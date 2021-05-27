@@ -67,13 +67,14 @@ class AssetView(BoxLayout):
 
 class AccountScreen(Screen):
     def __init__(self, **kwargs):
-        super(AccountScreen, self).__init__(**kwargs)
-
+        super(AccountScreen, self).__init__(**kwargs) 
+ 
     def on_pre_enter(self):
+        self.ids.accountscreen_toolbar.title = App.current_account + ' transfers'
         self.filter_buttons = [self.ids.oneweek_button, self.ids.twoweeks_button, self.ids.onemonth_button, 
                                self.ids.threemonths_button, self.ids.custom_button]
         self.fill_transfers_list(App.current_account)
-        self.ids.accountscreen_toolbar.title = App.current_account + ' transfers'
+        
     
     def button_clicked(self, instance):
         for button in self.filter_buttons:
@@ -84,11 +85,49 @@ class AccountScreen(Screen):
                 button.md_bg_color = Backend.bg_color
                 button.text_color  = Backend.text_color
         self.fill_transfers_list(App.current_account)
+ 
+    def open_transfer_dropdown(self, card, box, date, purpose, amount):
+   
+        self.items = ['Change amount', 'Change date', 'Delete']
+        self.transfer_menu_items = [
+            {
+                "text": item,
+                "viewclass": "OneLineListItem",
+                "height": dp(50),
+                "on_release": lambda x=item: self.transfer_item_selected(x, date, purpose, amount),
+            } for item in self.items
+        ]
 
+        self.transfer_dropdown = MDDropdownMenu(
+            caller=card,
+            items=self.transfer_menu_items,
+            width_mult=4,
+        )
+        box.md_bg_color = Backend.bg_color_light
+        self.transfer_dropdown.open()
+
+    def transfer_item_selected(self, item, date, purpose, amount):
+        if item==self.items[2]:
+            year  = date.split('-')[0]
+            month = str(int(date.split('-')[1]))
+            for i, transfer in enumerate(Backend.accounts[App.current_account][year][month]['Transfers'][date]):
+                if transfer[0]==amount and transfer[1]==purpose:
+                    if len(Backend.accounts[App.current_account][year][month]['Transfers'][date])>1:
+                        Backend.accounts[App.current_account][year][month]['Transfers'][date].pop(i)
+                    else:
+                        del Backend.accounts[App.current_account][year][month]['Transfers'][date]
+                        del Backend.accounts[App.current_account]['Status'][date]
+
+            Backend.calculate_status(App.current_account, date)
+            self.transfer_dropdown.dismiss()
+            self.fill_transfers_list(App.current_account)
+
+
+            
     def generate_month_carditem(self, year, month):
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color)
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[10,10,10,10])      
-        acclabel   = MDLabel(text=Backend.months[month-1]+' '+str(year), font_style='Button')
+        card           = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color)
+        contentbox     = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[10,10,10,10])   
+        acclabel       = MDLabel(text=Backend.months[month-1]+' '+str(year), font_style='Button')
         acclabel.color = Backend.text_color
         contentbox.add_widget(dialogs.Spacer_Horizontal(0.03))
         contentbox.add_widget(acclabel)
@@ -96,23 +135,23 @@ class AccountScreen(Screen):
         return card
 
     def generate_transfer_carditem(self, date, purpose, amount):
-        
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color_light)
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color, radius=[10,10,10,10])     
-
-        datelabel   = MDLabel(text=date, font_style='Button')
-        datelabel.color = Backend.text_color
-        datelabel.halign = 'center'
+        contentbox          = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color, radius=[10,10,10,10])     
+        card                = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color,
+                                     ripple_behavior=True, ripple_color=Backend.bg_color_light, 
+                                     on_release=lambda x=contentbox: self.open_transfer_dropdown(card, contentbox, date, purpose, amount))
+        datelabel           = MDLabel(text=date, font_style='Button')
+        datelabel.color     = Backend.text_color
+        datelabel.halign    = 'center'
         contentbox.add_widget(datelabel)
 
-        purposelabel   = MDLabel(text=purpose, font_style='Button')
-        purposelabel.color = Backend.text_color
+        purposelabel        = MDLabel(text=purpose, font_style='Button')
+        purposelabel.color  = Backend.text_color
         purposelabel.halign = 'center'
         contentbox.add_widget(purposelabel)
 
-        amlabel = MDLabel(text=str(amount), font_style='Button')
-        amlabel.color = Backend.error_color if amount<0 else Backend.green_color
-        amlabel.halign = 'center'
+        amlabel             = MDLabel(text=str(amount), font_style='Button')
+        amlabel.color       = Backend.error_color if amount<0 else Backend.green_color
+        amlabel.halign      = 'center'
         contentbox.add_widget(amlabel)
 
         card.add_widget(contentbox)
@@ -127,7 +166,7 @@ class AccountScreen(Screen):
         if i<=3:
             timedeltas = [relativedelta(weeks=1), relativedelta(weeks=2), relativedelta(months=1), relativedelta(months=3)]
             timedelta  = timedeltas[i]
-            end_date = App.dialog_date.today - timedelta
+            end_date   = App.dialog_date.today - timedelta
         if i==4:
             years = list(Backend.accounts[account].keys())[1:]
             years.sort(key=int)
@@ -228,11 +267,27 @@ class DemoApp(MDApp):
                 "on_release": lambda x=sett: self.select_settings_item(x),
             } for sett in Backend.settings
         ]
+        items = ['Change Amount', 'Delete']
+        self.transfer_menu_items = [
+            {
+                "text": item,
+                "viewclass": "OneLineListItem",
+                "height": dp(54),
+                "on_release": lambda x=item: self.transfer_item_selected(x),
+            } for item in items
+        ]
 
     def create_dropdownmenus(self):
         self.add_value_acc_dropdown = MDDropdownMenu(
             caller=self.add_value_accountfield,
             items=self.acc_menu_items,
+            position="bottom",
+            width_mult=4,
+        )
+
+        self.transfer_dropdown = MDDropdownMenu(
+            caller=self.screen.ids.account.ids.onemonth_button,
+            items=self.transfer_menu_items,
             position="bottom",
             width_mult=4,
         )

@@ -11,7 +11,7 @@ class Backend():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         accounts = {}
         accounts_list = ['DKB', 'ING', 'Cash']
-        years         = [2018, 2019, 2020, 2021]
+        years         = [2019, 2020, 2021]
         for acc in accounts_list:
             accounts[acc] = {}
             accounts[acc]['Status']  = {}
@@ -41,8 +41,8 @@ class Backend():
 
         Purposes = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 'Ticket', 'Gitarre', 'Bier']
         for acc in accounts_list:
-            for q in range(400):
-                year   = random.randint(2018,2021)
+            for q in range(100):
+                year   = random.randint(2019,2021)
                 month  = random.randint(1,12)
                 day    = random.randint(1,28)
                 amount = round(float(random.randint(-100,100)) + round(random.random(),2),2)
@@ -59,7 +59,7 @@ class Backend():
                         accounts[acc][year][month]['Transfers'][date] = []
                         accounts[acc][year][month]['Transfers'][date].append([amount, purpose]) 
 
-            accounts[acc]['Status']['2018-01-01'] = 0
+            accounts[acc]['Status']['2019-01-01'] = 0
             for year in years:
                 for i in range(1,13):
                     dates = list(accounts[acc][year][i]['Transfers'].keys())
@@ -101,9 +101,54 @@ class Backend():
             self.settings = json.load(lp)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)      
 
+    def calculate_status(self, acc, start_date):
+        #this function calculates the new status of the account 
+
+        #identify from which point (years, months) on the status 
+        #has to be calculated new
+        years = [start_date.split('-')[0]]
+        months = [[int(start_date.split('-')[1])]]
+        it_date = datetime.strptime(start_date, '%Y-%m-%d').date() + relativedelta(months=1)
+        if it_date>=self.today_date:
+            pass
+        else:
+            while it_date<self.today_date + relativedelta(months=1):
+                if it_date.month==1:
+                    months.append([])
+                    years.append(str(int(years[-1])+1))
+                if it_date>self.today_date:
+                    pass
+                else:
+                    months[-1].append(it_date.month)
+                it_date = it_date + relativedelta(months=1)
+      
+        #get the latest amount of status
+        start_date = datetime.strptime('{}-{}-{}'.format(years[0], months[0][0], '01'), '%Y-%m-%d').date() 
+        dates = list(self.accounts[acc]['Status'].keys())
+        dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
+        if len(dates)>1:
+            for i, date in enumerate(dates):
+                if datetime.strptime(date, '%Y-%m-%d').date()>=start_date:
+                    last_date = dates[i-1]
+                    break
+            else:
+                last_date = dates[0]
+        
+        for i, year in enumerate(years):
+            for month in months[i]:
+                dates = list(self.accounts[acc][year][str(month)]['Transfers'].keys())
+                dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
+                for date in dates:
+                    for transfer in self.accounts[acc][year][str(month)]['Transfers'][date]:
+                        if last_date!=date:
+                            self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][last_date] + transfer[0],2)
+                        else:
+                            self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][date] + transfer[0],2)
+                        
+              
     def get_colors(self):
         self.bg_color                     = (0.1, 0.1, 0.1, 1)
-        self.bg_color_light               = (90/255, 94/255, 99/255,  0.15)
+        self.bg_color_light               = (100/255, 94/255, 99/255,  0.15)
         self.text_color                   = (255/255, 253/255, 250/255, 1)
         self.primary_color                = (0, 7/255, 143/255, 0.8)
         self.error_color                  = (1, 0, 0, 0.7)
