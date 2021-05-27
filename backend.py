@@ -4,80 +4,17 @@ import json
 import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+import pandas as pd
 
 class Backend():
     def __init__(self):  
         self.today_str  = datetime.today().strftime('%Y-%m-%d')
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
-        accounts = {}
-        accounts_list = ['DKB', 'ING', 'Cash']
-        years         = [2019, 2020, 2021]
-        for acc in accounts_list:
-            accounts[acc] = {}
-            accounts[acc]['Status']  = {}
-            sum_total_income = 0
-            sum_total_expenditure = 0
-            for year in years:
-                accounts[acc][year] = {}
-                accounts[acc][year]['Income']      = 0
-                accounts[acc][year]['Expenditure'] = 0
-                accounts[acc][year]['Profit']      = 0 
-                sum_year_income      = 0
-                sum_year_expenditure = 0
-                for i in range(1,13):
-                    accounts[acc][year][i] = {}
-                    accounts[acc][year][i]['Income']      = round(float(random.randint(0,1000)) + round(random.random(),2),2)
-                    accounts[acc][year][i]['Expenditure'] = round(float(random.randint(-1000,0)) + round(random.random(),2),2)
-                    accounts[acc][year][i]['Profit']      = accounts[acc][year][i]['Income'] + accounts[acc][year][i]['Expenditure']
-                    accounts[acc][year][i]['Transfers']   = {}
-                    sum_year_income      += accounts[acc][year][i]['Income']
-                    sum_year_expenditure += accounts[acc][year][i]['Expenditure']
-
-                accounts[acc][year]['Income']      = sum_year_income
-                accounts[acc][year]['Expenditure'] = sum_year_expenditure
-                accounts[acc][year]['Profit']      = sum_year_income + sum_year_expenditure
-                sum_total_income      += sum_year_income
-                sum_total_expenditure += sum_year_expenditure
-
-        Purposes = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 'Ticket', 'Gitarre', 'Bier']
-        for acc in accounts_list:
-            for q in range(100):
-                year   = random.randint(2019,2021)
-                month  = random.randint(1,12)
-                day    = random.randint(1,28)
-                amount = round(float(random.randint(-100,100)) + round(random.random(),2),2)
-                purpose= Purposes[random.randint(0,13)]
-
-                month_str = '0'+str(month) if month<10 else str(month)
-                day_str = '0'+str(day) if day<10 else str(day)
-                date = '{}-{}-{}'.format(year, month_str, day_str)
-
-                if not datetime.strptime(date, '%Y-%m-%d').date()>self.today_date:
-                    if date in accounts[acc][year][month]['Transfers'].keys():
-                        accounts[acc][year][month]['Transfers'][date].append([amount, purpose])
-                    else:
-                        accounts[acc][year][month]['Transfers'][date] = []
-                        accounts[acc][year][month]['Transfers'][date].append([amount, purpose]) 
-
-            accounts[acc]['Status']['2019-01-01'] = 0
-            for year in years:
-                for i in range(1,13):
-                    dates = list(accounts[acc][year][i]['Transfers'].keys())
-                    dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
-                    for date in dates:
-                        for transfer in accounts[acc][year][i]['Transfers'][date]:
-                            last_date = list(accounts[acc]['Status'])[-1]
-                            if last_date!=date:
-                                accounts[acc]['Status'][date] = round(accounts[acc]['Status'][last_date] + transfer[0],2)
-                            else:
-                                accounts[acc]['Status'][date] = round(accounts[acc]['Status'][date] + transfer[0],2)
-              
-            if not self.today_str in accounts[acc]['Status'].keys():
-                accounts[acc]['Status'][self.today_str] = accounts[acc]['Status'][date]
-
-        with open('accounts.json', 'w') as qt:
-            json.dump(accounts, qt)
-         
+        self.create_demo_setup()
+        self.months     = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.clicks     = 0
+        self.get_colors()
+                 
         '''settings = {}
         settings['Labelsize'] = 20
         settings['Titlesize'] = 20
@@ -85,11 +22,7 @@ class Backend():
         settings['Markersize'] = 2
 
         with open('settings.json', 'w') as qt:
-            json.dump(settings, qt)'''
-        
-        self.months  = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
-        self.clicks  = 0
-        self.get_colors()
+            json.dump(settings, qt)'''    
 
         with open('accounts.json', 'r') as qt:
             self.accounts = json.load(qt)
@@ -140,8 +73,8 @@ class Backend():
                 dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
                 for date in dates:
                     for transfer in self.accounts[acc][year][str(month)]['Transfers'][date]:
-                        if last_date!=date:
-                            self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][last_date] + transfer[0],2)
+                        if date in self.accounts[acc]['Status']:
+                            self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][date] + transfer[0],2)
                         else:
                             self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][date] + transfer[0],2)
                         
@@ -296,4 +229,114 @@ class Backend():
 
         with open('data.json', 'w') as outfile:
             json.dump(self.data, outfile)
+
+    def change_transfers_into_dataframe(self, acc):
+        dates    = list(self.accounts[acc]['Transfers'].keys())
+        dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
+        amounts  = []
+        purposes = []
+        dates2   = [] 
+        for date in dates:
+            for transfer in self.accounts[acc]['Transfers'][date]:
+                amounts.append(transfer[0])
+                purposes.append(transfer[1])
+                dates2.append(datetime.strptime(date, '%Y-%m-%d').date())
+        df = pd.DataFrame(list(zip(dates2, purposes, amounts)), columns =['Date', 'Purpose', 'Amount'])
+        return df
+
+    def create_demo_setup(self):
+        #structure:
+        #accounts[account]['Transfers'][date]
+        #accounts[account]['Status'][date]
+
+        #accounts[account]['Income'][year]
+        #accounts[account]['Expenditure'][year]
+        #accounts[account]['Profit'][year]
+
+        #accounts[account]['Income'][year][month]
+        #accounts[account]['Expenditure'][year][month]
+        #accounts[account]['Profit'][year][month]
+
+        self.accounts = {}
+        self.transfers_df = {}
+        accounts_list = ['DKB', 'ING', 'Cash']
+        keys_list     = ['Transfers', 'Status', 'Income', 'Expenditure', 'Profit']
+        Purposes      = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 
+                         'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 
+                        'Ticket', 'Gitarre', 'Bier']
+        years         = [2019, 2020, 2021]
+
+        #initialize dictionaries
+        for acc in accounts_list:
+            self.accounts[acc] = {}
+            for key in keys_list:
+                self.accounts[acc][key] = {}
+        
+        #fill transfers
+        for acc in accounts_list:
+            for q in range(200):
+                year      = random.randint(years[0],years[-1])
+                month     = random.randint(1,12)
+                day       = random.randint(1,28)
+                amount    = round(float(random.randint(-100,100)) + round(random.random(),2),2)
+                purpose   = Purposes[random.randint(0,13)]
+
+                month_str = '0'+str(month) if month<10 else str(month)
+                day_str   = '0'+str(day) if day<10 else str(day)
+                date      = '{}-{}-{}'.format(year, month_str, day_str)
+
+                if not datetime.strptime(date, '%Y-%m-%d').date()>self.today_date:
+                    if date in self.accounts[acc]['Transfers'].keys():
+                        self.accounts[acc]['Transfers'][date].append([amount, purpose])
+                    else:
+                        self.accounts[acc]['Transfers'][date] = []
+                        self.accounts[acc]['Transfers'][date].append([amount, purpose]) 
+        
+            self.transfers_df[acc] = self.change_transfers_into_dataframe(acc)
+            
+            #fill income, expenditure, profit
+            for year in years:
+                self.accounts[acc]['Income'][year] = {}
+                self.accounts[acc]['Expenditure'][year] = {}
+                self.accounts[acc]['Profit'][year] = {}
+
+                boundary_date_one = datetime.strptime('{}-{}-{}'.format(year-1, '12', '31'), '%Y-%m-%d').date()
+                boundary_date_two = datetime.strptime('{}-{}-{}'.format(year+1, '01', '01'), '%Y-%m-%d').date()
+                filter_year       = self.transfers_df[acc][self.transfers_df[acc].Date > boundary_date_one]
+                filter_year       = filter_year[filter_year.Date < boundary_date_two]
+
+                filter_income                                    = filter_year[filter_year.Amount > 0]
+                filter_expenditure                               = filter_year[filter_year.Amount < 0]
+                self.accounts[acc]['Income'][year]['Total']      = sum(filter_income.Amount)
+                self.accounts[acc]['Expenditure'][year]['Total'] = sum(filter_expenditure.Amount)
+               
+                for i in range(1, 13):
+                    boundary_date_one = datetime.strptime('{}-{}-{}'.format(year, str(i), '01'), '%Y-%m-%d').date()
+                    if i==12:
+                        boundary_date_two = datetime.strptime('{}-{}-{}'.format(year+1, '01', '01'), '%Y-%m-%d').date() - relativedelta(days=1)
+                    else:
+                        boundary_date_two = datetime.strptime('{}-{}-{}'.format(year, str(i+1), '01'), '%Y-%m-%d').date() - relativedelta(days=1)
+
+                    filter_month = filter_year[filter_year.Date > boundary_date_one]
+                    filter_month = filter_month[filter_month.Date < boundary_date_two]
+                    
+                    filter_income                                 = filter_month[filter_month.Amount > 0]
+                    filter_expenditure                            = filter_month[filter_month.Amount < 0]
+                    self.accounts[acc]['Income'][year][i]         = sum(filter_income.Amount)
+                    self.accounts[acc]['Expenditure'][year][i]    = sum(filter_expenditure.Amount)
+
+            #fill status
+            for i, date in enumerate(self.transfers_df[acc].Date):
+                if i==0:
+                    self.accounts[acc]['Status'][date.strftime('%Y-%m-%d')] = round(self.transfers_df[acc].Amount.iloc[i], 2)
+                else:
+                    previous_date = self.transfers_df[acc].Date.iloc[i-1].strftime('%Y-%m-%d')
+                    self.accounts[acc]['Status'][date.strftime('%Y-%m-%d')] = round(self.accounts[acc]['Status'][previous_date] + self.transfers_df[acc].Amount.iloc[i-1], 2)
+                         
+            if not self.today_str in self.accounts[acc]['Status'].keys():
+                self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][self.transfers_df[acc].Date.iloc[-1].strftime('%Y-%m-%d')], 2)
+
+        with open('accounts.json', 'w') as qt:
+            json.dump(self.accounts, qt)
+
 
