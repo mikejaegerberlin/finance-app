@@ -10,11 +10,11 @@ from kivymd.uix.label import MDLabel
 
 class Backend():
     def __init__(self):  
+        self.months     = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
         self.today_str  = datetime.today().strftime('%Y-%m-%d')
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.get_colors()
-        self.create_demo_setup()
-        self.months     = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.create_demo_setup() 
         self.cards_transferitem = []
         self.cards_monthitem    = []
         
@@ -242,8 +242,28 @@ class Backend():
             #fill status
             self.fill_status_of_account(acc)
 
+        self.standingorders = {}
+        keys = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
+        for i in range(10):
+            self.standingorders[i] = {}
+            self.standingorders[i][keys[0]] = accounts_list[random.randint(0,2)]
+            self.standingorders[i][keys[1]] = self.months[random.randint(0,11)] + '\n' + str(random.randint(2017,2020))
+            self.standingorders[i][keys[2]] = self.months[random.randint(0,11)] + '\n' + str(random.randint(2021,2025))
+            day       = random.randint(1,28)
+            amount    = round(float(random.randint(-2000,100)) + round(random.random(),2),2)
+            purpose   = Purposes[random.randint(0,13)] 
+            self.standingorders[i][keys[3]] = str(day)+'.'
+            self.standingorders[i][keys[4]] = purpose
+            self.standingorders[i][keys[5]] = amount
+
+
+
+
         with open('accounts.json', 'w') as qt:
             json.dump(self.accounts, qt)
+
+        with open('standingorders.json', 'w') as qt:
+            json.dump(self.standingorders, qt)
 
     def fill_status_of_account(self, acc):
         

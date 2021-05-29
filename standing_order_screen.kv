@@ -2,6 +2,7 @@
     name: 'Standing order'
     standing_orders_list: standing_orders_list
     standingscreen_toolbar: standingscreen_toolbar
+    header: header
     MDNavigationLayout:
         ScreenManager:
             Screen:
@@ -17,14 +18,38 @@
                         id: standingscreen_toolbar
                         title: 'Standing orders'
                         left_action_items: [["arrow-left", lambda x: app.go_to_mainscreen(x)]]
-                        right_action_items: [["magnify", lambda x: app.go_to_mainscreen(x)]]
                         elevation:5
                         md_bg_color: app.primary_color
                         specific_text_color: app.text_color
                     MDBoxLayout:
                         size_hint_y: 0.01
+
+                    MDBoxLayout:
+                        size_hint_y: 0.048
+                        orientation: 'horizontal'
+                        MDBoxLayout:
+                            size_hint_x: 0.01
+                        MDBoxLayout:
+                            id: header
+                            orientation: 'horizontal'
+                            size_hint_y: 1
+                            size_hint_x: 0.98
+                        MDBoxLayout:
+                            size_hint_x: 0.01
+
+                    MDBoxLayout:
+                        size_hint_y: 0.8
+                        orientation: 'horizontal'
+                        MDBoxLayout:
+                            size_hint_x: 0.01
+                        ScrollView:   
+                            size_hint_y: 1
+                            size_hint_x: 0.98
+                            MDList:
+                                id: standing_orders_list
+                        MDBoxLayout:
+                            size_hint_x: 0.01
                     
-                    ScrollView:
-                        MDList:
-                            id: standing_orders_list
+            
+                           
         

@@ -66,6 +66,45 @@ class StandingOrdersScreen(Screen):
     def __init__(self, **kwargs):
         super(StandingOrdersScreen, self).__init__(**kwargs) 
 
+    def on_pre_enter(self):
+        header = self.ids.header
+        header.clear_widgets()
+        header.md_bg_color = Backend.primary_color
+        header.radius = [20,20,20,20]
+        
+        
+        labels = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
+        for label in labels:
+            header_label = MDLabel(text=label, font_style="Subtitle2")
+            header_label.color = Backend.text_color
+            header_label.halign = 'center'
+            header.add_widget(header_label)
+
+        #scrollview items
+        self.standing_orders_list.clear_widgets()
+        for number in Backend.standingorders:
+            carditem = self.generate_carditem(Backend.standingorders[number])
+            self.standing_orders_list.add_widget(carditem)
+            self.standing_orders_list.add_widget(dialogs.Spacer_Vertical('6dp'))
+
+    def generate_carditem(self, entry):
+        card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color)
+        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[20,20,20,20])  
+        for i, key in enumerate(entry):
+            if not i==len(list(entry.keys()))-1:
+                label   = MDLabel(text=str(entry[key]), font_style='Subtitle2')
+                label.color = Backend.text_color
+                label.halign = 'center'
+                contentbox.add_widget(label)
+
+        label   = MDLabel(text=str(entry['Amount'])+' €', font_style='Subtitle2')
+        label.color = Backend.error_color if entry['Amount']<0 else Backend.green_color
+        label.halign = 'center'
+        contentbox.add_widget(label)
+        card.add_widget(contentbox)
+        
+        return card
+
 class AssetView(BoxLayout):
     def __init__(self, **kwargs):
         super(AssetView, self).__init__(**kwargs)
@@ -79,7 +118,7 @@ class AccountScreen(Screen):
         self.ids.accountscreen_toolbar.title = App.current_account + ' transfers'
         self.filter_buttons = [self.ids.twoweeks_button, self.ids.onemonth_button, 
                                self.ids.threemonths_button, self.ids.sixmonths_button, self.ids.custom_button]
-        Backend.generate_carditems(15)
+        Backend.generate_carditems(10)
         self.fill_transfers_list(App.current_account)
         
         
@@ -99,7 +138,7 @@ class AccountScreen(Screen):
         )
 
     def button_clicked(self, instance):
-        Backend.generate_carditems(5)
+        Backend.generate_carditems(3)
         for button in self.filter_buttons:
             if button==instance:
                 button.md_bg_color = Backend.text_color
@@ -312,15 +351,15 @@ class DemoApp(MDApp):
         
         self.create_dropdownmenus()
         self.add_account_status_to_mainscreen()
-        Backend.generate_carditems(15)
+        Backend.generate_carditems(10)
         
         
     def create_items_for_dropdowns_and_buttons(self):
         self.data_floating_button = {
             'Income/Expenditure': 'bank-outline', 
             'Transfer': 'bank-transfer',
-            'Standing Order': 'book-plus',
-            'New Account': 'account-plus',
+            'Standing Orders': 'file-document-multiple-outline',
+            'Accounts': 'account-multiple',
             }
 
         self.acc_menu_items = [
@@ -396,7 +435,9 @@ class DemoApp(MDApp):
             self.dialog_add_value.open()
         if instance.icon == 'bank-transfer':
             self.dialog_money_transfer.open()
-        if instance.icon == 'book-plus':
+        if instance.icon == 'file-document-multiple-outline':
+            self.screen.ids.main.manager.current = 'Standing order'
+        if instance.icon == 'account-multiple':
             self.screen.ids.main.manager.current = 'Standing order'
         self.screen.main.ids.floating_button.close_stack()
         self.screen.main.ids.main_content.canvas.opacity = 1
