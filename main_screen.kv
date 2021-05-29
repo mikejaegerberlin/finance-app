@@ -1,13 +1,17 @@
 #:include account_screen.kv
+#:include standing_order_screen.kv
 #:include dialogs.kv
 
 ScreenManager:
     main: main
     account: account
+    standing_order: standing_order
     MainScreen:
         id: main
     AccountScreen:
         id: account
+    StandingOrdersScreen:
+        id: standing_order
 
 <MainScreen>:
     name: 'Main'
@@ -143,6 +147,7 @@ ScreenManager:
                     data: app.data_floating_button
                     root_button_anim: True
                     right_pad: True
+                    theme_text_color: 'Custom'
                     callback: app.callback_floatingbutton
                     bg_color_stack_button: app.primary_color
                     bg_hint_color: app.primary_color

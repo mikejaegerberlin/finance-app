@@ -116,7 +116,7 @@
         line_color_focus: app.primary_color
         current_hint_text_color: app.primary_color
         text_color: app.primary_color
-        on_focus: if self.focus: accountfield.focus = False
+        on_focus: if self.focus: root.focus_function()
         
         
                 
@@ -124,7 +124,7 @@
         id: accountfield
         hint_text: "Account"
         icon_right: "arrow-down-drop-circle-outline"
-        on_focus: if self.focus: app.open_add_value_acc_dropdown()
+        on_focus: if self.focus: app.open_acc_dropdown(accountfield)
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.primary_color
         current_hint_text_color: app.primary_color
@@ -140,7 +140,7 @@
         line_color_focus: app.primary_color
         current_hint_text_color: app.primary_color
         text_color: app.primary_color
-        on_focus: if self.focus: accountfield.focus = False
+        on_focus: if self.focus: root.focus_function()
 
     MDTextField:
         id: datefield
@@ -150,5 +150,112 @@
         line_color_focus: app.primary_color
         current_hint_text_color: app.primary_color
         text_color: app.primary_color
-        on_focus: if self.focus: app.open_add_value_datepicker()
+        on_focus: if self.focus: app.open_datepicker(datefield)
         keyboard_mode: 'managed'
+
+<ChangeTransferitemContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "150dp"
+    datefield: datefield
+    purposefield: purposefield
+    amountfield: amountfield
+    
+    MDBoxLayout:
+        orientation: 'vertical'
+        
+        MDTextField:
+            id: amountfield
+            hint_text: "Amount (€)"
+            color_mode: 'custom'
+            line_color_normal: app.button_disable_onwhite_color
+            line_color_focus: app.primary_color
+            current_hint_text_color: app.primary_color
+            text_color: app.primary_color  
+         
+
+        MDTextField:
+            id: purposefield
+            hint_text: "Purpose"
+            color_mode: 'custom'
+            line_color_normal: app.button_disable_onwhite_color
+            line_color_focus: app.primary_color
+            current_hint_text_color: app.primary_color
+            text_color: app.primary_color
+
+        MDTextField:
+            id: datefield
+            hint_text: "Date"
+            color_mode: 'custom'
+            line_color_normal: app.button_disable_onwhite_color
+            line_color_focus: app.primary_color
+            current_hint_text_color: app.primary_color
+            text_color: app.primary_color
+            on_focus: if self.focus: app.open_datepicker(datefield)
+           
+
+
+<MoneyTransferDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "240dp"
+    accountfield_from: accountfield_from
+    accountfield_to: accountfield_to
+    amountfield: amountfield
+    datefield: datefield
+    
+    MDTextField:
+        id: amountfield
+        hint_text: "Amount (€)"
+        color_mode: 'custom'
+        line_color_normal: app.button_disable_onwhite_color
+        line_color_focus: app.primary_color
+        current_hint_text_color: app.primary_color
+        text_color: app.primary_color
+        on_focus: if self.focus: accountfield_from.focus = False; accountfield_to.focus = False
+             
+    MDTextField:
+        id: accountfield_from
+        hint_text: "From account"
+        icon_right: "arrow-down-drop-circle-outline"
+        on_focus: if self.focus: app.open_acc_dropdown(accountfield_from)
+        line_color_normal: app.button_disable_onwhite_color
+        line_color_focus: app.primary_color
+        current_hint_text_color: app.primary_color
+        text_color: app.primary_color
+        keyboard_mode: 'managed'
+
+    MDTextField:
+        id: accountfield_to
+        hint_text: "To account"
+        icon_right: "arrow-down-drop-circle-outline"
+        on_focus: if self.focus: app.open_acc_dropdown(accountfield_to)
+        line_color_normal: app.button_disable_onwhite_color
+        line_color_focus: app.primary_color
+        current_hint_text_color: app.primary_color
+        text_color: app.primary_color
+        keyboard_mode: 'managed'
+
+    MDTextField:
+        id: datefield
+        hint_text: "Date"
+        color_mode: 'custom'
+        line_color_normal: app.button_disable_onwhite_color
+        line_color_focus: app.primary_color
+        current_hint_text_color: app.primary_color
+        text_color: app.primary_color
+        on_focus: if self.focus: app.open_datepicker(datefield)
+        keyboard_mode: 'managed'
+
+<DeleteMoneytransferDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "100dp"      
+         
+            
+       
+    
+        

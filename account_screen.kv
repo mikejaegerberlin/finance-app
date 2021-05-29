@@ -1,10 +1,11 @@
 <AccountScreen>:
     name: 'Account'
     tansfers_list: transfers_list
-    oneweek_button: oneweek_button
+    
     twoweeks_button: twoweeks_button
     onemonth_button: onemonth_button
     threemonths_button: threemonths_button
+    sixmonths_button: sixmonths_button
     custom_button: custom_button
     accountscreen_toolbar: accountscreen_toolbar
     MDNavigationLayout:
@@ -32,16 +33,6 @@
                         size_hint_x: 1
                         id: account_tabs
                         orientation: 'horizontal'
-                        
-                        MDFillRoundFlatButton:
-                            id: oneweek_button
-                            text: '1W'
-                            size_hint_y: 1
-                            size_hint_x: 0.2
-                            font_style: 'Button'
-                            text_color: app.text_color
-                            md_bg_color: app.bg_color
-                            on_release: root.button_clicked(oneweek_button)
                             
                         MDFillRoundFlatButton:
                             id: twoweeks_button
@@ -49,11 +40,10 @@
                             size_hint_y: 1
                             size_hint_x: 0.2
                             font_style: 'Button'
-                            text_color: app.bg_color
-                            md_bg_color: app.text_color
+                            text_color: app.text_color
+                            md_bg_color: app.bg_color
                             on_release: root.button_clicked(twoweeks_button)
-                            
-                            
+      
                         MDFillRoundFlatButton:
                             id: onemonth_button
                             text: '1M'
@@ -70,9 +60,19 @@
                             size_hint_y: 1
                             size_hint_x: 0.2
                             font_style: 'Button'
+                            text_color: app.bg_color
+                            md_bg_color: app.text_color
+                            on_release: root.button_clicked(threemonths_button)
+
+                        MDFillRoundFlatButton:
+                            id: sixmonths_button
+                            text: '6M'
+                            size_hint_y: 1
+                            size_hint_x: 0.2
+                            font_style: 'Button'
                             text_color: app.text_color
                             md_bg_color: app.bg_color
-                            on_release: root.button_clicked(threemonths_button)
+                            on_release: root.button_clicked(sixmonths_button)
 
                         MDFillRoundFlatButton:
                             id: custom_button
