@@ -16,6 +16,7 @@ class DemoData(Calculations):
         #accounts[account]['Income'][year][month]
         #accounts[account]['Expenditure'][year][month]
         #accounts[account]['Profit'][year][month]
+        self.current_account = ''
         self.today_str  = datetime.today().strftime('%Y-%m-%d')
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.months     = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
@@ -104,3 +105,5 @@ class DemoData(Calculations):
     def save(self):
         with open('accounts.json', 'w') as outfile:
             json.dump(self.accounts, outfile)
+
+DemoData = DemoData()
