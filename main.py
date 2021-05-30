@@ -2,41 +2,27 @@ from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.uix.boxlayout import BoxLayout
-from kivy.properties import StringProperty
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.floatlayout import MDFloatLayout
-from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
-from kivymd.uix.navigationdrawer import MDNavigationLayout
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.button import MDFlatButton
-from kivy.uix.button import Button
-from kivymd.uix.textfield import MDTextField
 from kivymd.uix.label import MDLabel
-from kivymd.uix.relativelayout import MDRelativeLayout
-from kivymd.uix.expansionpanel import MDExpansionPanel, MDExpansionPanelOneLine
 from kivymd.uix.snackbar import Snackbar
 from kivy.metrics import dp
 from kivymd import images_path
 from kivymd.icon_definitions import md_icons
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 import backend, dialogs
-from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.list import OneLineListItem, ThreeLineListItem
 from kivymd.uix.card import MDCard
 from kivy.graphics import *
-from kivy.uix.widget import Widget
 from kivymd.uix.picker import MDDatePicker
 from datetime import datetime
-from kivymd.uix.tab import MDTabsBase
-from datetime import timedelta
 from dateutil.relativedelta import relativedelta 
 from dialogsfolder.custom_datepicker import DatePickerContent
-import time
+
 
 Backend = backend.Backend()
 
