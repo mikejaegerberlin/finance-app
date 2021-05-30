@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
-from account_calculations import Calculations
+from backend.account_calculations import Calculations
+import json
 
 class DemoData(Calculations):
     def __init__(self):  
@@ -99,3 +100,7 @@ class DemoData(Calculations):
             self.standingorders[i][keys[3]] = str(day)+'.'
             self.standingorders[i][keys[4]] = purpose
             self.standingorders[i][keys[5]] = amount
+
+    def save(self):
+        with open('accounts.json', 'w') as outfile:
+            json.dump(self.accounts, outfile)

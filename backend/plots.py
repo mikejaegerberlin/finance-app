@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+from backend.settings import Sizes
+from backend.colors import Colors
 
 class AccountPlot():
     def __init__(self):  
@@ -10,7 +12,7 @@ class AccountPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)    
 
-    def make_plot(self, filter_buttons):
+    def make_plot(self, filter_buttons, data):
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)
         self.ax      = self.fig.add_subplot(111)
@@ -24,37 +26,36 @@ class AccountPlot():
         end_date     = start_date - filter
         amounts = {}
         dates   = {}
-        for acc in self.accounts:
+        for acc in data.accounts:
             amounts[acc] = []
             dates[acc]   = []
-            possible_dates = list(self.accounts[acc]['Status'].keys())
+            possible_dates = list(data.accounts[acc]['Status'].keys())
             possible_dates.sort(reverse=True)
             for date in possible_dates:
                 if datetime.strptime(date, '%Y-%m-%d').date()>start_date:
                     pass
                 else:
-                    amounts[acc].append(self.accounts[acc]['Status'][date])
+                    amounts[acc].append(data.accounts[acc]['Status'][date])
                     dates[acc].append(datetime.strptime(date, '%Y-%m-%d').date())
                 if datetime.strptime(date, '%Y-%m-%d').date()<end_date:
                     break
         colors = ['r', 'b', 'g']
-        for i, acc in enumerate(self.accounts):
-            self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=self.settings['Linewidth'], markersize=self.settings['Markersize'])
+        for i, acc in enumerate(data.accounts):
+            self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
             xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date, filter)
             self.ax.set_xticks(xticks)
             self.ax.set_xticklabels(xticklabels)
-        self.ax.patch.set_facecolor(self.bg_color_light_hex)
-        self.fig.patch.set_facecolor(self.bg_color_hex)
+        self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
+        self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.ax.grid(linestyle=':', linewidth=0.05)
-        self.ax.spines['left'].set_color(self.text_color_hex)
-        self.ax.spines['right'].set_color(self.text_color_hex)
-        self.ax.spines['top'].set_color(self.text_color_hex)
-        self.ax.spines['bottom'].set_color(self.text_color_hex)
-        self.ax.tick_params(axis='y', colors=self.text_color_hex, labelsize=self.settings['Labelsize'])
-        self.ax.tick_params(axis='x', colors=self.text_color_hex, labelsize=self.settings['Labelsize'])
+        self.ax.spines['left'].set_color(Colors.text_color_hex)
+        self.ax.spines['right'].set_color(Colors.text_color_hex)
+        self.ax.spines['top'].set_color(Colors.text_color_hex)
+        self.ax.spines['bottom'].set_color(Colors.text_color_hex)
+        self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
+        self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.axis([end_date, start_date,-1000,1000])
         canvas = self.fig.canvas  
-        self.save_jsons()
         return canvas        
         
     def get_xticks_and_labels(self, start_date, end_date, filter):
@@ -78,4 +79,4 @@ class AccountPlot():
             next_date = next_date - step
         return xticks, xticklabels
 
-    
+AccountPlot = AccountPlot()

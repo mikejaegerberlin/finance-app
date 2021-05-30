@@ -15,7 +15,6 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-import backend2
 from kivymd.uix.card import MDCard
 from kivy.graphics import *
 from datetime import datetime
@@ -28,8 +27,12 @@ from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
 from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
 from kivymd.uix.picker import MDDatePicker
 from backend.colors import Colors
+from backend.plots import AccountPlot
+from backend.demo_setup import DemoData
+from backend.settings import Sizes
+from backend.carditems import CardItemsBackend
 
-Backend = backend2.Backend()
+data = DemoData()
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -48,7 +51,7 @@ class MainScreen(Screen):
 
     def before_enter(self):
         self.ids.nav_drawer.set_state(0)
-        canvas    = Backend.make_plot(App.filter_buttons)
+        canvas    = AccountPlot.make_plot(App.filter_buttons, data)
         yeargraph = self.ids.assetview
         yeargraph.clear_widgets()
         yeargraph.add_widget(canvas)  
@@ -73,8 +76,8 @@ class StandingOrdersScreen(Screen):
 
         #scrollview items
         self.standing_orders_list.clear_widgets()
-        for number in Backend.standingorders:
-            carditem = self.generate_carditem(Backend.standingorders[number])
+        for number in data.standingorders:
+            carditem = self.generate_carditem(data.standingorders[number])
             self.standing_orders_list.add_widget(carditem)
             self.standing_orders_list.add_widget(Spacer_Vertical('6dp'))
 
@@ -108,7 +111,7 @@ class AccountScreen(Screen):
         self.ids.accountscreen_toolbar.title = App.current_account + ' transfers'
         self.filter_buttons = [self.ids.twoweeks_button, self.ids.onemonth_button, 
                                self.ids.threemonths_button, self.ids.sixmonths_button, self.ids.custom_button]
-        Backend.generate_carditems(10)
+        CardItemsBackend.generate_carditems(10)
         self.fill_transfers_list(App.current_account)
         
         
@@ -128,7 +131,7 @@ class AccountScreen(Screen):
         )
 
     def button_clicked(self, instance):
-        Backend.generate_carditems(3)
+        CardItemsBackend.generate_carditems(3)
         for button in self.filter_buttons:
             if button==instance:
                 button.md_bg_color = Colors.text_color
@@ -166,19 +169,19 @@ class AccountScreen(Screen):
         old_purpose = self.selected_card[1].text
         old_amount  = float(self.selected_card[2].text.replace(' €',''))
         
-        if not new_date in Backend.accounts[App.current_account]['Transfers'].keys():
-            Backend.accounts[App.current_account]['Transfers'][new_date] = [[new_amount, new_purpose]]
+        if not new_date in data.accounts[App.current_account]['Transfers'].keys():
+            data.accounts[App.current_account]['Transfers'][new_date] = [[new_amount, new_purpose]]
         else:
-            Backend.accounts[App.current_account]['Transfers'][new_date].append([new_amount, new_purpose])
+            data.accounts[App.current_account]['Transfers'][new_date].append([new_amount, new_purpose])
         
-        if len(Backend.accounts[App.current_account]['Transfers'][old_date])==1:
-            del Backend.accounts[App.current_account]['Transfers'][old_date]
+        if len(data.accounts[App.current_account]['Transfers'][old_date])==1:
+            del data.accounts[App.current_account]['Transfers'][old_date]
         else:
-            for i, transfer in enumerate(Backend.accounts[App.current_account]['Transfers'][old_date]):
+            for i, transfer in enumerate(data.accounts[App.current_account]['Transfers'][old_date]):
                 if transfer[0]==old_amount and transfer[1]==old_purpose:
-                    Backend.accounts[App.current_account]['Transfers'][old_date].pop(i)       
+                    data.accounts[App.current_account]['Transfers'][old_date].pop(i)       
         self.fill_transfers_list(App.current_account)
-        Backend.fill_status_of_account(App.current_account)
+        data.fill_status_of_account(App.current_account)
         App.update_main_accountview(App.current_account)
         self.dialog_change_transferitem.dismiss()
 
@@ -196,32 +199,32 @@ class AccountScreen(Screen):
 
         #delete
         if item==self.items[1]:
-            if len(Backend.accounts[App.current_account]['Transfers'][date])==1:
-                check_purposelabel = Backend.accounts[App.current_account]['Transfers'][date][0][1]
-                del Backend.accounts[App.current_account]['Transfers'][date]
+            if len(data.accounts[App.current_account]['Transfers'][date])==1:
+                check_purposelabel = data.accounts[App.current_account]['Transfers'][date][0][1]
+                del data.accounts[App.current_account]['Transfers'][date]
                 
             else:
-                for i, transfer in enumerate(Backend.accounts[App.current_account]['Transfers'][date]):
+                for i, transfer in enumerate(data.accounts[App.current_account]['Transfers'][date]):
                     if transfer[0]==float(amountlabel.text.replace(' €','')) and transfer[1]==purposelabel.text:
-                        Backend.accounts[App.current_account]['Transfers'][date].pop(i)
+                        data.accounts[App.current_account]['Transfers'][date].pop(i)
                         check_purposelabel = transfer[1]
                             
             self.ids.transfers_list.remove_widget(card)
-            Backend.fill_status_of_account(App.current_account)
+            data.fill_status_of_account(App.current_account)
             App.update_main_accountview(App.current_account)
 
             if 'From' in check_purposelabel and 'to' in check_purposelabel:
                 account_from = check_purposelabel.split(' ')[1]
                 account_to   = check_purposelabel.split(' ')[3]
                 delete_account = account_to if account_from==App.current_account else account_from
-                if len(Backend.accounts[delete_account]['Transfers'][date])==1:
-                    del Backend.accounts[delete_account]['Transfers'][date]
+                if len(data.accounts[delete_account]['Transfers'][date])==1:
+                    del data.accounts[delete_account]['Transfers'][date]
                 
                 else:
-                    for i, transfer in enumerate(Backend.accounts[delete_account]['Transfers'][date]):
+                    for i, transfer in enumerate(data.accounts[delete_account]['Transfers'][date]):
                         if transfer[0]==-float(amountlabel.text.replace(' €','')) and transfer[1]==check_purposelabel:
-                            Backend.accounts[delete_account]['Transfers'][date].pop(i)
-                Backend.fill_status_of_account(delete_account)
+                            data.accounts[delete_account]['Transfers'][date].pop(i)
+                data.fill_status_of_account(delete_account)
                 App.update_main_accountview(delete_account)
                 message = Snackbar(text='Deleted transfer also from account {}.'.format(delete_account))
                 message.bg_color=Colors.black_color
@@ -233,7 +236,7 @@ class AccountScreen(Screen):
     def generate_month_carditem(self, year, month):
         card           = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
         contentbox     = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[10,10,10,10])   
-        acclabel       = MDLabel(text=Backend.months[month-1]+' '+str(year), font_style='Button')
+        acclabel       = MDLabel(text=data.months[month-1]+' '+str(year), font_style='Button')
         acclabel.color = Colors.text_color
         contentbox.add_widget(Spacer_Horizontal(0.03))
         contentbox.add_widget(acclabel)
@@ -241,13 +244,13 @@ class AccountScreen(Screen):
         return card
 
     def generate_transfer_carditem(self, date, purpose, amount, cardnumber):
-        if cardnumber==len(Backend.cards_transferitem):
-            Backend.generate_carditems(1)
-        card              = Backend.cards_transferitem[cardnumber][0]
-        box               = Backend.cards_transferitem[cardnumber][1]
-        datelabel         = Backend.cards_transferitem[cardnumber][2]
-        purposelabel      = Backend.cards_transferitem[cardnumber][3]
-        amountlabel       = Backend.cards_transferitem[cardnumber][4]
+        if cardnumber==len(CardItemsBackend.cards_transferitem):
+            CardItemsBackend.generate_carditems(1)
+        card              = CardItemsBackend.cards_transferitem[cardnumber][0]
+        box               = CardItemsBackend.cards_transferitem[cardnumber][1]
+        datelabel         = CardItemsBackend.cards_transferitem[cardnumber][2]
+        purposelabel      = CardItemsBackend.cards_transferitem[cardnumber][3]
+        amountlabel       = CardItemsBackend.cards_transferitem[cardnumber][4]
         box.md_bg_color   = Colors.bg_color
         datelabel.text    = date
         purposelabel.text = purpose
@@ -268,11 +271,11 @@ class AccountScreen(Screen):
             timedelta  = timedeltas[i]
             end_date   = App.dialog_date.today - timedelta
         if i==4:
-            end_date = list(Backend.accounts[account]['Transfers'].keys())
+            end_date = list(data.accounts[account]['Transfers'].keys())
             end_date.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
             end_date = datetime.strptime(end_date[0], '%Y-%m-%d').date()
         
-        transfers_list = list(Backend.accounts[account]['Transfers'].keys())
+        transfers_list = list(data.accounts[account]['Transfers'].keys())
         transfers_list.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date(), reverse=True)
         transfer_cards = 0
         for i, date in enumerate(transfers_list):
@@ -285,7 +288,7 @@ class AccountScreen(Screen):
                     card = self.generate_month_carditem(int(date_to_date.year), int(date_to_date.month))
                     self.ids.transfers_list.add_widget(card)
 
-                for transfer in Backend.accounts[account]['Transfers'][date]:
+                for transfer in data.accounts[account]['Transfers'][date]:
                     purpose = transfer[1]
                     amount  = transfer[0]
                     card = self.generate_transfer_carditem(date, purpose, amount, transfer_cards)
@@ -297,16 +300,16 @@ class DemoApp(MDApp):
         super().__init__(**kwargs)
         #Window.size = (400,700)
         self.create_items_for_dropdowns_and_buttons()
-        self.slider_labelsize_current = Backend.settings['Labelsize']
-        self.slider_titlesize_current = Backend.settings['Titlesize']
-        self.slider_linewidth_current = Backend.settings['Linewidth']
-        self.slider_markersize_current = Backend.settings['Markersize']
+        self.slider_labelsize_current = Sizes.labelsize
+        self.slider_titlesize_current = Sizes.titlesize
+        self.slider_linewidth_current = Sizes.linewidth
+        self.slider_markersize_current = Sizes.markersize
 
         self.bg_color                     = Colors.bg_color
         self.bg_color_light               = Colors.bg_color_light
         self.text_color                   = Colors.text_color
         self.primary_color                = Colors.primary_color
-        self.button_disable_onwhite_color = Backend.button_disable_onwhite_color
+        self.button_disable_onwhite_color = Colors.button_disable_onwhite_color
         self.error_color                  = Colors.error_color
         self.black_color                  = Colors.black_color
         self.green_color                  = Colors.green_color
@@ -341,7 +344,7 @@ class DemoApp(MDApp):
         
         self.create_dropdownmenus()
         self.add_account_status_to_mainscreen()
-        Backend.generate_carditems(10)
+        CardItemsBackend.generate_carditems(10)
         
         
     def create_items_for_dropdowns_and_buttons(self):
@@ -358,7 +361,7 @@ class DemoApp(MDApp):
                 "viewclass": "OneLineListItem",
                 "height": dp(54),
                 "on_release": lambda x=acc: self.set_acc_item(x),
-            } for acc in Backend.accounts
+            } for acc in data.accounts
         ]
 
         self.settings_items = [
@@ -367,7 +370,7 @@ class DemoApp(MDApp):
                 "viewclass": "OneLineListItem",
                 "height": dp(54),
                 "on_release": lambda x=sett: self.select_settings_item(x),
-            } for sett in Backend.settings
+            } for sett in Sizes.file
         ]
         
     def create_dropdownmenus(self):
@@ -425,7 +428,7 @@ class DemoApp(MDApp):
         self.dialog_date_custom = MDDialog(
                 title="Pick a date",
                 type="custom",
-                content_cls=DatePickerContent(Backend),
+                content_cls=DatePickerContent(),
                 buttons=[
                     MDFlatButton(
                         text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel':self.dialog_date_custom_cancel(x)
@@ -475,20 +478,20 @@ class DemoApp(MDApp):
             self.money_transfer_amountfield.text  = ''
             self.money_transfer_accountfield_from.text = ''
             self.money_transfer_accountfield_to.text = ''
-            self.money_transfer_datefield.text = Backend.today_str
+            self.money_transfer_datefield.text = data.today_str
             
             #insert transfer into transfers_list and update account status
-            if date in Backend.accounts[account_to]['Transfers'].keys():
-                Backend.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
+            if date in data.accounts[account_to]['Transfers'].keys():
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
             else:
-                Backend.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
-            if date in Backend.accounts[account_from]['Transfers'].keys():
-                Backend.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
+            if date in data.accounts[account_from]['Transfers'].keys():
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
             else:
-                Backend.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
 
-            Backend.fill_status_of_account(account_to)
-            Backend.fill_status_of_account(account_from)
+            data.fill_status_of_account(account_to)
+            data.fill_status_of_account(account_from)
             self.update_main_accountview(account_to)
             self.update_main_accountview(account_from)
 
@@ -519,42 +522,41 @@ class DemoApp(MDApp):
             self.add_value_amountfield.text  = ''
             self.add_value_accountfield.text = ''
             self.add_value_purposefield.text = ''
-            self.add_value_datefield.text = Backend.today_str
+            self.add_value_datefield.text = data.today_str
             
             #insert transfer into transfers_list and update account status
-            if date in Backend.accounts[account]['Transfers'].keys():
-                Backend.accounts[account]['Transfers'][date].append([amount, purpose])
+            if date in data.accounts[account]['Transfers'].keys():
+                data.accounts[account]['Transfers'][date].append([amount, purpose])
             else:
-                Backend.accounts[account]['Transfers'][date] = []
-                Backend.accounts[account]['Transfers'][date].append([amount, purpose])
-            Backend.fill_status_of_account(account)
+                data.accounts[account]['Transfers'][date] = []
+                data.accounts[account]['Transfers'][date].append([amount, purpose])
+            data.fill_status_of_account(account)
+            data.save()
             self.update_main_accountview(account)
+            
 
     def update_main_accountview(self, account):
-            self.AmountLabels[account].text     = str(Backend.accounts[account]['Status'][Backend.today_str])+' €'
-            if Backend.accounts[account]['Status'][Backend.today_str]<0:
-                self.AmountLabels[account].color = self.error_color
+            self.AmountLabels[account].text     = str(data.accounts[account]['Status'][data.today_str])+' €'
+            if data.accounts[account]['Status'][data.today_str]<0:
+                self.AmountLabels[account].color = Colors.error_color
             else:
-                self.AmountLabels[account].color = self.green_color
+                self.AmountLabels[account].color = Colors.green_color
             self.update_plot()
-            Backend.save_jsons()
+            
 
     def update_plot(self):
-        canvas    = Backend.make_plot(self.filter_buttons)
+        canvas    = AccountPlot.make_plot(self.filter_buttons, data)
         yeargraph = self.screen.main.ids.assetview
         yeargraph.clear_widgets()
         yeargraph.add_widget(canvas)
 
     def update_sizes(self):
-        Backend.settings['Labelsize'] = int(self.dialog_settings.content_cls.ids.slider_labelsize.value)
-        Backend.settings['Titlesize'] = int(self.dialog_settings.content_cls.ids.slider_titlesize.value)
-        Backend.settings['Linewidth'] = int(self.dialog_settings.content_cls.ids.slider_linewidth.value)
-        Backend.settings['Markersize'] = int(self.dialog_settings.content_cls.ids.slider_markersize.value)
+        Sizes.labelsize = int(self.dialog_settings.content_cls.ids.slider_labelsize.value)
+        Sizes.titlesize = int(self.dialog_settings.content_cls.ids.slider_titlesize.value)
+        Sizes.linewidth = int(self.dialog_settings.content_cls.ids.slider_linewidth.value)
+        Sizes.markersize = int(self.dialog_settings.content_cls.ids.slider_markersize.value)
+        Sizes.save()
         self.update_plot()
-    
-    def reset_data(self):  
-        Backend.reset_data()
-        self.update_plot()        
 
     def open_acc_dropdown(self, accountfield):
         accountfield.hide_keyboard()
@@ -614,12 +616,12 @@ class DemoApp(MDApp):
         acclabel.halign = 'center'
         contentbox.add_widget(acclabel)
     
-        last_date = list(Backend.accounts[acc]['Status'].keys())
+        last_date = list(data.accounts[acc]['Status'].keys())
         last_date.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
         last_date = last_date[-1]
         
-        amlabel = MDLabel(text=str(Backend.accounts[acc]['Status'][last_date])+' €', font_style='Button')
-        amlabel.color = self.error_color if Backend.accounts[acc]['Status'][last_date]<0 else self.green_color
+        amlabel = MDLabel(text=str(data.accounts[acc]['Status'][last_date])+' €', font_style='Button')
+        amlabel.color = self.error_color if data.accounts[acc]['Status'][last_date]<0 else self.green_color
         amlabel.halign = 'center'
         self.AmountLabels[acc] = amlabel
         contentbox.add_widget(amlabel)
@@ -630,7 +632,7 @@ class DemoApp(MDApp):
 
     def add_account_status_to_mainscreen(self):
 
-        canvas = Backend.make_plot(self.filter_buttons)
+        canvas = AccountPlot.make_plot(self.filter_buttons, data)
         self.screen.ids.main.ids.assetview.add_widget(canvas)
 
         self.AmountLabels = {}
@@ -649,7 +651,7 @@ class DemoApp(MDApp):
             header.add_widget(header_label)
 
         #scrollview items
-        for acc in Backend.accounts:
+        for acc in data.accounts:
             carditem = self.generate_main_carditem(acc)
             self.screen.ids.main.accountsview.add_widget(carditem)
             self.screen.ids.main.accountsview.add_widget(Spacer_Vertical('6dp'))

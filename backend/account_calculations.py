@@ -26,10 +26,6 @@ class Calculations():
         if not self.today_str in self.accounts[acc]['Status'].keys():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
 
-    def save_jsons(self):
-        with open('settings.json', 'w') as outfile:
-            json.dump(self.settings, outfile)
-        with open('accounts.json', 'w') as outfile:
-            json.dump(self.accounts, outfile)
+    
 
         

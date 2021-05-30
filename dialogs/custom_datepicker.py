@@ -3,9 +3,10 @@ from kivymd.uix.label import MDLabel
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from kivymd.uix.button import MDFillRoundFlatButton
+from backend.colors import Colors
 
 class DatePickerContent(MDBoxLayout):
-    def __init__(self, Backend, **kwargs):
+    def __init__(self, **kwargs):
         super(DatePickerContent, self).__init__(**kwargs)
         self.spacing     = "12dp"
         self.height      = "250dp"
@@ -19,7 +20,7 @@ class DatePickerContent(MDBoxLayout):
         #make month box
         month_box   = MDBoxLayout(orientation='horizontal')
         month_label = MDLabel(text='{} {}'.format(self.months[int(self.today_date.month)-1], self.today_date.year))
-        month_label.color = Backend.black_color
+        month_label.color = Colors.black_color
         month_box.add_widget(month_label)
         self.add_widget(month_box)
 
@@ -27,7 +28,7 @@ class DatePickerContent(MDBoxLayout):
         weekday_box = MDBoxLayout(orientation='horizontal')        
         for day in self.weekdays:
             label = MDLabel(text=day)
-            label.color=Backend.button_disable_onwhite_color
+            label.color=Colors.button_disable_onwhite_color
             label.halign = 'center'
             weekday_box.add_widget(label)
         self.add_widget(weekday_box)
