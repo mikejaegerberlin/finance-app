@@ -48,7 +48,6 @@ class AddValueDialogContent(MDBoxLayout):
                 pass      
     def focus_function(self):
         self.ids.accountfield.focus = False
-        print (self.ids.dialog_income_button.text_color[1])
         if self.ids.dialog_income_button.text_color[1] == 0:
             try:
                 amount = float(self.ids.amountfield.text)

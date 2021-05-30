@@ -34,7 +34,8 @@ from kivymd.uix.picker import MDDatePicker
 from datetime import datetime
 from kivymd.uix.tab import MDTabsBase
 from datetime import timedelta
-from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta 
+from dialogsfolder.custom_datepicker import DatePickerContent
 import time
 
 Backend = backend.Backend()
@@ -71,8 +72,7 @@ class StandingOrdersScreen(Screen):
         header.clear_widgets()
         header.md_bg_color = Backend.primary_color
         header.radius = [20,20,20,20]
-        
-        
+
         labels = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
         for label in labels:
             header_label = MDLabel(text=label, font_style="Subtitle2")
@@ -305,7 +305,7 @@ class AccountScreen(Screen):
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Window.size = (400,700)
+        #Window.size = (400,700)
         self.create_items_for_dropdowns_and_buttons()
         self.slider_labelsize_current = Backend.settings['Labelsize']
         self.slider_titlesize_current = Backend.settings['Titlesize']
@@ -427,8 +427,24 @@ class DemoApp(MDApp):
                 ],
             )
 
-        self.dialog_date = MDDatePicker(primary_color=Backend.primary_color, selector_color=Backend.primary_color, text_button_color=Backend.primary_color, size_hint_y=None)
+        self.dialog_date = MDDatePicker(primary_color=Backend.primary_color, selector_color=Backend.primary_color, 
+                                        text_button_color=Backend.primary_color, text_color=Backend.bg_color, specific_text_color=Backend.bg_color,
+                                        size_hint_y=None, text_weekday_color=Backend.bg_color)
         self.dialog_date.bind(on_save=self.dialog_date_ok, on_cancel=self.dialog_date_cancel)
+
+        self.dialog_date_custom = MDDialog(
+                title="Pick a date",
+                type="custom",
+                content_cls=DatePickerContent(Backend),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel':self.dialog_date_custom_cancel(x)
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Add': self.dialog_date_custom_ok(x)
+                    ),
+                ],
+            )
                
     def callback_floatingbutton(self, instance):
         if instance.icon == 'bank-outline':
@@ -438,7 +454,7 @@ class DemoApp(MDApp):
         if instance.icon == 'file-document-multiple-outline':
             self.screen.ids.main.manager.current = 'Standing order'
         if instance.icon == 'account-multiple':
-            self.screen.ids.main.manager.current = 'Standing order'
+            self.dialog_date_custom.open()
         self.screen.main.ids.floating_button.close_stack()
         self.screen.main.ids.main_content.canvas.opacity = 1
         
@@ -563,28 +579,35 @@ class DemoApp(MDApp):
             self.money_transfer_accountfield_to.focus = False
         else:
             self.money_transfer_accountfield_from.focus = False
-        
-
-
 
     def open_datepicker(self, datefield):
         self.selected_datefield = datefield
-        datefield.hide_keyboard()
         self.dialog_date.open()
-
+        
     def dialog_date_ok(self, instance, value, date_range):
         date = value.strftime('%Y-%m-%d')
         self.selected_datefield.text = date
-        self.selected_datefield.focus  = False
         self.money_transfer_accountfield_to.focus = False
         self.money_transfer_accountfield_from.focus = False
         self.add_value_accountfield.focus = False
-       
+    
     def dialog_date_cancel(self, instance, value):
-        self.selected_datefield.focus  = False
         self.money_transfer_accountfield_to.focus = False
         self.money_transfer_accountfield_from.focus = False
         self.add_value_accountfield.focus = False
+
+    def dialog_date_custom_cancel(self, x):
+        self.money_transfer_accountfield_to.focus = False
+        self.money_transfer_accountfield_from.focus = False
+        self.add_value_accountfield.focus = False
+        self.dialog_date_custom.dismiss()
+
+    def dialog_date_custom_ok(self, x):
+        self.money_transfer_accountfield_to.focus = False
+        self.money_transfer_accountfield_from.focus = False
+        self.add_value_accountfield.focus = False
+        self.selected_datefield.text = '2019-01-01'
+        self.dialog_date_custom.dismiss()
  
 
     def set_acc_item(self, text_item):
