@@ -1,0 +1,75 @@
+<SettingsDialogContent>
+    spacing: "4dp"
+    size_hint_y: None
+    height: "220dp"
+    slider_labelsize: slider_labelsize
+    slider_titlesize: slider_titlesize
+    slider_linewidth: slider_linewidth
+    slider_markersize: slider_markersize
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Labelsize'
+                font_style: 'Subtitle1'
+                size_hint_y: None
+                color: app.primary_color
+            MDSlider:
+                id: slider_labelsize
+                min: 8
+                max: 36
+                value: app.slider_labelsize_current
+                on_touch_up: app.update_sizes()
+                color: app.primary_color 
+                hint_text_color: app.primary_color     
+
+        BoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Titlesize'
+                font_style: 'Subtitle1'
+                size_hint_y: None
+                color: app.primary_color
+                
+            MDSlider:
+                id: slider_titlesize
+                min: 14
+                max: 36
+                value: app.slider_titlesize_current 
+                on_touch_up: app.update_sizes()    
+                color: app.primary_color   
+                hint_text_color: app.primary_color      
+        BoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Linewidth'
+                font_style: 'Subtitle1'
+                size_hint_y: None
+                color: app.primary_color
+                
+            MDSlider:
+                id: slider_linewidth
+                min: 2
+                max: 16
+                value: app.slider_linewidth_current 
+                on_touch_up: app.update_sizes()    
+                color: app.primary_color    
+                hint_text_color: app.primary_color        
+
+        BoxLayout:
+            orientation: 'horizontal'
+            MDLabel:
+                text: 'Markersize'
+                font_style: 'Subtitle1'
+                size_hint_y: None
+                color: app.primary_color
+                
+            MDSlider:
+                id: slider_markersize
+                min: 2
+                max: 16
+                value: app.slider_markersize_current 
+                on_touch_up: app.update_sizes()    
+                color: app.primary_color   
+                hint_text_color: app.primary_color               

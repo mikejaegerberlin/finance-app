@@ -15,16 +15,21 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-import backend, dialogs
+import backend2
 from kivymd.uix.card import MDCard
 from kivy.graphics import *
-from kivymd.uix.picker import MDDatePicker
 from datetime import datetime
 from dateutil.relativedelta import relativedelta 
-from dialogsfolder.custom_datepicker import DatePickerContent
+from dialogs.custom_datepicker import DatePickerContent
+from dialogs.add_value_dialog import AddValueDialogContent
+from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
+from dialogs.dialogs_empty_pythonside import SettingsDialogContent
+from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
+from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
+from kivymd.uix.picker import MDDatePicker
+from backend.colors import Colors
 
-
-Backend = backend.Backend()
+Backend = backend2.Backend()
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -33,11 +38,11 @@ class MainScreen(Screen):
     def button_clicked(self, instance):
         for button in App.filter_buttons:
             if button==instance:
-                button.md_bg_color = Backend.text_color
-                button.text_color  = Backend.bg_color
+                button.md_bg_color = Colors.text_color
+                button.text_color  = Colors.bg_color
             else:
-                button.md_bg_color = Backend.bg_color
-                button.text_color  = Backend.text_color
+                button.md_bg_color = Colors.bg_color
+                button.text_color  = Colors.text_color
         App.update_plot()
     
 
@@ -56,13 +61,13 @@ class StandingOrdersScreen(Screen):
     def on_pre_enter(self):
         header = self.ids.header
         header.clear_widgets()
-        header.md_bg_color = Backend.primary_color
+        header.md_bg_color = Colors.primary_color
         header.radius = [20,20,20,20]
 
         labels = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
         for label in labels:
             header_label = MDLabel(text=label, font_style="Subtitle2")
-            header_label.color = Backend.text_color
+            header_label.color = Colors.text_color
             header_label.halign = 'center'
             header.add_widget(header_label)
 
@@ -71,24 +76,23 @@ class StandingOrdersScreen(Screen):
         for number in Backend.standingorders:
             carditem = self.generate_carditem(Backend.standingorders[number])
             self.standing_orders_list.add_widget(carditem)
-            self.standing_orders_list.add_widget(dialogs.Spacer_Vertical('6dp'))
+            self.standing_orders_list.add_widget(Spacer_Vertical('6dp'))
 
     def generate_carditem(self, entry):
-        card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color)
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[20,20,20,20])  
+        card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
+        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])  
         for i, key in enumerate(entry):
             if not i==len(list(entry.keys()))-1:
                 label   = MDLabel(text=str(entry[key]), font_style='Subtitle2')
-                label.color = Backend.text_color
+                label.color = Colors.text_color
                 label.halign = 'center'
                 contentbox.add_widget(label)
 
         label   = MDLabel(text=str(entry['Amount'])+' €', font_style='Subtitle2')
-        label.color = Backend.error_color if entry['Amount']<0 else Backend.green_color
+        label.color = Colors.error_color if entry['Amount']<0 else Colors.green_color
         label.halign = 'center'
         contentbox.add_widget(label)
         card.add_widget(contentbox)
-        
         return card
 
 class AssetView(BoxLayout):
@@ -112,13 +116,13 @@ class AccountScreen(Screen):
         self.dialog_change_transferitem = MDDialog(
                 title="Change transfer item",
                 type="custom",
-                content_cls=dialogs.ChangeTransferitemContent(),
+                content_cls=ChangeTransferitemContent(),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel': self.dialog_change_transferitem.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_change_transferitem.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Change': self.change_transfer_item(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Change': self.change_transfer_item(x)
                     ),
                 ],
         )
@@ -127,11 +131,11 @@ class AccountScreen(Screen):
         Backend.generate_carditems(3)
         for button in self.filter_buttons:
             if button==instance:
-                button.md_bg_color = Backend.text_color
-                button.text_color  = Backend.bg_color
+                button.md_bg_color = Colors.text_color
+                button.text_color  = Colors.bg_color
             else:
-                button.md_bg_color = Backend.bg_color
-                button.text_color  = Backend.text_color
+                button.md_bg_color = Colors.bg_color
+                button.text_color  = Colors.text_color
         self.fill_transfers_list(App.current_account)
  
     def open_transfer_dropdown(self, card, box, datelabel, purposelabel, amountlabel):
@@ -151,7 +155,7 @@ class AccountScreen(Screen):
             items=self.transfer_menu_items,
             width_mult=4,
         )
-        box.md_bg_color = Backend.bg_color_light
+        box.md_bg_color = Colors.bg_color_light
         self.transfer_dropdown.open()
 
     def change_transfer_item(self, instance):
@@ -182,7 +186,7 @@ class AccountScreen(Screen):
         date = datelabel.text
         #change 
         if item==self.items[0]:
-            box.md_bg_color = Backend.bg_color 
+            box.md_bg_color = Colors.bg_color 
             self.dialog_change_transferitem.content_cls.ids.datefield.text = datelabel.text
             self.dialog_change_transferitem.content_cls.ids.purposefield.text = purposelabel.text
             if 'From' in purposelabel.text and 'to' in purposelabel.text and len(purposelabel.text.split(' '))==4:
@@ -220,18 +224,18 @@ class AccountScreen(Screen):
                 Backend.fill_status_of_account(delete_account)
                 App.update_main_accountview(delete_account)
                 message = Snackbar(text='Deleted transfer also from account {}.'.format(delete_account))
-                message.bg_color=Backend.black_color
-                message.text_color=Backend.text_color
+                message.bg_color=Colors.black_color
+                message.text_color=Colors.text_color
                 message.open()
         self.transfer_dropdown.dismiss()
         
      
     def generate_month_carditem(self, year, month):
-        card           = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color)
-        contentbox     = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[10,10,10,10])   
+        card           = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
+        contentbox     = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[10,10,10,10])   
         acclabel       = MDLabel(text=Backend.months[month-1]+' '+str(year), font_style='Button')
-        acclabel.color = Backend.text_color
-        contentbox.add_widget(dialogs.Spacer_Horizontal(0.03))
+        acclabel.color = Colors.text_color
+        contentbox.add_widget(Spacer_Horizontal(0.03))
         contentbox.add_widget(acclabel)
         card.add_widget(contentbox)
         return card
@@ -244,11 +248,11 @@ class AccountScreen(Screen):
         datelabel         = Backend.cards_transferitem[cardnumber][2]
         purposelabel      = Backend.cards_transferitem[cardnumber][3]
         amountlabel       = Backend.cards_transferitem[cardnumber][4]
-        box.md_bg_color   = Backend.bg_color
+        box.md_bg_color   = Colors.bg_color
         datelabel.text    = date
         purposelabel.text = purpose
         amountlabel.text  = str(amount)+' €'
-        amountlabel.color = Backend.error_color if amount<0 else Backend.green_color
+        amountlabel.color = Colors.error_color if amount<0 else Colors.green_color
         card.on_release   = lambda x=box: self.open_transfer_dropdown(card, box, datelabel, purposelabel, amountlabel)
         return card
 
@@ -298,14 +302,14 @@ class DemoApp(MDApp):
         self.slider_linewidth_current = Backend.settings['Linewidth']
         self.slider_markersize_current = Backend.settings['Markersize']
 
-        self.bg_color                     = Backend.bg_color
-        self.bg_color_light               = Backend.bg_color_light
-        self.text_color                   = Backend.text_color
-        self.primary_color                = Backend.primary_color
+        self.bg_color                     = Colors.bg_color
+        self.bg_color_light               = Colors.bg_color_light
+        self.text_color                   = Colors.text_color
+        self.primary_color                = Colors.primary_color
         self.button_disable_onwhite_color = Backend.button_disable_onwhite_color
-        self.error_color                  = Backend.error_color
-        self.black_color                  = Backend.black_color
-        self.green_color                  = Backend.green_color
+        self.error_color                  = Colors.error_color
+        self.black_color                  = Colors.black_color
+        self.green_color                  = Colors.green_color
         
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainScreen(name='Main'))
@@ -377,13 +381,13 @@ class DemoApp(MDApp):
     def create_dialogs(self):
         self.dialog_add_value = MDDialog(
                 type="custom",
-                content_cls=dialogs.AddValueDialogContent(),
+                content_cls=AddValueDialogContent(Colors),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Add': self.add_value(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.add_value(x)
                     ),
                 ],
             )
@@ -391,10 +395,10 @@ class DemoApp(MDApp):
         self.dialog_settings = MDDialog(
                 title="Settings",
                 type="custom",
-                content_cls=dialogs.SettingsDialogContent(),
+                content_cls=SettingsDialogContent(),
                 buttons=[
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel': self.dialog_settings.dismiss()
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_settings.dismiss()
                     ),
                 ],
             )
@@ -402,20 +406,20 @@ class DemoApp(MDApp):
         self.dialog_money_transfer = MDDialog(
                 title="Money transfer",
                 type="custom",
-                content_cls=dialogs.MoneyTransferDialogContent(),
+                content_cls=MoneyTransferDialogContent(),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel': self.dialog_money_transfer.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_money_transfer.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
                     ),
                 ],
             )
 
-        self.dialog_date = MDDatePicker(primary_color=Backend.primary_color, selector_color=Backend.primary_color, 
-                                        text_button_color=Backend.primary_color, text_color=Backend.bg_color, specific_text_color=Backend.bg_color,
-                                        size_hint_y=None, text_weekday_color=Backend.bg_color)
+        self.dialog_date = MDDatePicker(primary_color=Colors.primary_color, selector_color=Colors.primary_color, 
+                                        text_button_color=Colors.primary_color, text_color=Colors.bg_color, specific_text_color=Colors.bg_color,
+                                        size_hint_y=None, text_weekday_color=Colors.bg_color)
         self.dialog_date.bind(on_save=self.dialog_date_ok, on_cancel=self.dialog_date_cancel)
 
         self.dialog_date_custom = MDDialog(
@@ -424,10 +428,10 @@ class DemoApp(MDApp):
                 content_cls=DatePickerContent(Backend),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Cancel':self.dialog_date_custom_cancel(x)
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel':self.dialog_date_custom_cancel(x)
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Backend.primary_color, on_release=lambda x='Add': self.dialog_date_custom_ok(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.dialog_date_custom_ok(x)
                     ),
                 ],
             )
@@ -459,14 +463,14 @@ class DemoApp(MDApp):
         messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
         if messagestring!='':
             message = Snackbar(text=messagestring)
-            message.bg_color=Backend.black_color
-            message.text_color=Backend.text_color
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_money_transfer.dismiss()
             message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to))
-            message.bg_color=Backend.black_color
-            message.text_color=Backend.text_color
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
             message.open()
             self.money_transfer_amountfield.text  = ''
             self.money_transfer_accountfield_from.text = ''
@@ -503,14 +507,14 @@ class DemoApp(MDApp):
         messagestring += 'Purpose field is empty.' if purpose=='' else ''   
         if messagestring!='':
             message = Snackbar(text=messagestring)
-            message.bg_color=Backend.black_color
-            message.text_color=Backend.text_color
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
             message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose))
-            message.bg_color=Backend.black_color
-            message.text_color=Backend.text_color
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
             message.open()
             self.add_value_amountfield.text  = ''
             self.add_value_accountfield.text = ''
@@ -603,10 +607,10 @@ class DemoApp(MDApp):
         self.dialog_add_value.content_cls.focus_function()
 
     def generate_main_carditem(self, acc):
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Backend.bg_color, ripple_behavior=True, ripple_color=Backend.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Backend.bg_color_light, radius=[20,20,20,20])      
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
+        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])      
         acclabel   = MDLabel(text=acc, font_style='Button')
-        acclabel.color = Backend.text_color
+        acclabel.color = Colors.text_color
         acclabel.halign = 'center'
         contentbox.add_widget(acclabel)
     
@@ -633,14 +637,14 @@ class DemoApp(MDApp):
 
         #header of table scrollview
         header = self.screen.ids.main.accountsview_header
-        header.md_bg_color = Backend.primary_color
+        header.md_bg_color = Colors.primary_color
         header.radius = [20,20,20,20]
-        header.add_widget(dialogs.Spacer_Horizontal(0.05))
+        header.add_widget(Spacer_Horizontal(0.05))
         
         labels = ['Account', 'Current Status', 'End Month Status']
         for label in labels:
             header_label = MDLabel(text=label, font_style="Button")
-            header_label.color = Backend.text_color
+            header_label.color = Colors.text_color
             header_label.halign = 'center'
             header.add_widget(header_label)
 
@@ -648,7 +652,7 @@ class DemoApp(MDApp):
         for acc in Backend.accounts:
             carditem = self.generate_main_carditem(acc)
             self.screen.ids.main.accountsview.add_widget(carditem)
-            self.screen.ids.main.accountsview.add_widget(dialogs.Spacer_Vertical('6dp'))
+            self.screen.ids.main.accountsview.add_widget(Spacer_Vertical('6dp'))
 
     def go_to_account(self, acc):
         self.current_account = acc
