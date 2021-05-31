@@ -40,11 +40,17 @@ class AccountPlot():
                 if datetime.strptime(date, '%Y-%m-%d').date()<end_date:
                     break
         colors = ['r', 'b', 'g']
+        maxes  = []
+        mines  = []
         for i, acc in enumerate(data.accounts):
             self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
-            xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date, filter)
-            self.ax.set_xticks(xticks)
-            self.ax.set_xticklabels(xticklabels)
+            maxes.append(max(amounts[acc]))
+            mines.append(min(amounts[acc]))
+        xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date, filter)
+        self.ax.set_xticks(xticks)
+        self.ax.set_xticklabels(xticklabels)
+        y_axis_max = int(max(maxes)+100)
+        y_axis_min = int(min(mines)-100)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.ax.grid(linestyle=':', linewidth=0.05)
@@ -54,7 +60,7 @@ class AccountPlot():
         self.ax.spines['bottom'].set_color(Colors.text_color_hex)
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
-        self.ax.axis([end_date, start_date,-1000,1000])
+        self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
         canvas = self.fig.canvas  
         return canvas        
         

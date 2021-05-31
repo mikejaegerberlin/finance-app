@@ -89,7 +89,7 @@ class DemoData(Calculations):
             self.fill_status_of_account(acc)
 
         self.standingorders = {}
-        keys = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
+        keys = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount']
         for i in range(10):
             self.standingorders[i] = {}
             self.standingorders[i][keys[0]] = accounts_list[random.randint(0,2)]

@@ -378,7 +378,7 @@ class DemoApp(MDApp):
     def generate_main_carditem(self, acc):
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
         contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])      
-        acclabel   = MDLabel(text=acc, font_style='Button')
+        acclabel   = MDLabel(text=acc, font_style='Subtitle2')
         acclabel.color = Colors.text_color
         acclabel.halign = 'center'
         contentbox.add_widget(acclabel)
@@ -387,7 +387,7 @@ class DemoApp(MDApp):
         last_date.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
         last_date = last_date[-1]
         
-        amlabel = MDLabel(text=str(data.accounts[acc]['Status'][last_date])+' €', font_style='Button')
+        amlabel = MDLabel(text=str(data.accounts[acc]['Status'][last_date])+' €', font_style='Subtitle2')
         amlabel.color = self.error_color if data.accounts[acc]['Status'][last_date]<0 else self.green_color
         amlabel.halign = 'center'
         self.AmountLabels[acc] = amlabel
@@ -412,7 +412,7 @@ class DemoApp(MDApp):
         
         labels = ['Account', 'Current Status', 'End Month Status']
         for label in labels:
-            header_label = MDLabel(text=label, font_style="Button")
+            header_label = MDLabel(text=label, font_style="Subtitle2")
             header_label.color = Colors.text_color
             header_label.halign = 'center'
             header.add_widget(header_label)

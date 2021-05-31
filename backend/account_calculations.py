@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import json
 from datetime import datetime
 
 class Calculations():
@@ -25,6 +23,20 @@ class Calculations():
                     
         if not self.today_str in self.accounts[acc]['Status'].keys():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
+
+    def check_standingorders_in_transfer(self, acc):
+        for i in range(len(self.standingorders)):
+            order = self.standingorders[i]
+            if acc in order['Account']:
+                start_month = order['From']
+                end_month   = order['To']
+                day         = order['Date']
+
+    def calculate_end_month_status(self, acc):
+        pass
+
+    def calculate_month_summary(self, acc, month):
+        pass
 
     
 

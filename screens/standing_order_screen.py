@@ -28,11 +28,13 @@ class StandingOrdersScreen(Screen):
         header.md_bg_color = Colors.primary_color
         header.radius = [20,20,20,20]
 
-        labels = ['Account', 'From', 'To', 'Date', 'Purpose', 'Amount']
-        for label in labels:
+        self.padding_x = [0.2, 0.11, 0.11, 0.08, 0.25, 0.25]
+        labels = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount']
+        for i, label in enumerate(labels):
             header_label = MDLabel(text=label, font_style="Subtitle2")
             header_label.color = Colors.text_color
             header_label.halign = 'center'
+            header_label.size_hint_x = self.padding_x[i]
             header.add_widget(header_label)
 
         #scrollview items
@@ -50,11 +52,13 @@ class StandingOrdersScreen(Screen):
                 label   = MDLabel(text=str(entry[key]), font_style='Subtitle2')
                 label.color = Colors.text_color
                 label.halign = 'center'
+                label.size_hint_x = self.padding_x[i]
                 contentbox.add_widget(label)
 
         label   = MDLabel(text=str(entry['Amount'])+' €', font_style='Subtitle2')
         label.color = Colors.error_color if entry['Amount']<0 else Colors.green_color
         label.halign = 'center'
+        label.size_hint_x = self.padding_x[-1]
         contentbox.add_widget(label)
         card.add_widget(contentbox)
         return card
