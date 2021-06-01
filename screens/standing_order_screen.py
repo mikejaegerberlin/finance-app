@@ -48,7 +48,7 @@ class StandingOrdersScreen(Screen):
         card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
         contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])  
         for i, key in enumerate(entry):
-            if not i==len(list(entry.keys()))-1:
+            if i<len(list(entry.keys()))-2:
                 label   = MDLabel(text=str(entry[key]), font_style='Subtitle2')
                 label.color = Colors.text_color
                 label.halign = 'center'

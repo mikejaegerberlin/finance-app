@@ -97,6 +97,7 @@ class AccountScreen(Screen):
                     data.accounts[data.current_account]['Transfers'][old_date].pop(i)       
         self.fill_transfers_list(data.current_account)
         data.fill_status_of_account(data.current_account)
+        data.save_accounts()
         self.dialog_change_transferitem.dismiss()
 
     def transfer_item_selected(self, item, datelabel, purposelabel, amountlabel, card, box):
@@ -142,6 +143,7 @@ class AccountScreen(Screen):
                 message.bg_color=Colors.black_color
                 message.text_color=Colors.text_color
                 message.open()
+            data.save_accounts()
         self.transfer_dropdown.dismiss()
         
      

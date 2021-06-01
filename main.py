@@ -114,6 +114,7 @@ class DemoApp(MDApp):
         CardItemsBackend.generate_carditems(10)
         
         
+        
     def create_items_for_dropdowns_and_buttons(self):
         self.data_floating_button = {
             'Income/Expenditure': 'bank-outline', 
@@ -261,6 +262,7 @@ class DemoApp(MDApp):
             data.fill_status_of_account(account_from)
             self.update_main_accountview(account_to)
             self.update_main_accountview(account_from)
+            data.save_accounts()
 
     def add_value(self, instance):  
         self.dialog_add_value.content_cls.focus_function()
@@ -298,8 +300,8 @@ class DemoApp(MDApp):
                 data.accounts[account]['Transfers'][date] = []
                 data.accounts[account]['Transfers'][date].append([amount, purpose])
             data.fill_status_of_account(account)
-            data.save()
             self.update_main_accountview(account)
+            data.save_accounts()
             
 
     def update_main_accountview(self, account):
