@@ -5,28 +5,6 @@ import json
 
 class DemoData(Calculations):
     def __init__(self): 
-        self.current_account = ''
-        self.today_str       = datetime.today().strftime('%Y-%m-%d')
-        self.today_date      = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
-        self.current_month   = int(self.today_date.month)
-        self.current_year    = int(self.today_date.year)
-        self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
-        self.accounts        = {}
-        self.standingorders  = {}
-
-        #self.create_new_setup() 
-        #self.save_accounts()
-        #self.save_standingorders()
-        self.load_setup()
-
-    def load_setup(self):
-        with open('accounts.json', 'r') as infile:
-            self.accounts = json.load(infile)
-
-        with open('standingorders.json', 'r') as infile:
-            self.standingorders = json.load(infile)
-    
-    def create_new_setup(self):
         #structure:
         #accounts[account]['Transfers'][date]
         #accounts[account]['Status'][date]
@@ -38,6 +16,28 @@ class DemoData(Calculations):
         #accounts[account]['Income'][year][month]
         #accounts[account]['Expenditure'][year][month]
         #accounts[account]['Profit'][year][month]
+        self.current_account = ''
+        self.today_str       = datetime.today().strftime('%Y-%m-%d')
+        self.today_date      = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
+        self.current_month   = int(self.today_date.month)
+        self.current_year    = int(self.today_date.year)
+        self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.accounts        = {}
+        self.standingorders  = {}
+
+        self.create_new_setup() 
+        self.save_accounts()
+        self.save_standingorders()
+        #self.load_setup()
+
+    def load_setup(self):
+        with open('accounts.json', 'r') as infile:
+            self.accounts = json.load(infile)
+
+        with open('standingorders.json', 'r') as infile:
+            self.standingorders = json.load(infile)
+    
+    def create_new_setup(self):
         
         accounts_list = ['DKB', 'ING', 'Cash']
         keys_list     = ['Transfers', 'Status', 'Income', 'Expenditure', 'Profit']
@@ -111,7 +111,7 @@ class DemoData(Calculations):
             self.standingorders[i][keys[0]] = accounts_list[random.randint(0,2)]
             self.standingorders[i][keys[1]] = self.months[random.randint(0,11)] + '\n' + '2021'
             self.standingorders[i][keys[2]] = self.months[random.randint(0,11)] + '\n' + str(random.randint(2022,2025))
-            day       = random.randint(1,28)
+            day       = random.randint(1,5)
             amount    = round(float(random.randint(-2000,100)) + round(random.random(),2),2)
             purpose   = Purposes[random.randint(0,13)] 
             self.standingorders[i][keys[3]] = str(day)+'.'
@@ -120,7 +120,7 @@ class DemoData(Calculations):
             self.standingorders[i][keys[6]] = False
 
         for acc in self.accounts:
-            self.check_standingorders_in_transfer(acc)
+            self.add_standingorders_in_transfers_demosetup(acc)
             self.fill_status_of_account(acc)
 
     def save_accounts(self):

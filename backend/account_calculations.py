@@ -47,29 +47,60 @@ class Calculations():
             it_date = it_date + relativedelta(months=1)
         return date_range
 
-    def check_if_current_month_listed(self, date, order):
-        if date.month==self.today_date.month and date.year==self.today_date.year:
-            order['MonthListed'] = True
+    def reset_standingorders_monthlisted(self):
+        for i in range(len(self.standingorders)):
+           self.standingorders[str(i)]['MonthListed'] = False
 
-    def add_standingorder_to_transfers(self, date_range, order):
-        acc = order['Account']
+    def check_standingorders(self, acc):
+        for i in range(len(self.standingorders)):  
+            order = self.standingorders[str(i)]
+
+            #filter order in terms of account
+            if acc in order['Account']:
+                date_range = self.make_dates(order['From'], order['To'], order['Day'])
+
+                #check if today is within range of standing order
+                if self.today_date>=date_range[0] and self.today_date<=date_range[-1]:
+
+                    #check if todays day is already standing orders day
+                    if self.today_date.day>=date_range[0].day and order['MonthListed']==False:
+                        month    = '0'+str(self.today_date.month) if self.today_date.month<10 else str(self.today_date.month)
+                        day      = '0'+str(date_range[0].day) if date_range[0].day<10 else str(date_range[0].day)
+                        date_str = '{}-{}-{}'.format(self.today_date.year, month, day)
+
+                        #add standingorder to transfers
+                        if not date_str in self.accounts[acc]['Transfers'].keys():
+                            self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose']]]
+                        else:
+                            self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
+                        order['MonthListed'] = True
+
+    def calculate_end_month_status(self, acc):
+        pass
+
+    def calculate_month_summary(self, acc, month):
+        pass
+
+    ####################################################################################################################################################
+    ############################################################ FUNCTIONS ONLY FOR DEMOSETUP ##########################################################
+    ####################################################################################################################################################
+
+    def add_order_to_transfers_demosetup(self, date_range, order, acc):
         for date in date_range:
+
+            #only if date is lower than today
             if date<=self.today_date:
                 date_str = date.strftime('%Y-%m-%d')
+
+                #add standingorder to transfers
                 if not date_str in self.accounts[acc]['Transfers'].keys():
                     self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose']]]
-                    self.check_if_current_month_listed(date, order)
                 else:
-                    check = False
-                    for transfer in self.accounts[acc]['Transfers'][date_str]:
-                        if transfer[0]==order['Amount'] and transfer[1]==order['Purpose']:
-                            check = True
-                    if check==False:
-                        self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
-                        self.check_if_current_month_listed(date, order)
+                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
+                if date.month==self.today_date.month and date.year==self.today_date.year:
+                    order['MonthListed'] = True
 
-    def check_standingorders_in_transfer(self, acc):
-        orders = []
+    def add_standingorders_in_transfers_demosetup(self, acc):
         for i in range(len(self.standingorders)):
             order = self.standingorders[i]
             if acc in order['Account']:
@@ -77,7 +108,7 @@ class Calculations():
                 date_range = self.make_dates(order['From'], order['To'], order['Day'])
 
                 #populate standingorder into transfers of account
-                self.add_standingorder_to_transfers(date_range, order)
+                self.add_order_to_transfers_demosetup(date_range, order, acc)
         
 
 
@@ -92,11 +123,7 @@ class Calculations():
                 
 
 
-    def calculate_end_month_status(self, acc):
-        pass
-
-    def calculate_month_summary(self, acc, month):
-        pass
+    
 
     
 

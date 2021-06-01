@@ -108,7 +108,15 @@ class DemoApp(MDApp):
         date = self.dialog_date.today.strftime('%Y-%m-%d')
         self.add_value_datefield.text = date
         self.money_transfer_datefield.text = date
-        
+
+        #exectute this block if demodata is load from json        
+        '''if data.today_date.day==1:
+            data.reset_standingorders_monthlisted()
+        for acc in data.accounts:
+            data.check_standingorders(acc)
+            data.fill_status_of_account(acc)
+        data.save_standingorders()'''
+
         self.create_dropdownmenus()
         self.add_account_status_to_mainscreen()
         CardItemsBackend.generate_carditems(10)
