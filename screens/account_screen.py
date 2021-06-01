@@ -40,7 +40,7 @@ class AccountScreen(Screen):
                         text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_change_transferitem.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Change': self.change_transfer_item(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Change': self.check_and_execute_change_transfer_item(x)
                     ),
                 ],
         )
@@ -76,28 +76,61 @@ class AccountScreen(Screen):
         box.md_bg_color = Colors.bg_color_light
         self.transfer_dropdown.open()
 
-    def change_transfer_item(self, instance):
+    def check_and_execute_change_transfer_item(self, instance):
         new_date    = self.dialog_change_transferitem.content_cls.ids.datefield.text
         new_purpose = self.dialog_change_transferitem.content_cls.ids.purposefield.text
-        new_amount  = float(self.dialog_change_transferitem.content_cls.ids.amountfield.text.replace(' €',''))
         old_date    = self.selected_card[0].text
         old_purpose = self.selected_card[1].text
         old_amount  = float(self.selected_card[2].text.replace(' €',''))
-        
-        if not new_date in data.accounts[data.current_account]['Transfers'].keys():
-            data.accounts[data.current_account]['Transfers'][new_date] = [[new_amount, new_purpose]]
+        try:
+            new_amount  = float(self.dialog_change_transferitem.content_cls.ids.amountfield.text.replace(' €',''))
+            self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, data.current_account)
+            #if 'From' in old_purpose and 'to' in old_purpose:
+            #    account_from = old_purpose.split(' ')[1]
+            #    account_to   = old_purpose.split(' ')[3]
+            #    other_account = account_to if account_from==data.current_account else account_from
+            #    self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, other_account)
+            data.save_accounts()
+            self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
+        except:
+            message = Snackbar(text='Amount must be number.')
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+
+    def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account):
+        if not new_date in data.accounts[account]['Transfers'].keys():
+            data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose]]
         else:
-            data.accounts[data.current_account]['Transfers'][new_date].append([new_amount, new_purpose])
+            data.accounts[account]['Transfers'][new_date].append([new_amount, new_purpose])
         
-        if len(data.accounts[data.current_account]['Transfers'][old_date])==1:
-            del data.accounts[data.current_account]['Transfers'][old_date]
+        if len(data.accounts[account]['Transfers'][old_date])==1:
+            del data.accounts[account]['Transfers'][old_date]
         else:
-            for i, transfer in enumerate(data.accounts[data.current_account]['Transfers'][old_date]):
+            for i, transfer in enumerate(data.accounts[account]['Transfers'][old_date]):
                 if transfer[0]==old_amount and transfer[1]==old_purpose:
-                    data.accounts[data.current_account]['Transfers'][old_date].pop(i)       
-        self.fill_transfers_list(data.current_account)
-        data.fill_status_of_account(data.current_account)
-        data.save_accounts()
+                    data.accounts[account]['Transfers'][old_date].pop(i)       
+        self.fill_transfers_list(account)
+        data.fill_status_of_account(account)
+
+    def message_after_change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount):
+        if 'From' in old_purpose and 'to' in old_purpose:
+            account_from = old_purpose.split(' ')[1]
+            account_to   = old_purpose.split(' ')[3]
+            other_account = account_to if account_from==data.current_account else account_from
+            message = 'Changed transfer also in account {}.'.format(other_account)
+        else:
+            message = ''
+            if new_date!=old_date:
+                message += 'Changed date from {} to {}. '.format(old_date, new_date)
+            if new_purpose!=old_purpose:
+                message += 'Changed purpose from {} to {}. '.format(old_purpose, new_purpose)
+            if new_amount!=old_amount:
+                message += 'Changed amount from {} to {}. '.format(old_amount, new_amount)    
+        message = Snackbar(text=message)
+        message.bg_color=Colors.black_color
+        message.text_color=Colors.text_color
+        message.open()
         self.dialog_change_transferitem.dismiss()
 
     def transfer_item_selected(self, item, datelabel, purposelabel, amountlabel, card, box):
@@ -139,10 +172,13 @@ class AccountScreen(Screen):
                         if transfer[0]==-float(amountlabel.text.replace(' €','')) and transfer[1]==check_purposelabel:
                             data.accounts[delete_account]['Transfers'][date].pop(i)
                 data.fill_status_of_account(delete_account)
-                message = Snackbar(text='Deleted transfer also from account {}.'.format(delete_account))
-                message.bg_color=Colors.black_color
-                message.text_color=Colors.text_color
-                message.open()
+                message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
+            else:
+                message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
+            message = Snackbar(text=message_text)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
             data.save_accounts()
         self.transfer_dropdown.dismiss()
         

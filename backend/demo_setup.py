@@ -25,10 +25,10 @@ class DemoData(Calculations):
         self.accounts        = {}
         self.standingorders  = {}
 
-        self.create_new_setup() 
-        self.save_accounts()
-        self.save_standingorders()
-        #self.load_setup()
+        #self.create_new_setup() 
+        #self.save_accounts()
+        #self.save_standingorders()
+        self.load_setup()
 
     def load_setup(self):
         with open('accounts.json', 'r') as infile:

@@ -17,10 +17,13 @@ from kivy.graphics import *
 from dialogs.dialogs_empty_pythonside import Spacer_Vertical
 from backend.colors import Colors
 from backend.demo_setup import DemoData as data
+from datetime import datetime
 
 class StandingOrdersScreen(Screen):
     def __init__(self, **kwargs):
         super(StandingOrdersScreen, self).__init__(**kwargs) 
+        self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.months_dict     = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mai': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dez': 12}
 
     def on_pre_enter(self):
         header = self.ids.header
@@ -39,10 +42,43 @@ class StandingOrdersScreen(Screen):
 
         #scrollview items
         self.standing_orders_list.clear_widgets()
-        for number in data.standingorders:
-            carditem = self.generate_carditem(data.standingorders[number])
+        sorted_orders = self.sort_standingorders()
+        for number in sorted_orders:
+            carditem = self.generate_carditem(sorted_orders[number])
             self.standing_orders_list.add_widget(carditem)
             self.standing_orders_list.add_widget(Spacer_Vertical('6dp'))
+
+    def sort_standingorders(self):
+        sorted_orders = {}
+        k             = 0
+        for acc in data.accounts:
+            dates  = []
+            orders = []
+            #getting all dates of standingorders
+            for i in data.standingorders:
+                entry = data.standingorders[i]
+                if acc in entry['Account']:
+                    month = str(self.months_dict[entry['From'].split('\n')[0]])
+                    month = month if int(month)>9 else '0' + month
+                    year  = entry['From'].split('\n')[1]
+                    day   = entry['Day'].replace('.','')
+                    day   = day if int(day)>9 else '0' + day
+                    dates.append('{}-{}-{}'.format(year, month, day)) 
+                    orders.append(entry)
+            dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
+                     
+            #sorting
+            for order in orders:
+                sorted_orders[k] = {}
+                sorted_orders[k]['Account'] = order['Account']
+                sorted_orders[k]['From']    = order['From']
+                sorted_orders[k]['To']      = order['To']
+                sorted_orders[k]['Day']     = order['Day']
+                sorted_orders[k]['Purpose'] = order['Purpose']
+                sorted_orders[k]['Amount']  = order['Amount']
+                sorted_orders[k]['MonthListed']  = order['MonthListed']
+                k += 1
+        return sorted_orders
 
     def generate_carditem(self, entry):
         card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
