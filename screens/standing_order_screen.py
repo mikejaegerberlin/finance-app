@@ -55,8 +55,8 @@ class StandingOrdersScreen(Screen):
             dates  = []
             orders = []
             #getting all dates of standingorders
-            for i in data.standingorders:
-                entry = data.standingorders[i]
+            for i in data.standingorders['Orders']:
+                entry = data.standingorders['Orders'][i]
                 if acc in entry['Account']:
                     month = str(self.months_dict[entry['From'].split('\n')[0]])
                     month = month if int(month)>9 else '0' + month
@@ -65,6 +65,7 @@ class StandingOrdersScreen(Screen):
                     day   = day if int(day)>9 else '0' + day
                     dates.append('{}-{}-{}'.format(year, month, day)) 
                     orders.append(entry)
+               
             dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
                      
             #sorting

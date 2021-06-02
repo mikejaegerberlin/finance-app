@@ -103,19 +103,24 @@ class DemoApp(MDApp):
         self.add_value_purposefield = self.dialog_add_value.content_cls.ids.purposefield
         self.add_value_datefield    = self.dialog_add_value.content_cls.ids.datefield
         self.filter_buttons = [self.screen.ids.main.ids.onemonth_button, self.screen.ids.main.ids.threemonths_button, self.screen.ids.main.ids.sixmonths_button, 
-                               self.screen.ids.main.ids.oneyear_button, self.screen.ids.main.ids.threeyears_button]
+                               self.screen.ids.main.ids.oneyear_button, self.screen.ids.main.ids.threeyears_button, self.screen.ids.main.ids.fiveyears_button,
+                               self.screen.ids.main.ids.tenyears_button, self.screen.ids.main.ids.all_button]
 
         date = self.dialog_date.today.strftime('%Y-%m-%d')
         self.add_value_datefield.text = date
         self.money_transfer_datefield.text = date
 
-        #exectute this block if demodata is load from json        
-        '''if data.today_date.day==1:
+        #exectute this block if demodata is load from json   
+        reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
+        if data.today_date.month!=reset_date.month:
             data.reset_standingorders_monthlisted()
+            data.standingorders['Reset date'] = self.today_str
+            data.save_standingorders()
         for acc in data.accounts:
             data.check_standingorders(acc)
             data.fill_status_of_account(acc)
-        data.save_standingorders()'''
+            data.check_todays_status(acc)            
+        data.save_accounts()
 
         self.create_dropdownmenus()
         self.add_account_status_to_mainscreen()
@@ -420,7 +425,7 @@ class DemoApp(MDApp):
         header.radius = [20,20,20,20]
         header.add_widget(Spacer_Horizontal(0.05))
         
-        labels = ['Account', 'Current Status', 'End Month Status']
+        labels = ['Account', 'Current Status', 'Month Status']
         for label in labels:
             header_label = MDLabel(text=label, font_style="Subtitle2")
             header_label.color = Colors.text_color

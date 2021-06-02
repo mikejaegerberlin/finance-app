@@ -84,12 +84,13 @@ class AccountScreen(Screen):
         old_amount  = float(self.selected_card[2].text.replace(' €',''))
         try:
             new_amount  = float(self.dialog_change_transferitem.content_cls.ids.amountfield.text.replace(' €',''))
+            print (new_amount, old_amount)
             self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, data.current_account)
-            #if 'From' in old_purpose and 'to' in old_purpose:
-            #    account_from = old_purpose.split(' ')[1]
-            #    account_to   = old_purpose.split(' ')[3]
-            #    other_account = account_to if account_from==data.current_account else account_from
-            #    self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, other_account)
+            if 'From' in old_purpose and 'to' in old_purpose:
+                account_from = old_purpose.split(' ')[1]
+                account_to   = old_purpose.split(' ')[3]
+                other_account = account_to if account_from==data.current_account else account_from
+                self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
             data.save_accounts()
             self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
         except:
@@ -99,6 +100,9 @@ class AccountScreen(Screen):
             message.open()
 
     def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account):
+        print (account)
+        print (new_amount)
+        print (old_amount)
         if not new_date in data.accounts[account]['Transfers'].keys():
             data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose]]
         else:

@@ -31,6 +31,9 @@ ScreenManager:
     sixmonths_button: sixmonths_button
     oneyear_button: oneyear_button
     threeyears_button: threeyears_button
+    fiveyears_button: fiveyears_button
+    tenyears_button: tenyears_button
+    all_button: all_button
     
     MDNavigationLayout:
         ScreenManager:
@@ -65,7 +68,7 @@ ScreenManager:
                             id: onemonth_button
                             text: '1M'
                             size_hint_y: 1
-                            size_hint_x: 0.2
+                            size_hint_x: 0.125
                             font_style: 'Button'
                             text_color: app.bg_color
                             md_bg_color: app.text_color
@@ -75,7 +78,7 @@ ScreenManager:
                             id: threemonths_button
                             text: '3M'
                             size_hint_y: 1
-                            size_hint_x: 0.2
+                            size_hint_x: 0.125
                             font_style: 'Button'
                             text_color: app.text_color
                             md_bg_color: app.bg_color
@@ -86,7 +89,7 @@ ScreenManager:
                             id: sixmonths_button
                             text: '6M'
                             size_hint_y: 1
-                            size_hint_x: 0.2
+                            size_hint_x: 0.125
                             font_style: 'Button'
                             text_color: app.text_color
                             md_bg_color: app.bg_color
@@ -96,7 +99,7 @@ ScreenManager:
                             id: oneyear_button
                             text: '1Y'
                             size_hint_y: 1
-                            size_hint_x: 0.2
+                            size_hint_x: 0.125
                             font_style: 'Button'
                             text_color: app.text_color
                             md_bg_color: app.bg_color
@@ -106,11 +109,41 @@ ScreenManager:
                             id: threeyears_button
                             text: '3Y'
                             size_hint_y: 1
-                            size_hint_x: 0.2
+                            size_hint_x: 0.125
                             font_style: 'Button'
                             text_color: app.text_color
                             md_bg_color: app.bg_color
                             on_release: root.button_clicked(threeyears_button)
+
+                        MDFillRoundFlatButton:
+                            id: fiveyears_button
+                            text: '5Y'
+                            size_hint_y: 1
+                            size_hint_x: 0.125
+                            font_style: 'Button'
+                            text_color: app.text_color
+                            md_bg_color: app.bg_color
+                            on_release: root.button_clicked(fiveyears_button)
+
+                        MDFillRoundFlatButton:
+                            id: tenyears_button
+                            text: '10Y'
+                            size_hint_y: 1
+                            size_hint_x: 0.125
+                            font_style: 'Button'
+                            text_color: app.text_color
+                            md_bg_color: app.bg_color
+                            on_release: root.button_clicked(tenyears_button)
+
+                        MDFillRoundFlatButton:
+                            id: all_button
+                            text: 'All'
+                            size_hint_y: 1
+                            size_hint_x: 0.125
+                            font_style: 'Button'
+                            text_color: app.text_color
+                            md_bg_color: app.bg_color
+                            on_release: root.button_clicked(all_button)
 
                     AssetView:
                         id: assetview

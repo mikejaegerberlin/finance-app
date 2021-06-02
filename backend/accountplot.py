@@ -18,19 +18,26 @@ class AccountPlot():
         self.ax      = self.fig.add_subplot(111)
         start_date   = self.today_date
         self.filters = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6),
-                        relativedelta(years=1), relativedelta(years=3)]
+                        relativedelta(years=1), relativedelta(years=3), relativedelta(years=5), relativedelta(years=10), relativedelta(years=13)]
+        self.filters_help = [30, 90, 180, 365, 1095, 1825, 3650, 4745]
         for i, button in enumerate(filter_buttons):
             if button.md_bg_color[0]==1:
                 self.filter_index = i
-                filter = self.filters[i]
-        end_date     = start_date - filter
+        
+        if self.filter_index==len(filter_buttons)-1:
+            end_date = start_date - relativedelta(years=1000)
+        else:
+            end_date = start_date - self.filters[self.filter_index]
         amounts = {}
         dates   = {}
+        adjust_plot = True
+        min_dates = []
         for acc in data.accounts:
             amounts[acc] = []
             dates[acc]   = []
             possible_dates = list(data.accounts[acc]['Status'].keys())
             possible_dates.sort(reverse=True)
+            min_dates.append(possible_dates[-1])
             for date in possible_dates:
                 if datetime.strptime(date, '%Y-%m-%d').date()>start_date:
                     pass
@@ -38,7 +45,35 @@ class AccountPlot():
                     amounts[acc].append(data.accounts[acc]['Status'][date])
                     dates[acc].append(datetime.strptime(date, '%Y-%m-%d').date())
                 if datetime.strptime(date, '%Y-%m-%d').date()<end_date:
+                    adjust_plot = False
                     break
+        
+        self.exceed_years = 0
+        if adjust_plot:
+            end_date = datetime.strptime(min(min_dates), '%Y-%m-%d').date()
+            delta    = start_date - end_date
+            if delta.days<=30:
+                self.filter_index = 0
+            else:
+                exceeded = True
+                for i in range(len(self.filters)-1):
+                    if delta.days>self.filters_help[i] and delta.days<=self.filters_help[i+1]:
+                        distance1 = delta.days - self.filters_help[i]
+                        distance2 = self.filters_help[i+1] - delta.days 
+                        if distance1>distance2:
+                            self.filter_index = i+1
+                        else:
+                            self.filter_index = i
+                        exceeded = False
+                        if self.filter_index==len(self.filters)-1:
+                            self.exceed_years = 1
+                        break
+                        
+                if exceeded:
+                    rest_days         = delta.days - self.filters_help[-1]
+                    rest_years        = int(int(rest_days / 365) / 3)
+                    self.exceed_years = 1 + rest_years
+       
         colors = ['r', 'b', 'g']
         maxes  = []
         mines  = []
@@ -46,7 +81,7 @@ class AccountPlot():
             self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
             maxes.append(max(amounts[acc]))
             mines.append(min(amounts[acc]))
-        xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date, filter)
+        xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
         y_axis_max = int(max(maxes)+100)
@@ -64,8 +99,9 @@ class AccountPlot():
         canvas = self.fig.canvas  
         return canvas        
         
-    def get_xticks_and_labels(self, start_date, end_date, filter):
-        steps = [relativedelta(days=7), relativedelta(days=14), relativedelta(days=28), relativedelta(months=3), relativedelta(months=6)]
+    def get_xticks_and_labels(self, start_date, end_date):
+        steps = [relativedelta(days=7), relativedelta(days=14), relativedelta(days=28), relativedelta(months=3), relativedelta(months=6), 
+                 relativedelta(years=1), relativedelta(years=2), relativedelta(years=2)+relativedelta(years=self.exceed_years)]
         step  = steps[self.filter_index]
         
         if self.filter_index<3:

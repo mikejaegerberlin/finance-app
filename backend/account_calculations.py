@@ -47,13 +47,20 @@ class Calculations():
             it_date = it_date + relativedelta(months=1)
         return date_range
 
+    def check_todays_status(self, acc):
+        dates = list(self.accounts[acc]['Status'].keys())
+        dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
+        last_date = datetime.strptime(dates[-1], '%Y-%m-%d').date() 
+        if last_date<self.today_date:
+            self.accounts[acc]['Status'][self.today_str] = self.accounts[acc]['Status'][dates[-1]]
+        
     def reset_standingorders_monthlisted(self):
-        for i in range(len(self.standingorders)):
+        for i in range(len(self.standingorders['Orders'])):
            self.standingorders[str(i)]['MonthListed'] = False
 
     def check_standingorders(self, acc):
-        for i in range(len(self.standingorders)):  
-            order = self.standingorders[str(i)]
+        for i in range(len(self.standingorders['Orders'])):  
+            order = self.standingorders['Orders'][str(i)]
 
             #filter order in terms of account
             if acc in order['Account']:
@@ -62,7 +69,7 @@ class Calculations():
                 #check if today is within range of standing order
                 if self.today_date>=date_range[0] and self.today_date<=date_range[-1]:
 
-                    #check if todays day is already standing orders day
+                    #check if todays day is already standing orders day and if it was already listed
                     if self.today_date.day>=date_range[0].day and order['MonthListed']==False:
                         month    = '0'+str(self.today_date.month) if self.today_date.month<10 else str(self.today_date.month)
                         day      = '0'+str(date_range[0].day) if date_range[0].day<10 else str(date_range[0].day)
@@ -101,14 +108,15 @@ class Calculations():
                     order['MonthListed'] = True
 
     def add_standingorders_in_transfers_demosetup(self, acc):
-        for i in range(len(self.standingorders)):
-            order = self.standingorders[i]
+        for i in range(len(self.standingorders['Orders'])):
+            order = self.standingorders['Orders'][str(i)]
             if acc in order['Account']:
                 #parse standing order entry in date
                 date_range = self.make_dates(order['From'], order['To'], order['Day'])
 
                 #populate standingorder into transfers of account
                 self.add_order_to_transfers_demosetup(date_range, order, acc)
+          
         
 
 
