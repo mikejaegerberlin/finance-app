@@ -90,7 +90,8 @@ class AccountScreen(Screen):
                 account_from = old_purpose.split(' ')[1]
                 account_to   = old_purpose.split(' ')[3]
                 other_account = account_to if account_from==data.current_account else account_from
-                #self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
+                self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
+                self.fill_transfers_list(data.current_account)
             data.save_accounts()
             self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
         except:
@@ -149,39 +150,41 @@ class AccountScreen(Screen):
 
         #delete
         if item==self.items[1]:
-            if len(data.accounts[data.current_account]['Transfers'][date])==1:
-                check_purposelabel = data.accounts[data.current_account]['Transfers'][date][0][1]
-                del data.accounts[data.current_account]['Transfers'][date]
-                
-            else:
-                for i, transfer in enumerate(data.accounts[data.current_account]['Transfers'][date]):
-                    if transfer[0]==float(amountlabel.text.replace(' €','')) and transfer[1]==purposelabel.text:
-                        data.accounts[data.current_account]['Transfers'][date].pop(i)
-                        check_purposelabel = transfer[1]
-                            
-            self.ids.transfers_list.remove_widget(card)
-            data.fill_status_of_account(data.current_account)
+            #this if clause is for a very weird bug!
+            if date in data.accounts[data.current_account]['Transfers'].keys():
 
-            if 'From' in check_purposelabel and 'to' in check_purposelabel:
-                account_from = check_purposelabel.split(' ')[1]
-                account_to   = check_purposelabel.split(' ')[3]
-                delete_account = account_to if account_from==data.current_account else account_from
-                if len(data.accounts[delete_account]['Transfers'][date])==1:
-                    del data.accounts[delete_account]['Transfers'][date]
-                
+                if len(data.accounts[data.current_account]['Transfers'][date])==1:
+                    check_purposelabel = data.accounts[data.current_account]['Transfers'][date][0][1]
+                    del data.accounts[data.current_account]['Transfers'][date]
                 else:
-                    for i, transfer in enumerate(data.accounts[delete_account]['Transfers'][date]):
-                        if transfer[0]==-float(amountlabel.text.replace(' €','')) and transfer[1]==check_purposelabel:
-                            data.accounts[delete_account]['Transfers'][date].pop(i)
-                data.fill_status_of_account(delete_account)
-                message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
-            else:
-                message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
-            message = Snackbar(text=message_text)
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
-            data.save_accounts()
+                    for i, transfer in enumerate(data.accounts[data.current_account]['Transfers'][date]):
+                        if transfer[0]==float(amountlabel.text.replace(' €','')) and transfer[1]==purposelabel.text:
+                            data.accounts[data.current_account]['Transfers'][date].pop(i)
+                            check_purposelabel = transfer[1]
+                                
+                self.ids.transfers_list.remove_widget(card)
+                data.fill_status_of_account(data.current_account)
+
+                if 'From' in check_purposelabel and 'to' in check_purposelabel:
+                    account_from = check_purposelabel.split(' ')[1]
+                    account_to   = check_purposelabel.split(' ')[3]
+                    delete_account = account_to if account_from==data.current_account else account_from
+                    if len(data.accounts[delete_account]['Transfers'][date])==1:
+                        del data.accounts[delete_account]['Transfers'][date]
+                    
+                    else:
+                        for i, transfer in enumerate(data.accounts[delete_account]['Transfers'][date]):
+                            if transfer[0]==-float(amountlabel.text.replace(' €','')) and transfer[1]==check_purposelabel:
+                                data.accounts[delete_account]['Transfers'][date].pop(i)
+                    data.fill_status_of_account(delete_account)
+                    message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
+                else:
+                    message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
+                message = Snackbar(text=message_text)
+                message.bg_color=Colors.black_color
+                message.text_color=Colors.text_color
+                message.open()
+                data.save_accounts()
         self.transfer_dropdown.dismiss()
         
      

@@ -25,10 +25,10 @@ class DemoData(Calculations):
         self.accounts        = {}
         self.standingorders  = {}
 
-        self.create_new_setup() 
-        self.save_accounts()
-        self.save_standingorders()
-        #self.load_setup()       
+        #self.create_new_setup() 
+        #self.save_accounts()
+        #self.save_standingorders()
+        self.load_setup()       
 
     def load_setup(self):
         with open('accounts.json', 'r') as infile:
@@ -44,8 +44,8 @@ class DemoData(Calculations):
         Purposes      = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 
                          'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 
                         'Ticket', 'Gitarre', 'Bier']
-        #years         = [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
-        years         = [2019, 2020, 2021]
+        years         = [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+        #years         = [2019, 2020, 2021]
         #initialize dictionaries
         for acc in accounts_list:
             self.accounts[acc] = {}

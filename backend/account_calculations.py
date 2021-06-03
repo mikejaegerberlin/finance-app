@@ -5,6 +5,43 @@ class Calculations():
     def __init__(self):  
         pass
         
+
+    def fill_income_expenditure_profit(self, acc):
+        dates = list(self.accounts[acc]['Transfers'].keys())
+        dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
+        years = [str(datetime.strptime(dates[0], '%Y-%m-%d').date().year)]
+        
+        for date_str in dates:
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            if int(date.year)!=years[-1]:
+                years.append(str(date.year))
+
+        for year in years:    
+            filter_year        = list(filter(lambda k: str(year) in k, dates))
+            year_income        = 0
+            year_expenditure   = 0
+            for i in range(1,13):
+                month_income      = 0
+                month_expenditure = 0
+                i_str = '0'+str(i) if i<10 else str(i)
+                filter_month   = list(filter(lambda k: i_str in k[5:7], filter_year))
+                for date in filter_month:
+                    for transfer in self.accounts[acc]['Transfers'][date]:
+                        if transfer[0]>=0:
+                            month_income      += transfer[0]
+                        else:
+                            month_expenditure += transfer[0]
+            
+                self.accounts[acc]['Income'][year][i]      = month_income
+                self.accounts[acc]['Expenditure'][year][i] = month_expenditure
+                self.accounts[acc]['Profit'][year][i]      = month_income + month_expenditure
+                year_income      += month_income
+                year_expenditure += month_expenditure
+                    
+            self.accounts[acc]['Income'][year]['Total']      = year_income
+            self.accounts[acc]['Expenditure'][year]['Total'] = year_expenditure
+            self.accounts[acc]['Profit'][year]['Total']      = year_income + year_expenditure
+
     def fill_status_of_account(self, acc):
         self.accounts[acc]['Status'] = {}
         dates = list(self.accounts[acc]['Transfers'].keys())
@@ -21,6 +58,10 @@ class Calculations():
                 
         if not self.today_str in self.accounts[acc]['Status'].keys():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
+
+        self.fill_income_expenditure_profit(acc)
+
+        
 
     def make_dates(self, from_str, to, day):
         day = day.replace('.','')
