@@ -6,7 +6,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.button import MDFlatButton
-from kivymd.uix.label import MDLabel
+from kivymd.uix.label import MDLabel, MDIcon
 from kivymd.uix.snackbar import Snackbar
 from kivy.metrics import dp
 from kivymd import images_path
@@ -16,6 +16,7 @@ from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivymd.uix.card import MDCard
+from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.graphics import *
 from datetime import datetime
 from dateutil.relativedelta import relativedelta 
@@ -53,14 +54,27 @@ class MainScreen(Screen):
         for acc in data.accounts:
             App.update_main_accountview(acc)
         canvas    = AccountPlot.make_plot(App.filter_buttons, data)
+        canvas.pos_hint = {'top': 1}
         yeargraph = self.ids.assetview
         yeargraph.clear_widgets()
-        yeargraph.add_widget(canvas)  
-        self.ids.floating_button.close_stack()
+        yeargraph.add_widget(canvas)
+        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        label.color = Colors.text_color
+        yeargraph.add_widget(label)
+        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
 
-class AssetView(BoxLayout):
-    def __init__(self, **kwargs):
-        super(AssetView, self).__init__(**kwargs)
+        for i, acc in enumerate(data.accounts):
+            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
+            icon.color=Colors.matplotlib_rgba[i]
+            icon.halign = 'right'
+            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
+            label2.color = Colors.text_color
+            label2.halign = 'left'
+            box.add_widget(icon)
+            box.add_widget(label2)
+        yeargraph.add_widget(box)
+       
+        self.ids.floating_button.close_stack()
 
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
@@ -327,10 +341,26 @@ class DemoApp(MDApp):
             
 
     def update_plot(self):
-        canvas    = AccountPlot.make_plot(self.filter_buttons, data)
+        canvas    = AccountPlot.make_plot(App.filter_buttons, data)
+        canvas.pos_hint = {'top': 1}
         yeargraph = self.screen.main.ids.assetview
         yeargraph.clear_widgets()
         yeargraph.add_widget(canvas)
+        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        label.color = Colors.text_color
+        yeargraph.add_widget(label)
+        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
+
+        for i, acc in enumerate(data.accounts):
+            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
+            icon.color=Colors.matplotlib_rgba[i]
+            icon.halign = 'right'
+            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
+            label2.color = Colors.text_color
+            label2.halign = 'left'
+            box.add_widget(icon)
+            box.add_widget(label2)
+        yeargraph.add_widget(box)
 
     def update_sizes(self):
         Sizes.labelsize = int(self.dialog_settings.content_cls.ids.slider_labelsize.value)
@@ -415,7 +445,23 @@ class DemoApp(MDApp):
     def add_account_status_to_mainscreen(self):
 
         canvas = AccountPlot.make_plot(self.filter_buttons, data)
+        canvas.pos_hint = {'top': 1}
         self.screen.ids.main.ids.assetview.add_widget(canvas)
+        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        label.color = Colors.text_color
+        self.screen.ids.main.ids.assetview.add_widget(label)
+        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
+
+        for i, acc in enumerate(data.accounts):
+            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
+            icon.color=Colors.matplotlib_rgba[i]
+            icon.halign = 'right'
+            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
+            label2.color = Colors.text_color
+            label2.halign = 'left'
+            box.add_widget(icon)
+            box.add_widget(label2)
+        self.screen.ids.main.ids.assetview.add_widget(box)
 
         self.AmountLabels = {}
 

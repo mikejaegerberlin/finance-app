@@ -75,6 +75,7 @@ class DemoData(Calculations):
             
             #fill income, expenditure, profit
             for year in years:
+                year = str(year)
                 self.accounts[acc]['Income'][year]      = {}
                 self.accounts[acc]['Expenditure'][year] = {}
                 self.accounts[acc]['Profit'][year]      = {}

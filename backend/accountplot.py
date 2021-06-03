@@ -74,11 +74,11 @@ class AccountPlot():
                     rest_years        = int(int(rest_days / 365) / 3)
                     self.exceed_years = 1 + rest_years
        
-        colors = ['r', 'b', 'g']
+        colors = Colors.matplotlib_colors
         maxes  = []
         mines  = []
         for i, acc in enumerate(data.accounts):
-            self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
+            self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label=acc)
             maxes.append(max(amounts[acc]))
             mines.append(min(amounts[acc]))
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
@@ -96,7 +96,10 @@ class AccountPlot():
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
+        #self.ax.legend(loc='best', ncol=4, fontsize='medium', facecolor=Colors.bg_color_light_hex, edgecolor=Colors.bg_color_hex, bbox_to_anchor=(0.8, -0.06))
+        #print (dir(self.ax.legend))
         canvas = self.fig.canvas  
+        
         return canvas        
         
     def get_xticks_and_labels(self, start_date, end_date):

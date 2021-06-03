@@ -145,9 +145,13 @@ ScreenManager:
                             md_bg_color: app.bg_color
                             on_release: root.button_clicked(all_button)
 
-                    AssetView:
-                        id: assetview
+                    MDCard:
                         size_hint_y: 0.4
+                        MDFloatLayout:
+                            size: root.width, root.height
+                            md_bg_color: app.bg_color
+                            id: assetview
+
 
                     MDBoxLayout:
                         size_hint_y: 0.03
