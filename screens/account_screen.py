@@ -90,7 +90,7 @@ class AccountScreen(Screen):
                 account_from = old_purpose.split(' ')[1]
                 account_to   = old_purpose.split(' ')[3]
                 other_account = account_to if account_from==data.current_account else account_from
-                self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
+                #self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
             data.save_accounts()
             self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
         except:
@@ -100,9 +100,7 @@ class AccountScreen(Screen):
             message.open()
 
     def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account):
-        print (account)
-        print (new_amount)
-        print (old_amount)
+        
         if not new_date in data.accounts[account]['Transfers'].keys():
             data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose]]
         else:
