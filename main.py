@@ -75,11 +75,12 @@ class MainScreen(Screen):
         yeargraph.add_widget(box)
        
         self.ids.floating_button.close_stack()
+      
 
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Window.size = (400,700)
+        #Window.size = (400,700)
         self.create_items_for_dropdowns_and_buttons()
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
@@ -124,7 +125,7 @@ class DemoApp(MDApp):
         self.add_value_datefield.text = date
         self.money_transfer_datefield.text = date
 
-        #exectute this block if demodata is load from json   
+        #execute this block if demodata is load from json   
         reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
         if data.today_date.month!=reset_date.month:
             data.reset_standingorders_monthlisted()
@@ -135,6 +136,7 @@ class DemoApp(MDApp):
             data.fill_status_of_account(acc)
             data.check_todays_status(acc)            
         data.save_accounts()
+        data.save_standingorders()
 
         self.create_dropdownmenus()
         self.add_account_status_to_mainscreen()

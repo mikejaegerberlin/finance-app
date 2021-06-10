@@ -18,7 +18,7 @@
                         id: standingscreen_toolbar
                         title: 'Standing orders'
                         left_action_items: [["arrow-left", lambda x: app.go_to_mainscreen(x)]]
-                        right_action_items: [["file-document-edit-outline", lambda x: app.go_to_mainscreen(x)]]
+                        right_action_items: [["file-document-edit-outline", lambda x: root.open_standingorder_dialog(x)]]
                         elevation:5
                         md_bg_color: app.primary_color
                         specific_text_color: app.text_color

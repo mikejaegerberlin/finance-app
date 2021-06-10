@@ -60,8 +60,34 @@ class Calculations():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
 
         self.fill_income_expenditure_profit(acc)
+        self.fill_total_status()
 
-        
+    def fill_total_status(self):
+        self.total['Status'] = {}
+        date_min = []
+        for acc in self.accounts:
+            dates = list(self.accounts[acc]['Transfers'].keys())
+            dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
+            date_min.append(datetime.strptime(dates[0], '%Y-%m-%d').date() )
+        date = min(date_min)
+
+        while date<=self.today_date:
+            date_str = date.strftime('%Y-%m-%d')
+            for i, acc in enumerate(self.accounts):
+                if date_str in self.accounts[acc]['Transfers'].keys():
+                    for transfer in self.accounts[acc]['Transfers'][date_str]:
+                        if len(self.total['Status'].keys())==0:
+                            self.total['Status'][date_str] = round(transfer[0], 2)
+                        elif not date_str in self.total['Status'].keys():
+                            self.total['Status'][date_str] = round(self.total['Status'][previous_date_str] + transfer[0], 2)
+                        else:
+                            self.total['Status'][date_str] = round(self.total['Status'][date_str] + transfer[0], 2)
+                    previous_date_str = date_str
+            date = date + relativedelta(days=1)
+
+                
+            
+
 
     def make_dates(self, from_str, to, day):
         day = day.replace('.','')
@@ -69,8 +95,9 @@ class Calculations():
         year_begin = from_str.split('\n')[1]
         year_end   = to.split('\n')[1]
         from_str = from_str.split('\n')[0]
-        if to=='-':
+        if '-' in to:
             end_month = '0'+str(self.today_date.month) if int(self.today_date.month)<10 else str(self.today_date.month)
+            year_end  = str(self.today_date.year)
         else:
             to = to.split('\n')[0]
         for i, month in enumerate(self.months):
@@ -97,12 +124,11 @@ class Calculations():
         
     def reset_standingorders_monthlisted(self):
         for i in range(len(self.standingorders['Orders'])):
-           self.standingorders[str(i)]['MonthListed'] = False
+           self.standingorders['Orders'][str(i)]['MonthListed'] = False
 
     def check_standingorders(self, acc):
         for i in range(len(self.standingorders['Orders'])):  
             order = self.standingorders['Orders'][str(i)]
-
             #filter order in terms of account
             if acc in order['Account']:
                 date_range = self.make_dates(order['From'], order['To'], order['Day'])
@@ -123,6 +149,25 @@ class Calculations():
                             self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
                         order['MonthListed'] = True
 
+    def add_order_in_transfers(self, order):
+        date_range = self.make_dates(order['From'], order['To'], order['Day'])
+        acc = order['Account']
+        for date in date_range:
+
+            #only if date is lower than today
+            if date<=self.today_date:
+                date_str = date.strftime('%Y-%m-%d')
+
+                #add standingorder to transfers
+                if not date_str in self.accounts[acc]['Transfers'].keys():
+                    self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose']]]
+                else:
+                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
+                if date.month==self.today_date.month and date.year==self.today_date.year:
+                    order['MonthListed'] = True
+
+
+                        
     def calculate_end_month_status(self, acc):
         pass
 

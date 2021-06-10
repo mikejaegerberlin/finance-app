@@ -4,6 +4,7 @@
 #:include dialogs/change_transferitem_dialog.kv
 #:include dialogs/settings_dialog.kv
 #:include dialogs/money_transfer_dialog.kv
+#:include dialogs/add_standingorder_dialog.kv
 
 ScreenManager:
     main: main
@@ -146,8 +147,10 @@ ScreenManager:
                             on_release: root.button_clicked(all_button)
 
                     MDCard:
+                        md_bg_color: app.bg_color
                         size_hint_y: 0.4
                         MDFloatLayout:
+                            
                             size: root.width, root.height
                             md_bg_color: app.bg_color
                             id: assetview
@@ -196,7 +199,7 @@ ScreenManager:
                     color_icon_root_button: app.text_color
                     color_icon_stack_button: app.text_color
                     label_text_color: app.primary_color
-                    label_color: app.primary_color
+                    label_color: app.green_color
                     x: root.width - self.width - dp(20)
                     y: dp(90)
                     elevation_normal: 8

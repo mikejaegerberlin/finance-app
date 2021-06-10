@@ -24,7 +24,7 @@ class DemoData(Calculations):
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
         self.accounts        = {}
         self.standingorders  = {}
-
+        self.total = {}
         #self.create_new_setup() 
         #self.save_accounts()
         #self.save_standingorders()
@@ -122,7 +122,7 @@ class DemoData(Calculations):
             self.standingorders['Orders'][i][keys[5]] = amount
             self.standingorders['Orders'][i][keys[6]] = False
         self.standingorders['Reset date']   = self.today_str
-
+        
         for acc in self.accounts:
             self.add_standingorders_in_transfers_demosetup(acc)
             self.fill_status_of_account(acc)
