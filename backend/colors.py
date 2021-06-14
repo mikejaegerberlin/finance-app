@@ -5,7 +5,7 @@ class Colors(object):
         self.bg_color                     = (0.1, 0.1, 0.1, 1)
         self.bg_color_light               = (100/255, 94/255, 99/255,  0.15)
         self.text_color                   = (255/255, 253/255, 250/255, 1)
-        self.primary_color                = (0, 7/255, 143/255, 0.8)
+        self.primary_color                = (0, 7/255, 143/255, 1)
         self.error_color                  = (1, 0, 0, 0.7)
         self.black_color                  = (0, 0, 0, 1)
         self.green_color                  = (0, 180/255, 0, 1)

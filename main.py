@@ -33,55 +33,21 @@ from backend.demo_setup import DemoData as data
 from backend.settings import Sizes
 from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
-from screens.account_screen import AccountScreen
+from screens.transfers_screen import TransfersScreen
+from screens.accounts_screen import AccountsScreen
+from screens.overview_screen import OverviewScreen
+from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(**kwargs)  
+        super(MainScreen, self).__init__(**kwargs)
 
-    def button_clicked(self, instance):
-        for button in App.filter_buttons:
-            if button==instance:
-                button.md_bg_color = Colors.text_color
-                button.text_color  = Colors.bg_color
-            else:
-                button.md_bg_color = Colors.bg_color
-                button.text_color  = Colors.text_color
-        App.update_plot()
-    
-    def before_enter(self):
-        self.ids.nav_drawer.set_state(0)
-        for acc in data.accounts:
-            App.update_main_accountview(acc)
-        canvas    = AccountPlot.make_plot(App.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
-        yeargraph = self.ids.assetview
-        yeargraph.clear_widgets()
-        yeargraph.add_widget(canvas)
-        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
-        label.color = Colors.text_color
-        yeargraph.add_widget(label)
-        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
-
-        for i, acc in enumerate(data.accounts):
-            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-            icon.color=Colors.matplotlib_rgba[i]
-            icon.halign = 'right'
-            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
-            label2.color = Colors.text_color
-            label2.halign = 'left'
-            box.add_widget(icon)
-            box.add_widget(label2)
-        yeargraph.add_widget(box)
-       
-        self.ids.floating_button.close_stack()
-      
 
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        #Window.size = (400,700)
-        self.create_items_for_dropdowns_and_buttons()
+        Window.size = (400,700)
+        #self.create_items_for_dropdowns_and_buttons()
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
         self.slider_linewidth_current = Sizes.linewidth
@@ -98,32 +64,10 @@ class DemoApp(MDApp):
         
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainScreen(name='Main'))
-        sm.add_widget(AccountScreen(name='Account'))
-        sm.add_widget(StandingOrdersScreen(name='Standing order'))
-        self.screen = Builder.load_file("main_screen.kv")
-
+        sm.add_widget(TransfersScreen(name='Transfers'))
+        self.screen = Builder.load_file("main.kv")
         ### Get relevant ids form kv file###
         self.create_dialogs()
-
-        self.add_value_accountfield = self.dialog_add_value.content_cls.ids.accountfield
-        self.add_value_amountfield  = self.dialog_add_value.content_cls.ids.amountfield
-        self.add_value_purposefield = self.dialog_add_value.content_cls.ids.purposefield
-        self.add_value_datefield    = self.dialog_add_value.content_cls.ids.datefield
-
-        self.money_transfer_accountfield_from = self.dialog_money_transfer.content_cls.ids.accountfield_from
-        self.money_transfer_accountfield_to   = self.dialog_money_transfer.content_cls.ids.accountfield_to
-        self.money_transfer_amountfield    = self.dialog_money_transfer.content_cls.ids.amountfield
-        self.money_transfer_datefield      = self.dialog_money_transfer.content_cls.ids.datefield
-        self.add_value_amountfield         = self.dialog_add_value.content_cls.ids.amountfield
-        self.add_value_purposefield = self.dialog_add_value.content_cls.ids.purposefield
-        self.add_value_datefield    = self.dialog_add_value.content_cls.ids.datefield
-        self.filter_buttons = [self.screen.ids.main.ids.onemonth_button, self.screen.ids.main.ids.threemonths_button, self.screen.ids.main.ids.sixmonths_button, 
-                               self.screen.ids.main.ids.oneyear_button, self.screen.ids.main.ids.threeyears_button, self.screen.ids.main.ids.fiveyears_button,
-                               self.screen.ids.main.ids.tenyears_button, self.screen.ids.main.ids.all_button]
-
-        date = self.dialog_date.today.strftime('%Y-%m-%d')
-        self.add_value_datefield.text = date
-        self.money_transfer_datefield.text = date
 
         #execute this block if demodata is load from json   
         reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
@@ -138,71 +82,8 @@ class DemoApp(MDApp):
         data.save_accounts()
         data.save_standingorders()
 
-        self.create_dropdownmenus()
-        self.add_account_status_to_mainscreen()
-        CardItemsBackend.generate_carditems(10)
-        
-        
-        
-    def create_items_for_dropdowns_and_buttons(self):
-        self.data_floating_button = {
-            'Income/Expenditure': 'bank-outline', 
-            'Transfer': 'bank-transfer',
-            'Standing Orders': 'file-document-multiple-outline',
-            'Accounts': 'account-multiple',
-            }
-
-        self.acc_menu_items = [
-            {
-                "text": acc,
-                "viewclass": "OneLineListItem",
-                "height": dp(54),
-                "on_release": lambda x=acc: self.set_acc_item(x),
-            } for acc in data.accounts
-        ]
-
-        self.settings_items = [
-            {
-                "text": sett,
-                "viewclass": "OneLineListItem",
-                "height": dp(54),
-                "on_release": lambda x=sett: self.select_settings_item(x),
-            } for sett in Sizes.file
-        ]
-        
-    def create_dropdownmenus(self):
-        self.acc_dropdown = MDDropdownMenu(
-            caller=self.add_value_accountfield,
-            items=self.acc_menu_items,
-            position="bottom",
-            width_mult=4,
-        )
     
     def create_dialogs(self):
-        self.dialog_add_value = MDDialog(
-                type="custom",
-                content_cls=AddValueDialogContent(Colors),
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
-                    ),
-                    MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.add_value(x)
-                    ),
-                ],
-            )
-
-        self.dialog_settings = MDDialog(
-                title="Settings",
-                type="custom",
-                content_cls=SettingsDialogContent(),
-                buttons=[
-                    MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_settings.dismiss()
-                    ),
-                ],
-            )
-
         self.dialog_money_transfer = MDDialog(
                 title="Money transfer",
                 type="custom",
@@ -215,38 +96,7 @@ class DemoApp(MDApp):
                         text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
                     ),
                 ],
-            )
-
-        self.dialog_date = MDDatePicker(primary_color=Colors.primary_color, selector_color=Colors.primary_color, 
-                                        text_button_color=Colors.primary_color, text_color=Colors.bg_color, specific_text_color=Colors.bg_color,
-                                        size_hint_y=None, text_weekday_color=Colors.bg_color)
-        self.dialog_date.bind(on_save=self.dialog_date_ok, on_cancel=self.dialog_date_cancel)
-
-        self.dialog_date_custom = MDDialog(
-                title="Pick a date",
-                type="custom",
-                content_cls=DatePickerContent(),
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel':self.dialog_date_custom_cancel(x)
-                    ),
-                    MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.dialog_date_custom_ok(x)
-                    ),
-                ],
-            )
-               
-    def callback_floatingbutton(self, instance):
-        if instance.icon == 'bank-outline':
-            self.dialog_add_value.open()
-        if instance.icon == 'bank-transfer':
-            self.dialog_money_transfer.open()
-        if instance.icon == 'file-document-multiple-outline':
-            self.screen.ids.main.manager.current = 'Standing order'
-        if instance.icon == 'account-multiple':
-            self.dialog_date_custom.open()
-        self.screen.main.ids.floating_button.close_stack()
-        self.screen.main.ids.main_content.canvas.opacity = 1
+            )               
         
     def execute_money_transfer(self, instance):
         amount        = self.money_transfer_amountfield.text
@@ -293,76 +143,7 @@ class DemoApp(MDApp):
             self.update_main_accountview(account_from)
             data.save_accounts()
 
-    def add_value(self, instance):  
-        self.dialog_add_value.content_cls.focus_function()
-        amount        = self.add_value_amountfield.text
-        account       = self.add_value_accountfield.text
-        purpose       = self.add_value_purposefield.text
-        date          = self.add_value_datefield.text
-        messagestring = ''
-        try:
-            amount = round(float(amount),2)
-        except:
-            messagestring += 'Amount field must be number. '
-        messagestring += 'Account field is empty. ' if account=='' else ''
-        messagestring += 'Purpose field is empty.' if purpose=='' else ''   
-        if messagestring!='':
-            message = Snackbar(text=messagestring)
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
-        else:
-            self.dialog_add_value.dismiss()
-            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose))
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
-            self.add_value_amountfield.text  = ''
-            self.add_value_accountfield.text = ''
-            self.add_value_purposefield.text = ''
-            self.add_value_datefield.text = data.today_str
-            
-            #insert transfer into transfers_list and update account status
-            if date in data.accounts[account]['Transfers'].keys():
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
-            else:
-                data.accounts[account]['Transfers'][date] = []
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
-            data.fill_status_of_account(account)
-            self.update_main_accountview(account)
-            data.save_accounts()
-            
-
-    def update_main_accountview(self, account):
-            self.AmountLabels[account].text     = str(data.accounts[account]['Status'][data.today_str])+' €'
-            if data.accounts[account]['Status'][data.today_str]<0:
-                self.AmountLabels[account].color = Colors.error_color
-            else:
-                self.AmountLabels[account].color = Colors.green_color
-            self.update_plot()
-            
-
-    def update_plot(self):
-        canvas    = AccountPlot.make_plot(App.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
-        yeargraph = self.screen.main.ids.assetview
-        yeargraph.clear_widgets()
-        yeargraph.add_widget(canvas)
-        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
-        label.color = Colors.text_color
-        yeargraph.add_widget(label)
-        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
-
-        for i, acc in enumerate(data.accounts):
-            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-            icon.color=Colors.matplotlib_rgba[i]
-            icon.halign = 'right'
-            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
-            label2.color = Colors.text_color
-            label2.halign = 'left'
-            box.add_widget(icon)
-            box.add_widget(label2)
-        yeargraph.add_widget(box)
+  
 
     def update_sizes(self):
         Sizes.labelsize = int(self.dialog_settings.content_cls.ids.slider_labelsize.value)
@@ -371,128 +152,6 @@ class DemoApp(MDApp):
         Sizes.markersize = int(self.dialog_settings.content_cls.ids.slider_markersize.value)
         Sizes.save()
         self.update_plot()
-
-    def open_acc_dropdown(self, accountfield):
-        accountfield.hide_keyboard()
-        self.acc_dropdown.caller = accountfield
-        self.acc_dropdown.open()
-        
-        self.add_value_purposefield.focus     = False
-        self.add_value_amountfield.focus      = False
-        self.money_transfer_datefield.focus   = False
-        self.money_transfer_amountfield.focus = False
-        if accountfield==self.money_transfer_accountfield_from:
-            self.money_transfer_accountfield_to.focus = False
-        else:
-            self.money_transfer_accountfield_from.focus = False
-
-    def open_datepicker(self, datefield):
-        self.selected_datefield = datefield
-        self.dialog_date.open()
-        
-    def dialog_date_ok(self, instance, value, date_range):
-        date = value.strftime('%Y-%m-%d')
-        self.selected_datefield.text = date
-        self.money_transfer_accountfield_to.focus = False
-        self.money_transfer_accountfield_from.focus = False
-        self.add_value_accountfield.focus = False
-    
-    def dialog_date_cancel(self, instance, value):
-        self.money_transfer_accountfield_to.focus = False
-        self.money_transfer_accountfield_from.focus = False
-        self.add_value_accountfield.focus = False
-
-    def dialog_date_custom_cancel(self, x):
-        self.money_transfer_accountfield_to.focus = False
-        self.money_transfer_accountfield_from.focus = False
-        self.add_value_accountfield.focus = False
-        self.dialog_date_custom.dismiss()
-
-    def dialog_date_custom_ok(self, x):
-        self.money_transfer_accountfield_to.focus = False
-        self.money_transfer_accountfield_from.focus = False
-        self.add_value_accountfield.focus = False
-        self.selected_datefield.text = '2019-01-01'
-        self.dialog_date_custom.dismiss()
- 
-
-    def set_acc_item(self, text_item):
-        self.acc_dropdown.caller.text = text_item
-        self.acc_dropdown.dismiss()
-        self.acc_dropdown.caller.focus = False
-        self.dialog_add_value.content_cls.focus_function()
-
-    def generate_main_carditem(self, acc):
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])      
-        acclabel   = MDLabel(text=acc, font_style='Subtitle2')
-        acclabel.color = Colors.text_color
-        acclabel.halign = 'center'
-        contentbox.add_widget(acclabel)
-    
-        last_date = list(data.accounts[acc]['Status'].keys())
-        last_date.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
-        last_date = last_date[-1]
-        
-        amlabel = MDLabel(text=str(data.accounts[acc]['Status'][last_date])+' €', font_style='Subtitle2')
-        amlabel.color = self.error_color if data.accounts[acc]['Status'][last_date]<0 else self.green_color
-        amlabel.halign = 'center'
-        self.AmountLabels[acc] = amlabel
-        contentbox.add_widget(amlabel)
-        contentbox.add_widget(MDLabel())
-        card.add_widget(contentbox)
-        
-        return card
-
-    def add_account_status_to_mainscreen(self):
-
-        canvas = AccountPlot.make_plot(self.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
-        self.screen.ids.main.ids.assetview.add_widget(canvas)
-        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
-        label.color = Colors.text_color
-        self.screen.ids.main.ids.assetview.add_widget(label)
-        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
-
-        for i, acc in enumerate(data.accounts):
-            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-            icon.color=Colors.matplotlib_rgba[i]
-            icon.halign = 'right'
-            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
-            label2.color = Colors.text_color
-            label2.halign = 'left'
-            box.add_widget(icon)
-            box.add_widget(label2)
-        self.screen.ids.main.ids.assetview.add_widget(box)
-
-        self.AmountLabels = {}
-
-        #header of table scrollview
-        header = self.screen.ids.main.accountsview_header
-        header.md_bg_color = Colors.primary_color
-        header.radius = [20,20,20,20]
-        header.add_widget(Spacer_Horizontal(0.05))
-        
-        labels = ['Account', 'Current Status', 'Month Status']
-        for label in labels:
-            header_label = MDLabel(text=label, font_style="Subtitle2")
-            header_label.color = Colors.text_color
-            header_label.halign = 'center'
-            header.add_widget(header_label)
-
-        #scrollview items
-        for acc in data.accounts:
-            carditem = self.generate_main_carditem(acc)
-            self.screen.ids.main.accountsview.add_widget(carditem)
-            self.screen.ids.main.accountsview.add_widget(Spacer_Vertical('6dp'))
-
-    def go_to_account(self, acc):
-        self.current_account = acc
-        data.current_account = acc
-        self.screen.ids.main.manager.current = 'Account'  
-    
-    def go_to_mainscreen(self, instance):
-        self.screen.ids.main.manager.current = 'Main' 
             
     def build(self):
         return self.screen

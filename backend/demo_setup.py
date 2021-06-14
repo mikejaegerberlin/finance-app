@@ -34,6 +34,9 @@ class DemoData(Calculations):
         with open('accounts.json', 'r') as infile:
             self.accounts = json.load(infile)
 
+        with open('total.json', 'r') as infile:
+            self.total = json.load(infile)
+
         with open('standingorders.json', 'r') as infile:
             self.standingorders = json.load(infile)
     
@@ -130,6 +133,9 @@ class DemoData(Calculations):
     def save_accounts(self):
         with open('accounts.json', 'w') as outfile:
             json.dump(self.accounts, outfile)
+
+        with open('total.json', 'w') as outfile:
+            json.dump(self.total, outfile)
 
     def save_standingorders(self):
         with open('standingorders.json', 'w') as outfile:

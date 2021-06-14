@@ -21,13 +21,15 @@ from datetime import datetime
 from dialogs.add_standingorder_dialog import AddStandingOrderDialogContent
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 
-class StandingOrdersScreen(Screen):
+class StandingOrdersScreen(MDBottomNavigationItem):
     def __init__(self, **kwargs):
         super(StandingOrdersScreen, self).__init__(**kwargs) 
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
         self.months_dict     = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mai': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dez': 12}
         self.create_dialogs()
+        
        
     #create dialogs for the screen
     def create_dialogs(self):
@@ -56,9 +58,9 @@ class StandingOrdersScreen(Screen):
         self.update_standingorder_list()
 
         
-    def on_pre_enter(self):
-        header = self.ids.header
-        header.clear_widgets()
+    def on_kv_post(self, instance):
+        self.md_bg_color = Colors.bg_color
+        header = self.ids.standingorder_header
         header.md_bg_color = Colors.primary_color
         header.radius = [20,20,20,20]
 

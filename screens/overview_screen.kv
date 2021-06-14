@@ -1,0 +1,142 @@
+<OverviewScreen>:
+    assetview: assetview
+    floating_button: floating_button
+    main_content: main_content
+    onemonth_button: onemonth_button
+    threemonths_button: threemonths_button
+    sixmonths_button: sixmonths_button
+    oneyear_button: oneyear_button
+    threeyears_button: threeyears_button
+    fiveyears_button: fiveyears_button
+    tenyears_button: tenyears_button
+    all_button: all_button
+    on_kv_post: root.app = app
+
+    MDFloatLayout:
+        md_bg_color: app.bg_color
+    
+    StackLayout:
+        id: main_content
+
+        MDToolbar:
+            id: main_toolbar
+            title: 'Accounts'
+            md_bg_color: app.primary_color
+            right_action_items: [["account-plus", lambda x: app.go_to_account('DKB')]]
+            specific_text_color: app.text_color
+    
+        MDBoxLayout:
+            size_hint_y: 0.01
+
+        MDBoxLayout:
+            size_hint_y: 0.03
+            size_hint_x: 1
+            id: account_tabs
+            orientation: 'horizontal'
+            
+            MDFillRoundFlatButton:
+                id: onemonth_button
+                text: '1M'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.bg_color
+                md_bg_color: app.text_color
+                on_release: root.button_clicked(onemonth_button)
+                
+            MDFillRoundFlatButton:
+                id: threemonths_button
+                text: '3M'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(threemonths_button)
+                
+                
+            MDFillRoundFlatButton:
+                id: sixmonths_button
+                text: '6M'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(sixmonths_button)
+
+            MDFillRoundFlatButton:
+                id: oneyear_button
+                text: '1Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(oneyear_button)
+
+            MDFillRoundFlatButton:
+                id: threeyears_button
+                text: '3Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(threeyears_button)
+
+            MDFillRoundFlatButton:
+                id: fiveyears_button
+                text: '5Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(fiveyears_button)
+
+            MDFillRoundFlatButton:
+                id: tenyears_button
+                text: '10Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(tenyears_button)
+
+            MDFillRoundFlatButton:
+                id: all_button
+                text: 'All'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(all_button)
+
+        MDCard:
+            md_bg_color: app.bg_color
+            size_hint_y: 0.4
+            MDFloatLayout:
+                size: root.width, root.height
+                md_bg_color: app.bg_color
+                id: assetview
+        MDBoxLayout:
+            size_hint_y: 0.03
+        
+            
+    MDFloatingActionButton:
+        icon: 'bank-plus'
+        id: floating_button
+        right_pad: True
+        theme_text_color: 'Custom'
+        bg_color_stack_button: app.primary_color
+        bg_hint_color: app.primary_color
+        md_bg_color: app.primary_color
+        x: root.width - self.width - dp(20)
+        y: dp(20)
+        elevation_normal: 8
+        on_release: root.dialog_add_value.open()
+     
+      

@@ -1,0 +1,50 @@
+#:include screens/overview_screen.kv
+#:include screens/accounts_screen.kv
+#:include screens/transfers_screen.kv
+#:include screens/standing_order_screen.kv
+#:include dialogs/add_value_dialog.kv
+#:include dialogs/change_transferitem_dialog.kv
+#:include dialogs/add_standingorder_dialog.kv
+
+ScreenManager:
+    main: main
+    transfer: transfers
+    MainScreen:
+        id: main
+    TransfersScreen:
+        id: transfers
+
+
+<MainScreen>:
+    name: 'Main'
+    accounts_screen: accounts_screen
+
+    MDBoxLayout:
+        orientation: 'vertical'
+ 
+        MDBottomNavigation:
+            panel_color: app.primary_color
+            text_color_active: app.text_color
+            text_color_normal: app.bg_color
+            
+            OverviewScreen:
+                name: 'Overview'
+                text: 'Overview'
+                icon: 'view-compact-outline'
+
+            AccountsScreen:
+                id: accounts_screen
+                name: 'Accounts'
+                text: 'Accounts'
+                icon: 'account-multiple'
+                
+
+            StandingOrdersScreen:
+                name: 'Standing orders'
+                text: 'Standing orders'
+                icon: 'file-document-multiple-outline'
+
+            
+               
+            
+              

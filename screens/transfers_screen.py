@@ -18,9 +18,9 @@ from backend.colors import Colors
 from backend.demo_setup import DemoData as data
 from backend.carditems import CardItemsBackend
 
-class AccountScreen(Screen):
+class TransfersScreen(Screen):
     def __init__(self, **kwargs):
-        super(AccountScreen, self).__init__(**kwargs) 
+        super(TransfersScreen, self).__init__(**kwargs) 
         self.create_dialogs()
  
     def on_pre_enter(self):
@@ -44,6 +44,11 @@ class AccountScreen(Screen):
                     ),
                 ],
         )
+ 
+    def go_to_mainscreen(self, instance):
+        self.app.screen.ids.main.manager.current = 'Main'
+        for acc in data.accounts:
+            self.app.screen.ids.main.ids.accounts_screen.update_main_accountview(acc)
 
     def button_clicked(self, instance):
         CardItemsBackend.generate_carditems(3)
