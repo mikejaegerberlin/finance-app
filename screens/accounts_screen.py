@@ -65,6 +65,7 @@ class AccountsScreen(MDBottomNavigationItem):
     def on_pre_enter(self):
         for acc in data.accounts:
             self.update_main_accountview(acc)
+        self.update_plot()
 
     def add_value(self, instance):  
         self.dialog_add_value.content_cls.focus_function()
@@ -103,9 +104,12 @@ class AccountsScreen(MDBottomNavigationItem):
                 data.accounts[account]['Transfers'][date].append([amount, purpose])
             data.fill_status_of_account(account)
             self.update_main_accountview(account)
+            self.update_plot()
+            data.fill_total_status()
+            self.app.screen.ids.main.overview_screen.update_plot()
+            self.app.screen.ids.main.overview_screen.add_things_to_screen()
             data.save_accounts()
-
-        
+ 
         
     def button_clicked(self, instance):
         for button in self.filter_buttons:
@@ -125,18 +129,6 @@ class AccountsScreen(MDBottomNavigationItem):
         label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
-        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
-
-        for i, acc in enumerate(data.accounts):
-            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-            icon.color=Colors.matplotlib_rgba[i]
-            icon.halign = 'right'
-            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
-            label2.color = Colors.text_color
-            label2.halign = 'left'
-            box.add_widget(icon)
-            box.add_widget(label2)
-        self.ids.assetview.add_widget(box)
 
     def update_main_accountview(self, account):
             self.AmountLabels[account].text     = str(data.accounts[account]['Status'][data.today_str])+' €'
@@ -144,20 +136,30 @@ class AccountsScreen(MDBottomNavigationItem):
                 self.AmountLabels[account].color = Colors.error_color
             else:
                 self.AmountLabels[account].color = Colors.green_color
-            self.update_plot()
+           
 
     def go_to_account(self, acc):
         data.current_account = acc
         self.app.screen.ids.main.manager.current = 'Transfers'
 
 
-    def generate_main_carditem(self, acc):
+    def generate_main_carditem(self, acc, color):
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
-        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])      
-        acclabel   = MDLabel(text=acc, font_style='Subtitle2')
-        acclabel.color = Colors.text_color
-        acclabel.halign = 'center'
-        contentbox.add_widget(acclabel)
+        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])   
+
+        subbox = MDBoxLayout(orientation='horizontal')
+        icon = MDIcon(icon='vector-line', theme_text_color='Custom')
+        icon.color=color
+        icon.halign = 'right'
+        label2 = MDLabel(text=acc, font_style='Caption')
+        label2.color = Colors.text_color
+        label2.halign = 'left'
+        subbox.add_widget(icon)
+        subbox.add_widget(label2)   
+        #acclabel   = MDLabel(text=acc, font_style='Subtitle2')
+        #acclabel.color = Colors.text_color
+        #acclabel.halign = 'center'
+        contentbox.add_widget(subbox)
     
         last_date = list(data.accounts[acc]['Status'].keys())
         last_date.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date())
@@ -181,19 +183,6 @@ class AccountsScreen(MDBottomNavigationItem):
         label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
-        box = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color, size_hint_y=0.05, pos_hint={'top': 0.01})
-
-        for i, acc in enumerate(data.accounts):
-            icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-            icon.color=Colors.matplotlib_rgba[i]
-            icon.halign = 'right'
-            label2 = MDLabel(text=acc, font_style='Caption', md_bg_color=Colors.bg_color)
-            label2.color = Colors.text_color
-            label2.halign = 'left'
-            box.add_widget(icon)
-            box.add_widget(label2)
-        self.ids.assetview.add_widget(box)
-
         self.AmountLabels = {}
 
         #header of table scrollview
@@ -210,8 +199,8 @@ class AccountsScreen(MDBottomNavigationItem):
             header.add_widget(header_label)
 
         #scrollview items
-        for acc in data.accounts:
-            carditem = self.generate_main_carditem(acc)
+        for i, acc in enumerate(data.accounts):
+            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
             self.ids.accountsview.add_widget(carditem)
             self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
       

@@ -28,6 +28,7 @@ from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
 from dialogs.dialogs_empty_pythonside import SettingsDialogContent
 from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
 from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
+from dialogs.add_transfer_dialog import AddTransferDialogContent
 from kivymd.uix.picker import MDDatePicker
 from backend.colors import Colors
 from backend.totalplot import TotalPlot
@@ -42,12 +43,13 @@ from screens.transfers_screen import TransfersScreen
 class OverviewScreen(MDBottomNavigationItem):
     def __init__(self, **kwargs):
         super(OverviewScreen, self).__init__(**kwargs)
+        self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
 
     def on_kv_post(self, instance):
-        self.filter_buttons = [self.ids.onemonth_button, self.ids.threemonths_button, self.ids.sixmonths_button, 
-                               self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
+        self.filter_buttons = [self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
                                self.ids.tenyears_button, self.ids.all_button]
         self.update_plot()
+        self.add_things_to_screen()
         self.dialog_add_value = MDDialog(
                 type="custom",
                 content_cls=AddValueDialogContent(),
@@ -60,6 +62,8 @@ class OverviewScreen(MDBottomNavigationItem):
                     ),
                 ],
             )
+
+    
     def add_value(self, instance):  
         self.dialog_add_value.content_cls.focus_function()
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
@@ -96,9 +100,10 @@ class OverviewScreen(MDBottomNavigationItem):
                 data.accounts[account]['Transfers'][date] = []
                 data.accounts[account]['Transfers'][date].append([amount, purpose])
             data.fill_status_of_account(account)
-            self.update_main_accountview(account)
+            data.fill_total_status()
+            self.update_plot()
+            self.add_things_to_screen()
             data.save_accounts()
-
         
         
     def button_clicked(self, instance):
@@ -112,13 +117,33 @@ class OverviewScreen(MDBottomNavigationItem):
         self.update_plot()
  
     def update_plot(self):
-        canvas    = TotalPlot.make_plot(self.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
+        canvas    = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=False)
+        canvas.size_hint_y = 0.75
+        canvas.pos_hint = {'top': 0.98}
+
+        canvas2 = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=True)
+        canvas2.size_hint_y = 0.35
+        canvas2.pos_hint = {'top': 0.25}
+
+        
         self.ids.assetview.clear_widgets()
         self.ids.assetview.add_widget(canvas)
-        label = MDLabel(text='Total status', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        self.ids.assetview.add_widget(canvas2)
+        label = MDLabel(text='Total status (monthly)', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
+
+        label2 = MDLabel(text='Monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.08, halign='center', pos_hint={'top': 0.3})
+        label2.color = Colors.text_color
+        self.ids.assetview.add_widget(label2)
        
-    
+    def add_things_to_screen(self):
+        self.ids.status_label.text = str(data.total['Status'][data.today_str])+' €'
+        self.ids.status_label.color = Colors.green_color if data.total['Status'][data.today_str]>=0 else Colors.error_color
+
+        self.ids.month_label.text = 'Status '+self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)
+        profit = round(TotalPlot.profits_date[self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)], 2)
+
+        self.ids.status_month_label.text = str(profit)+' €'
+        self.ids.status_month_label.color = Colors.green_color if profit>=0 else Colors.error_color
    

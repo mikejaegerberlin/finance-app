@@ -31,6 +31,15 @@
             line_color: app.error_color
             icon_color: app.error_color
             on_release: root.expenditure_button_clicked()
+         MDRectangleFlatIconButton:
+            icon: "bank-transfer"
+            text: "Transfer"
+            theme_text_color: "Custom"
+            id: dialog_expenditure_button
+            text_color: app.button_disable_onwhite_color
+            line_color: app.button_disable_onwhite_color
+            icon_color: app.button_disable_onwhite_color
+            on_release: root.transfer_button_clicked()
           
 
     MDTextField:

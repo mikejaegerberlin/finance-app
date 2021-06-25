@@ -53,10 +53,10 @@ class StandingOrdersScreen(MDBottomNavigationItem):
         order = content.add_standing_order()
         self.dialog_add_standingorder.dismiss()
         data.add_order_in_transfers(order)
-        data.fill_status_of_account(order['Account'])           
+        data.fill_status_of_account(order['Account'])      
+        data.fill_total_status()     
         data.save_accounts()
         self.update_standingorder_list()
-
         
     def on_kv_post(self, instance):
         self.md_bg_color = Colors.bg_color

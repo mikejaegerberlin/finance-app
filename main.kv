@@ -18,6 +18,7 @@ ScreenManager:
 <MainScreen>:
     name: 'Main'
     accounts_screen: accounts_screen
+    overview_screen: overview_screen
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -28,6 +29,7 @@ ScreenManager:
             text_color_normal: app.bg_color
             
             OverviewScreen:
+                id: overview_screen
                 name: 'Overview'
                 text: 'Overview'
                 icon: 'view-compact-outline'

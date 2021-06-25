@@ -2,14 +2,14 @@
     assetview: assetview
     floating_button: floating_button
     main_content: main_content
-    onemonth_button: onemonth_button
-    threemonths_button: threemonths_button
-    sixmonths_button: sixmonths_button
+    
     oneyear_button: oneyear_button
     threeyears_button: threeyears_button
     fiveyears_button: fiveyears_button
     tenyears_button: tenyears_button
     all_button: all_button
+    status_label: status_label
+    month_label: status_month_label
     on_kv_post: root.app = app
 
     MDFloatLayout:
@@ -20,9 +20,9 @@
 
         MDToolbar:
             id: main_toolbar
-            title: 'Accounts'
+            title: 'Overview'
+            halign: 'center'
             md_bg_color: app.primary_color
-            right_action_items: [["account-plus", lambda x: app.go_to_account('DKB')]]
             specific_text_color: app.text_color
     
         MDBoxLayout:
@@ -34,36 +34,7 @@
             id: account_tabs
             orientation: 'horizontal'
             
-            MDFillRoundFlatButton:
-                id: onemonth_button
-                text: '1M'
-                size_hint_y: 1
-                size_hint_x: 0.125
-                font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
-                on_release: root.button_clicked(onemonth_button)
-                
-            MDFillRoundFlatButton:
-                id: threemonths_button
-                text: '3M'
-                size_hint_y: 1
-                size_hint_x: 0.125
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(threemonths_button)
-                
-                
-            MDFillRoundFlatButton:
-                id: sixmonths_button
-                text: '6M'
-                size_hint_y: 1
-                size_hint_x: 0.125
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(sixmonths_button)
+           
 
             MDFillRoundFlatButton:
                 id: oneyear_button
@@ -81,8 +52,8 @@
                 size_hint_y: 1
                 size_hint_x: 0.125
                 font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
+                text_color: app.bg_color
+                md_bg_color: app.text_color
                 on_release: root.button_clicked(threeyears_button)
 
             MDFillRoundFlatButton:
@@ -117,13 +88,61 @@
 
         MDCard:
             md_bg_color: app.bg_color
-            size_hint_y: 0.4
+            size_hint_y: 0.35
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: assetview
         MDBoxLayout:
-            size_hint_y: 0.03
+            size_hint_y: 0.1
+        MDBoxLayout:
+            orientation: 'horizontal'
+            md_bg_color: app.bg_color
+            size_hint_y: 0.08
+            MDBoxLayout:
+                size_hint_x: 0.1
+            MDBoxLayout:
+                size_hint_x: 0.8
+                MDLabel:
+                    text: 'Current total status: '
+                    theme_text_color: 'Custom'
+                    color: app.text_color
+                    font_style: 'Button'
+                    halign: 'center'
+                    size_hint_x: 0.7
+                MDLabel:
+                    theme_text_color: 'Custom'
+                    font_style: 'Button'
+                    halign: 'left'
+                    id: status_label
+                    size_hint_x: 0.3
+            MDBoxLayout:
+                size_hint_x: 0.1
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            md_bg_color: app.bg_color
+            size_hint_y: 0.08
+            MDBoxLayout:
+                size_hint_x: 0.1
+            MDBoxLayout:
+                size_hint_x: 0.8
+                MDLabel:
+                    id: month_label
+                    theme_text_color: 'Custom'
+                    color: app.text_color
+                    font_style: 'Button'
+                    halign: 'center'
+                    size_hint_x: 0.7
+                MDLabel:
+                    theme_text_color: 'Custom'
+                    font_style: 'Button'
+                    halign: 'left'
+                    id: status_month_label
+                    size_hint_x: 0.3
+            MDBoxLayout:
+                size_hint_x: 0.1
+
         
             
     MDFloatingActionButton:

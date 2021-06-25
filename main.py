@@ -65,11 +65,8 @@ class DemoApp(MDApp):
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainScreen(name='Main'))
         sm.add_widget(TransfersScreen(name='Transfers'))
-        self.screen = Builder.load_file("main.kv")
-        ### Get relevant ids form kv file###
-        self.create_dialogs()
-
-        #execute this block if demodata is load from json   
+        
+        ### prepare data for start
         reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
         if data.today_date.month!=reset_date.month:
             data.reset_standingorders_monthlisted()
@@ -78,9 +75,14 @@ class DemoApp(MDApp):
         for acc in data.accounts:
             data.check_standingorders(acc)
             data.fill_status_of_account(acc)
-            data.check_todays_status(acc)            
+            data.check_todays_status(acc)  
+        data.fill_total_status()          
         data.save_accounts()
         data.save_standingorders()
+
+        self.screen = Builder.load_file("main.kv")
+        ### Get relevant ids form kv file###
+        self.create_dialogs()
 
     
     def create_dialogs(self):

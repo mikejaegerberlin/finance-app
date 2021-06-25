@@ -60,8 +60,8 @@ class Calculations():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
 
         self.fill_income_expenditure_profit(acc)
-        self.fill_total_status()
-
+        
+       
     def fill_total_status(self):
         self.total['Status'] = {}
         date_min = []
@@ -84,10 +84,9 @@ class Calculations():
                             self.total['Status'][date_str] = round(self.total['Status'][date_str] + transfer[0], 2)
                     previous_date_str = date_str
             date = date + relativedelta(days=1)
-
-                
-            
-
+      
+        if not self.today_str in self.total['Status'].keys():
+            self.total['Status'][self.today_str] = round(self.total['Status'][dates[-1]], 2)
 
     def make_dates(self, from_str, to, day):
         day = day.replace('.','')

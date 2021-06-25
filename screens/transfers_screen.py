@@ -120,6 +120,10 @@ class TransfersScreen(Screen):
                     data.accounts[account]['Transfers'][old_date].pop(i)       
         self.fill_transfers_list(account)
         data.fill_status_of_account(account)
+        data.fill_total_status()
+        self.app.screen.ids.main.overview_screen.update_plot()
+        self.app.screen.ids.main.overview_screen.add_things_to_screen()
+        data.save_accounts()
 
     def message_after_change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount):
         if 'From' in old_purpose and 'to' in old_purpose:
@@ -169,6 +173,7 @@ class TransfersScreen(Screen):
                                 
                 self.ids.transfers_list.remove_widget(card)
                 data.fill_status_of_account(data.current_account)
+                
 
                 if 'From' in check_purposelabel and 'to' in check_purposelabel:
                     account_from = check_purposelabel.split(' ')[1]
@@ -182,6 +187,7 @@ class TransfersScreen(Screen):
                             if transfer[0]==-float(amountlabel.text.replace(' €','')) and transfer[1]==check_purposelabel:
                                 data.accounts[delete_account]['Transfers'][date].pop(i)
                     data.fill_status_of_account(delete_account)
+                    
                     message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
                 else:
                     message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
@@ -189,6 +195,10 @@ class TransfersScreen(Screen):
                 message.bg_color=Colors.black_color
                 message.text_color=Colors.text_color
                 message.open()
+
+                data.fill_total_status()
+                self.app.screen.ids.main.overview_screen.update_plot()
+                self.app.screen.ids.main.overview_screen.add_things_to_screen()
                 data.save_accounts()
         self.transfer_dropdown.dismiss()
         
