@@ -35,8 +35,9 @@ from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
 from screens.transfers_screen import TransfersScreen
 from screens.accounts_screen import AccountsScreen
-from screens.overview_screen import OverviewScreen
+from screens.overview_screen import MainScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
+from kivy.uix.screenmanager import FadeTransition
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -65,12 +66,14 @@ class DemoApp(MDApp):
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainScreen(name='Main'))
         sm.add_widget(TransfersScreen(name='Transfers'))
+        sm.add_widget(StandingOrdersScreen(name='Standing order'))
+        sm.add_widget(AccountsScreen(name='Accounts'))
         
         ### prepare data for start
         reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
         if data.today_date.month!=reset_date.month:
             data.reset_standingorders_monthlisted()
-            data.standingorders['Reset date'] = self.today_str
+            data.standingorders['Reset date'] = data.today_str
             data.save_standingorders()
         for acc in data.accounts:
             data.check_standingorders(acc)
@@ -83,6 +86,36 @@ class DemoApp(MDApp):
         self.screen = Builder.load_file("main.kv")
         ### Get relevant ids form kv file###
         self.create_dialogs()
+
+        self.on_kv_post_MainScreen()
+        self.on_kv_post_AccountsScreen()
+        self.on_kv_post_StandingOrdersScreen()
+        
+
+    def on_kv_post_MainScreen(self):
+        self.screen.ids.main.update_plot()
+        self.screen.ids.main.add_things_to_screen()
+
+    def on_kv_post_AccountsScreen(self):
+        self.screen.ids.accounts_screen.update_plot()
+        self.screen.ids.accounts_screen.add_account_status_to_mainscreen()
+
+    def on_kv_post_StandingOrdersScreen(self):
+        self.screen.ids.standingorders_screen.create_screen()
+        ID = self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.ids.accountfield
+        self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.acc_dropdown.caller = ID
+        
+    def go_to_accounts(self):
+        self.screen.ids.main.manager.transition = FadeTransition()
+        self.screen.ids.main.manager.current = 'Accounts'
+
+    def go_to_standingorders(self):
+        self.screen.ids.main.manager.transition = FadeTransition()
+        self.screen.ids.main.manager.current = 'Standing order'
+
+    def go_to_main(self):
+        self.screen.ids.main.manager.transition = FadeTransition()
+        self.screen.ids.main.manager.current = 'Main'
 
     
     def create_dialogs(self):

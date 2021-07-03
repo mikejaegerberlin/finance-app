@@ -76,7 +76,7 @@ class AddStandingOrderDialogContent(MDBoxLayout):
             } for acc in data.accounts
         ]
         self.acc_dropdown = MDDropdownMenu(
-            caller=self.ids.accountfield,
+            caller=MDFlatButton(),
             items=self.acc_menu_items,
             position="bottom",
             width_mult=4,

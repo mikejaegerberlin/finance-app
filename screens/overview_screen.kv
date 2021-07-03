@@ -88,36 +88,15 @@
 
         MDCard:
             md_bg_color: app.bg_color
-            size_hint_y: 0.35
+            size_hint_y: 0.4
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: assetview
         MDBoxLayout:
             size_hint_y: 0.1
-        MDBoxLayout:
-            orientation: 'horizontal'
-            md_bg_color: app.bg_color
-            size_hint_y: 0.08
-            MDBoxLayout:
-                size_hint_x: 0.1
-            MDBoxLayout:
-                size_hint_x: 0.8
-                MDLabel:
-                    text: 'Current total status: '
-                    theme_text_color: 'Custom'
-                    color: app.text_color
-                    font_style: 'Button'
-                    halign: 'center'
-                    size_hint_x: 0.7
-                MDLabel:
-                    theme_text_color: 'Custom'
-                    font_style: 'Button'
-                    halign: 'left'
-                    id: status_label
-                    size_hint_x: 0.3
-            MDBoxLayout:
-                size_hint_x: 0.1
+        
+            
 
         MDBoxLayout:
             orientation: 'horizontal'

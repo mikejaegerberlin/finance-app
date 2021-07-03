@@ -23,7 +23,7 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 
-class StandingOrdersScreen(MDBottomNavigationItem):
+class StandingOrdersScreen(Screen):
     def __init__(self, **kwargs):
         super(StandingOrdersScreen, self).__init__(**kwargs) 
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
@@ -58,7 +58,7 @@ class StandingOrdersScreen(MDBottomNavigationItem):
         data.save_accounts()
         self.update_standingorder_list()
         
-    def on_kv_post(self, instance):
+    def create_screen(self):
         self.md_bg_color = Colors.bg_color
         header = self.ids.standingorder_header
         header.md_bg_color = Colors.primary_color

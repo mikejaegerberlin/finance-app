@@ -38,17 +38,13 @@ from screens.standing_order_screen import StandingOrdersScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from dialogs.add_value_dialog import AddValueDialogContent
 from screens.transfers_screen import TransfersScreen
+from kivy.uix.screenmanager import SlideTransition
 
-class AccountsScreen(MDBottomNavigationItem):
+class AccountsScreen(Screen):
     def __init__(self, **kwargs):
         super(AccountsScreen, self).__init__(**kwargs)
 
-    def on_kv_post(self, instance):
-        self.filter_buttons = [self.ids.onemonth_button, self.ids.threemonths_button, self.ids.sixmonths_button, 
-                               self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
-                               self.ids.tenyears_button, self.ids.all_button]
-        self.add_account_status_to_mainscreen()
-        self.update_plot()
+    def on_enter(self):
         self.dialog_add_value = MDDialog(
                 type="custom",
                 content_cls=AddValueDialogContent(),
@@ -106,8 +102,8 @@ class AccountsScreen(MDBottomNavigationItem):
             self.update_main_accountview(account)
             self.update_plot()
             data.fill_total_status()
-            self.app.screen.ids.main.overview_screen.update_plot()
-            self.app.screen.ids.main.overview_screen.add_things_to_screen()
+            self.app.screen.ids.main.update_plot()
+            self.app.screen.ids.main.add_things_to_screen()
             data.save_accounts()
  
         
@@ -122,6 +118,9 @@ class AccountsScreen(MDBottomNavigationItem):
         self.update_plot()
  
     def update_plot(self):
+        self.filter_buttons = [self.ids.onemonth_button, self.ids.threemonths_button, self.ids.sixmonths_button, 
+                               self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
+                               self.ids.tenyears_button, self.ids.all_button]
         canvas    = AccountPlot.make_plot(self.filter_buttons, data)
         canvas.pos_hint = {'top': 1}
         self.ids.assetview.clear_widgets()
@@ -140,8 +139,8 @@ class AccountsScreen(MDBottomNavigationItem):
 
     def go_to_account(self, acc):
         data.current_account = acc
+        self.app.screen.ids.main.manager.transition = SlideTransition()
         self.app.screen.ids.main.manager.current = 'Transfers'
-
 
     def generate_main_carditem(self, acc, color):
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))

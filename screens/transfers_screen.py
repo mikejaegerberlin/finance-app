@@ -17,6 +17,7 @@ from dialogs.dialogs_empty_pythonside import Spacer_Horizontal
 from backend.colors import Colors
 from backend.demo_setup import DemoData as data
 from backend.carditems import CardItemsBackend
+from kivy.uix.screenmanager import SlideTransition
 
 class TransfersScreen(Screen):
     def __init__(self, **kwargs):
@@ -44,11 +45,13 @@ class TransfersScreen(Screen):
                     ),
                 ],
         )
- 
-    def go_to_mainscreen(self, instance):
-        self.app.screen.ids.main.manager.current = 'Main'
+        
+
+    def go_to_main(self):
+        self.app.screen.ids.main.manager.transition = SlideTransition()
+        self.app.screen.ids.main.manager.current = 'Accounts'
         for acc in data.accounts:
-            self.app.screen.ids.main.ids.accounts_screen.update_main_accountview(acc)
+            self.app.screen.ids.accounts_screen.update_main_accountview(acc)
 
     def button_clicked(self, instance):
         CardItemsBackend.generate_carditems(3)
@@ -121,8 +124,8 @@ class TransfersScreen(Screen):
         self.fill_transfers_list(account)
         data.fill_status_of_account(account)
         data.fill_total_status()
-        self.app.screen.ids.main.overview_screen.update_plot()
-        self.app.screen.ids.main.overview_screen.add_things_to_screen()
+        self.app.screen.ids.main.update_plot()
+        self.app.screen.ids.main.add_things_to_screen()
         data.save_accounts()
 
     def message_after_change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount):
@@ -197,8 +200,8 @@ class TransfersScreen(Screen):
                 message.open()
 
                 data.fill_total_status()
-                self.app.screen.ids.main.overview_screen.update_plot()
-                self.app.screen.ids.main.overview_screen.add_things_to_screen()
+                self.app.screen.ids.main.update_plot()
+                self.app.screen.ids.main.add_things_to_screen()
                 data.save_accounts()
         self.transfer_dropdown.dismiss()
         

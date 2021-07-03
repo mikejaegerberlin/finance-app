@@ -1,6 +1,8 @@
 <StandingOrdersScreen>:
+    name: 'Standing order'
     standing_orders_list: standing_orders_list
     standingorder_header: standingorder_header
+    
     MDFloatLayout:
         md_bg_color: app.bg_color
 
@@ -40,6 +42,73 @@
                     id: standing_orders_list
             MDBoxLayout:
                 size_hint_x: 0.01
+
+    MDBoxLayout:
+        size_hint_y: 0.075
+        size_hint_x: 1
+        orientation: 'horizontal'
+
+        MDCard:
+            size_hint_y: 1
+            size_hint_x: 0.333
+            on_release: app.go_to_main()
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDIcon:
+                    icon: 'view-compact-outline'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color
+                MDLabel:
+                    text: 'Overview'
+                    font_style: 'Button'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color
+
+        MDCard:
+            size_hint_y: 1
+            size_hint_x: 0.333
+            on_release: app.go_to_accounts()
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDIcon:
+                    icon: 'account-multiple'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color   
+                MDLabel:
+                    text: 'Accounts'
+                    font_style: 'Button'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color
+
+
+        MDCard:
+            size_hint_y: 1
+            size_hint_x: 0.333
+            
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDIcon:
+                    icon: 'file-document-multiple-outline'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.text_color
+                    md_bg_color: app.primary_color
+                   
+                MDLabel:
+                    text: 'Standing Orders'
+                    font_style: 'Button'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.text_color
+                    md_bg_color: app.primary_color
                
                            
         
