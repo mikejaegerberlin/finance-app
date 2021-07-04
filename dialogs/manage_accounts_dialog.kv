@@ -1,0 +1,79 @@
+<ManageAccountsDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "220dp"
+    accountfield: accountfield
+    on_kv_post: root.app = app
+   
+    add_account_button: add_account_button
+    add_account_button_icon: add_account_button_icon
+    add_account_button_text: add_account_button_text
+    remove_account_button: remove_account_button
+    remove_account_button_icon: remove_account_button_icon
+    remove_account_button_text: remove_account_button_text
+    
+
+
+    MDBoxLayout:
+        orientation: 'horizontal'
+        size_hint_x: 1
+        size_hint_y: 1
+        MDCard:
+            size_hint_x: 0.5
+            id: add_account_button
+            on_release: root.add_account_button_clicked()
+            elevation: 0
+            MDBoxLayout:
+                orientation: "vertical"
+                MDIcon:
+                    id: add_account_button_icon
+                    icon: "account-plus"
+                    theme_text_color: 'Custom'
+                    color: app.green_color
+                    halign: 'center'
+                MDLabel:
+                    id: add_account_button_text
+                    text: "Add account"
+                    theme_text_color: "Custom"
+                    color: app.green_color
+                    halign: 'center'
+                    font_style: 'Caption'
+
+
+        MDCard:
+            size_hint_x: 0.5
+            id: remove_account_button
+            on_release: root.remove_account_button_clicked()
+            elevation: 0
+            MDBoxLayout:
+                orientation: "vertical"
+                MDIcon:
+                    id: remove_account_button_icon
+                    icon: "account-minus"
+                    theme_text_color: 'Custom'
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+                MDLabel:
+                    id: remove_account_button_text
+                    text: "Remove account"
+                    theme_text_color: "Custom"
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+                    font_style: 'Caption'
+          
+
+    MDTextField:
+        id: accountfield
+        hint_text: "Account name"
+        color_mode: 'custom'
+        line_color_normal: app.button_disable_onwhite_color
+        line_color_focus: app.primary_color
+        current_hint_text_color: app.primary_color
+        text_color: app.primary_color
+        on_focus: if self.focus: root.accountfield_focus_function()
+   
+    
+
+
+    

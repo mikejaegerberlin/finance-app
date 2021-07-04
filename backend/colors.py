@@ -10,6 +10,7 @@ class Colors(object):
         self.black_color                  = (0, 0, 0, 1)
         self.green_color                  = (0, 180/255, 0, 1)
         self.button_disable_onwhite_color = (0, 0, 0, 0.3)
+        self.white_color                  = (1,1,1,1)
 
         self.text_color_hex     = str(matplotlib.colors.to_hex([self.text_color[0], self.text_color[1], self.text_color[2], self.text_color[3]], keep_alpha=True))
         self.bg_color_hex       = str(matplotlib.colors.to_hex([self.bg_color[0], self.bg_color[1], self.bg_color[2], self.bg_color[3]], keep_alpha=True))

@@ -6,7 +6,7 @@ class Sizes():
         
         
         settings = {}
-        settings['Labelsize'] = 12
+        settings['Labelsize'] = 14
         settings['Titlesize'] = 20
         settings['Linewidth'] = 5
         settings['Markersize'] = 2

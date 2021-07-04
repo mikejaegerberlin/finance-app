@@ -33,6 +33,7 @@ from backend.demo_setup import DemoData as data
 from backend.settings import Sizes
 from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
+from screens.categories_screen import CategoriesScreen
 from screens.transfers_screen import TransfersScreen
 from screens.accounts_screen import AccountsScreen
 from screens.overview_screen import MainScreen
@@ -48,7 +49,7 @@ class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         Window.size = (400,700)
-        #self.create_items_for_dropdowns_and_buttons()
+        
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
         self.slider_linewidth_current = Sizes.linewidth
@@ -62,12 +63,14 @@ class DemoApp(MDApp):
         self.error_color                  = Colors.error_color
         self.black_color                  = Colors.black_color
         self.green_color                  = Colors.green_color
+        self.white_color                  = Colors.white_color
         
         sm = ScreenManager(transition=NoTransition())
         sm.add_widget(MainScreen(name='Main'))
         sm.add_widget(TransfersScreen(name='Transfers'))
         sm.add_widget(StandingOrdersScreen(name='Standing order'))
         sm.add_widget(AccountsScreen(name='Accounts'))
+        sm.add_widget(CategoriesScreen(name='Categories'))
         
         ### prepare data for start
         reset_date = datetime.strptime(data.standingorders['Reset date'], '%Y-%m-%d').date() 
@@ -84,9 +87,8 @@ class DemoApp(MDApp):
         data.save_standingorders()
 
         self.screen = Builder.load_file("main.kv")
+        
         ### Get relevant ids form kv file###
-        self.create_dialogs()
-
         self.on_kv_post_MainScreen()
         self.on_kv_post_AccountsScreen()
         self.on_kv_post_StandingOrdersScreen()
@@ -115,70 +117,11 @@ class DemoApp(MDApp):
 
     def go_to_main(self):
         self.screen.ids.main.manager.transition = FadeTransition()
-        self.screen.ids.main.manager.current = 'Main'
+        self.screen.ids.main.manager.current = 'Main' 
 
-    
-    def create_dialogs(self):
-        self.dialog_money_transfer = MDDialog(
-                title="Money transfer",
-                type="custom",
-                content_cls=MoneyTransferDialogContent(),
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_money_transfer.dismiss()
-                    ),
-                    MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
-                    ),
-                ],
-            )               
-        
-    def execute_money_transfer(self, instance):
-        amount        = self.money_transfer_amountfield.text
-        account_from  = self.money_transfer_accountfield_from.text
-        account_to    = self.money_transfer_accountfield_to.text
-        date          = self.money_transfer_datefield.text
-        messagestring = ''
-        try:
-            amount = round(float(amount),2)
-        except:
-            messagestring += 'Amount field must be number. '
-        messagestring += 'Account field from is empty. ' if account_from=='' else ''
-        messagestring += 'Account field to is empty.' if account_to=='' else ''   
-        messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
-        if messagestring!='':
-            message = Snackbar(text=messagestring)
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
-        else:
-            self.dialog_money_transfer.dismiss()
-            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to))
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
-            self.money_transfer_amountfield.text  = ''
-            self.money_transfer_accountfield_from.text = ''
-            self.money_transfer_accountfield_to.text = ''
-            self.money_transfer_datefield.text = data.today_str
-            
-            #insert transfer into transfers_list and update account status
-            if date in data.accounts[account_to]['Transfers'].keys():
-                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
-            else:
-                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
-            if date in data.accounts[account_from]['Transfers'].keys():
-                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
-            else:
-                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
-
-            data.fill_status_of_account(account_to)
-            data.fill_status_of_account(account_from)
-            self.update_main_accountview(account_to)
-            self.update_main_accountview(account_from)
-            data.save_accounts()
-
-  
+    def go_to_categories(self):
+        self.screen.ids.main.manager.transition = FadeTransition()
+        self.screen.ids.main.manager.current = 'Categories' 
 
     def update_sizes(self):
         Sizes.labelsize = int(self.dialog_settings.content_cls.ids.slider_labelsize.value)

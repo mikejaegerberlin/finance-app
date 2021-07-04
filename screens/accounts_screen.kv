@@ -25,7 +25,7 @@
             id: main_toolbar
             title: 'Accounts'
             md_bg_color: app.primary_color
-            right_action_items: [["account-plus", lambda x: app.go_to_account('DKB')]]
+            right_action_items: [["account-edit", lambda x: root.dialog_manage_accounts.open()]]
             specific_text_color: app.text_color
     
         MDBoxLayout:
@@ -160,7 +160,7 @@
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             on_release: app.go_to_main()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -180,7 +180,7 @@
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -197,10 +197,30 @@
                     color: app.text_color
                     md_bg_color: app.primary_color
 
+        MDCard:
+            size_hint_y: 1
+            size_hint_x: 0.25
+            on_release: app.go_to_categories()
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDIcon:
+                    icon: 'chart-pie'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color   
+                MDLabel:
+                    text: 'Categories'
+                    font_style: 'Button'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color
+
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             on_release: app.go_to_standingorders()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -212,7 +232,7 @@
                     md_bg_color: app.primary_color
                    
                 MDLabel:
-                    text: 'Standing Orders'
+                    text: 'Orders'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'

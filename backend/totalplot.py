@@ -123,7 +123,8 @@ class TotalPlot():
         colors = Colors.matplotlib_colors
         #self.ax.plot(dates_daily, amounts_daily, colors[1], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label='Total')        
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
-        self.ax.grid(linestyle=':', linewidth=0.05)
+        self.ax.grid(axis='y', linestyle=':', linewidth=0.05)
+        self.ax.grid(axis='x', linestyle=':', linewidth=0.05, alpha=0.3)
         self.ax.spines['left'].set_color(Colors.text_color_hex)
         self.ax.spines['right'].set_color(Colors.text_color_hex)
         self.ax.spines['top'].set_color(Colors.text_color_hex)
@@ -131,6 +132,8 @@ class TotalPlot():
         if set_xticks:
             y_axis_max = int(max(self.profits[q:])+10)
             y_axis_min = int(min(self.profits[q:])-10)
+            xticks = xticks
+            xticklabels = xticklabels
             self.ax.set_xticks(xticks)
             self.ax.set_xticklabels(xticklabels)
             for j, profit in enumerate(self.profits):
@@ -163,7 +166,8 @@ class TotalPlot():
         steps = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), relativedelta(years=1), relativedelta(years=1)+relativedelta(years=self.exceed_years)]
         step  = steps[self.filter_index]
         
-        start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
+        #start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
+        start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
         xticklabels = [self.months[int(start_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+start_date.strftime('%Y-%m-%d')[2:4]]
         xticks = [start_date]

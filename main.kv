@@ -1,15 +1,18 @@
 #:include screens/accounts_screen.kv
 #:include screens/transfers_screen.kv
 #:include screens/standing_order_screen.kv
+#:include screens/categories_screen.kv
 #:include dialogs/add_value_dialog.kv
 #:include dialogs/change_transferitem_dialog.kv
 #:include dialogs/add_standingorder_dialog.kv
+#:include dialogs/manage_accounts_dialog.kv
 
 ScreenManager:
     main: main
     transfer: transfers
     accounts_screen: accounts_screen
     standingorders_screen: standingorders_screen
+    categories_screen: categories_screen
     
     MainScreen:
         id: main
@@ -19,6 +22,8 @@ ScreenManager:
         id: accounts_screen
     StandingOrdersScreen:
         id: standingorders_screen
+    CategoriesScreen:
+        id: categories_screen
     
     
 
@@ -68,8 +73,8 @@ ScreenManager:
                 size_hint_y: 1
                 size_hint_x: 0.125
                 font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
+                text_color: app.bg_color
+                md_bg_color: app.text_color
                 on_release: root.button_clicked(oneyear_button)
 
             MDFillRoundFlatButton:
@@ -78,8 +83,8 @@ ScreenManager:
                 size_hint_y: 1
                 size_hint_x: 0.125
                 font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
+                text_color: app.text_color
+                md_bg_color: app.bg_color
                 on_release: root.button_clicked(threeyears_button)
 
             MDFillRoundFlatButton:
@@ -114,7 +119,7 @@ ScreenManager:
 
         MDCard:
             md_bg_color: app.bg_color
-            size_hint_y: 0.35
+            size_hint_y: 0.4
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
@@ -154,7 +159,7 @@ ScreenManager:
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -173,7 +178,7 @@ ScreenManager:
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             on_release: app.go_to_accounts()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -191,10 +196,30 @@ ScreenManager:
                     color: app.bg_color
                     md_bg_color: app.primary_color
 
+        MDCard:
+            size_hint_y: 1
+            size_hint_x: 0.25
+            on_release: app.go_to_categories()
+            MDBoxLayout:
+                orientation: 'vertical'
+                MDIcon:
+                    icon: 'chart-pie'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color   
+                MDLabel:
+                    text: 'Categories'
+                    font_style: 'Button'
+                    halign: 'center'
+                    theme_text_color: 'Custom'
+                    color: app.bg_color
+                    md_bg_color: app.primary_color
+
 
         MDCard:
             size_hint_y: 1
-            size_hint_x: 0.333
+            size_hint_x: 0.25
             on_release: app.go_to_standingorders()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -206,7 +231,7 @@ ScreenManager:
                     md_bg_color: app.primary_color
                    
                 MDLabel:
-                    text: 'Standing Orders'
+                    text: 'Orders'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'

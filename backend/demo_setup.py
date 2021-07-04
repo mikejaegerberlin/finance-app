@@ -16,6 +16,7 @@ class DemoData(Calculations):
         #accounts[account]['Income'][year][month]
         #accounts[account]['Expenditure'][year][month]
         #accounts[account]['Profit'][year][month]
+        self.keys_list       = ['Transfers', 'Status', 'Income', 'Expenditure', 'Profit']
         self.current_account = ''
         self.today_str       = datetime.today().strftime('%Y-%m-%d')
         self.today_date      = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
@@ -43,7 +44,6 @@ class DemoData(Calculations):
     def create_new_setup(self):
         
         accounts_list = ['DKB', 'ING', 'Cash']
-        keys_list     = ['Transfers', 'Status', 'Income', 'Expenditure', 'Profit']
         Purposes      = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 
                          'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 
                         'Ticket', 'Gitarre', 'Bier']
@@ -52,7 +52,7 @@ class DemoData(Calculations):
         #initialize dictionaries
         for acc in accounts_list:
             self.accounts[acc] = {}
-            for key in keys_list:
+            for key in self.keys_list:
                 self.accounts[acc][key] = {}
         
         #fill transfers

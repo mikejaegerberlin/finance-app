@@ -26,6 +26,7 @@ from dialogs.custom_datepicker import DatePickerContent
 from dialogs.add_value_dialog import AddValueDialogContent
 from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
 from dialogs.dialogs_empty_pythonside import SettingsDialogContent
+from dialogs.manage_accounts_dialog import ManageAccountsDialogContent
 from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
 from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
 from kivymd.uix.picker import MDDatePicker
@@ -53,17 +54,159 @@ class AccountsScreen(Screen):
                         text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.add_value(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
                     ),
                 ],
             )
+
+        self.dialog_manage_accounts = MDDialog(
+                type="custom",
+                content_cls=ManageAccountsDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_manage_accounts.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_accounts_management(x)
+                    ),
+                ],
+            )
+
 
     def on_pre_enter(self):
         for acc in data.accounts:
             self.update_main_accountview(acc)
         self.update_plot()
 
-    def add_value(self, instance):  
+    def execute_accounts_management(self, instance):
+        if self.dialog_manage_accounts.content_cls.accountfield.hint_text == "Account name":
+            self.add_account()
+        else:
+            self.remove_account()
+        self.dialog_manage_accounts.content_cls.update_acc_items()
+        self.dialog_add_value.content_cls.update_acc_items()
+        self.app.screen.ids.main.dialog_add_value.content_cls.update_acc_items()
+        
+
+    def add_account(self):
+        account = self.dialog_manage_accounts.content_cls.accountfield.text
+        amount  = round(float(self.dialog_manage_accounts.content_cls.amountfield.text),2)
+        date    = self.dialog_manage_accounts.content_cls.datefield.text
+        self.dialog_manage_accounts.content_cls.accountfield.text = ''
+        self.dialog_manage_accounts.content_cls.amountfield.text = ''
+        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str
+        data.accounts[account] = {}
+        for key in data.keys_list:
+            data.accounts[account][key] = {}
+        data.accounts[account]['Transfers'][date] = []
+        data.accounts[account]['Transfers'][date].append([amount, 'Start amount'])
+        data.fill_status_of_account(account)
+        self.ids.accountsview.clear_widgets()
+        self.AmountLabels = {}
+        for i, acc in enumerate(data.accounts):
+            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
+            self.ids.accountsview.add_widget(carditem)
+            self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        label2 = MDLabel(text='Tap on account to see transfers.', font_style='Caption')
+        label2.color = Colors.text_color
+        label2.halign = 'center'
+        card.add_widget(label2)
+        self.ids.accountsview.add_widget(card)
+        card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        self.ids.accountsview.add_widget(card)
+
+        self.dialog_manage_accounts.dismiss()
+        message = Snackbar(text='Added account {} with {} € start amount.'.format(account, amount))
+        message.bg_color=Colors.black_color
+        message.text_color=Colors.text_color
+        message.open()
+        self.update_plot()
+        data.save_accounts()
+
+    def remove_account(self):
+        account = self.dialog_manage_accounts.content_cls.accountfield.text
+        del data.accounts[account]
+        self.ids.accountsview.clear_widgets()
+        self.AmountLabels = {}
+        for i, acc in enumerate(data.accounts):
+            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
+            self.ids.accountsview.add_widget(carditem)
+            self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        label2 = MDLabel(text='Tap on account to see transfers.', font_style='Caption')
+        label2.color = Colors.text_color
+        label2.halign = 'center'
+        card.add_widget(label2)
+        self.ids.accountsview.add_widget(card)
+        card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        self.ids.accountsview.add_widget(card)
+
+        self.dialog_manage_accounts.dismiss()
+        message = Snackbar(text='Deleted account {}.'.format(account))
+        message.bg_color=Colors.black_color
+        message.text_color=Colors.text_color
+        message.open()
+        self.update_plot()
+        self.dialog_manage_accounts.content_cls.accountfield.text = ''
+        self.dialog_manage_accounts.content_cls.amountfield.text = ''
+        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str
+        data.save_accounts()
+
+
+        
+
+
+    def execute_money_transfer(self, instance):
+        if self.dialog_add_value.content_cls.ids.purposefield.hint_text == "Purpose":
+            self.add_value()
+        else:
+            self.transfer_value()
+
+    def transfer_value(self):
+        amount        = self.dialog_add_value.content_cls.ids.amountfield.text
+        account_from  = self.dialog_add_value.content_cls.ids.accountfield.text
+        account_to    = self.dialog_add_value.content_cls.ids.purposefield.text
+        date          = self.dialog_add_value.content_cls.ids.datefield.text
+        messagestring = ''
+        try:
+            amount = round(float(amount),2)
+        except:
+            messagestring += 'Amount field must be number. '
+        messagestring += 'Account field from is empty. ' if account_from=='' else ''
+        messagestring += 'Account field to is empty.' if account_to=='' else ''   
+        messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
+        if messagestring!='':
+            message = Snackbar(text=messagestring)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.dialog_add_value.dismiss()
+            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to))
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+            self.dialog_add_value.content_cls.ids.amountfield.text  = ''
+            self.dialog_add_value.content_cls.ids.accountfield.text = ''
+            self.dialog_add_value.content_cls.ids.purposefield.text = ''
+            self.dialog_add_value.content_cls.ids.datefield.text = data.today_str
+            
+            #insert transfer into transfers_list and update account status
+            if date in data.accounts[account_to]['Transfers'].keys():
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
+            else:
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
+            if date in data.accounts[account_from]['Transfers'].keys():
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
+            else:
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
+
+            data.fill_status_of_account(account_to)
+            data.fill_status_of_account(account_from)
+            data.save_accounts()
+
+    def add_value(self):  
         self.dialog_add_value.content_cls.focus_function()
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
         account       = self.dialog_add_value.content_cls.ids.accountfield.text
@@ -125,7 +268,7 @@ class AccountsScreen(Screen):
         canvas.pos_hint = {'top': 1}
         self.ids.assetview.clear_widgets()
         self.ids.assetview.add_widget(canvas)
-        label = MDLabel(text='Trend of each account', font_style='Subtitle1', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        label = MDLabel(text='Trend of each account', font_style='Button', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
 
@@ -202,4 +345,12 @@ class AccountsScreen(Screen):
             carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
             self.ids.accountsview.add_widget(carditem)
             self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        label2 = MDLabel(text='Tap on account to see transfers.', font_style='Caption')
+        label2.color = Colors.text_color
+        label2.halign = 'center'
+        card.add_widget(label2)
+        self.ids.accountsview.add_widget(card)
+        card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        self.ids.accountsview.add_widget(card)
       

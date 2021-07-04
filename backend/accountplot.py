@@ -103,8 +103,12 @@ class AccountPlot():
         return canvas        
         
     def get_xticks_and_labels(self, start_date, end_date):
-        steps = [relativedelta(days=7), relativedelta(days=14), relativedelta(days=28), relativedelta(months=3), relativedelta(months=6), 
-                 relativedelta(years=1), relativedelta(years=2), relativedelta(years=2)+relativedelta(years=self.exceed_years)]
+        #steps = [relativedelta(days=7), relativedelta(days=14), relativedelta(days=28), relativedelta(months=3), relativedelta(months=6), 
+        #         relativedelta(years=1), relativedelta(years=2), relativedelta(years=2)+relativedelta(years=self.exceed_years)]
+        steps = [relativedelta(days=7), relativedelta(days=14), relativedelta(days=28),
+                 relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), 
+                 relativedelta(years=1), relativedelta(years=self.exceed_years)]
+
         step  = steps[self.filter_index]
         
         if self.filter_index<3:
@@ -112,7 +116,8 @@ class AccountPlot():
         else:
             start_date  = '{}-{}-{}'.format(str(start_date.year), str(start_date.month), '01')
             start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
-            xticklabels = [self.months[int(start_date.strftime('%Y-%m-%d')[5:7])-1]+' '+start_date.strftime('%Y-%m-%d')[0:4]]
+            #xticklabels = [self.months[int(start_date.strftime('%Y-%m-%d')[5:7])-1]+' '+start_date.strftime('%Y-%m-%d')[0:4]]
+            xticklabels = [self.months[int(start_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+start_date.strftime('%Y-%m-%d')[2:4]]
         xticks = [start_date]
         next_date = start_date - step
         while next_date>=end_date:
@@ -120,7 +125,8 @@ class AccountPlot():
             if self.filter_index<3:
                 xticklabels.append(str(int(next_date.strftime('%Y-%m-%d')[8:]))+' '+self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1])
             else:
-                xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+' '+next_date.strftime('%Y-%m-%d')[0:4])
+                #xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+' '+next_date.strftime('%Y-%m-%d')[0:4])
+                xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+next_date.strftime('%Y-%m-%d')[2:4])
             next_date = next_date - step
         return xticks, xticklabels
 

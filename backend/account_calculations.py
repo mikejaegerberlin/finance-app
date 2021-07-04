@@ -20,6 +20,11 @@ class Calculations():
             filter_year        = list(filter(lambda k: str(year) in k, dates))
             year_income        = 0
             year_expenditure   = 0
+            if not str(year) in self.accounts[acc]['Income'].keys():
+                self.accounts[acc]['Income'][str(year)] = {}
+                self.accounts[acc]['Expenditure'][str(year)] = {}
+                self.accounts[acc]['Profit'][str(year)] = {}
+
             for i in range(1,13):
                 month_income      = 0
                 month_expenditure = 0

@@ -8,29 +8,83 @@
     purposefield: purposefield
     datefield: datefield
     dialog_income_button: dialog_income_button
+    dialog_income_button_icon: dialog_income_button_icon
+    dialog_income_button_text: dialog_income_button_text
     dialog_expenditure_button: dialog_expenditure_button
+    dialog_expenditure_button_icon: dialog_expenditure_button_icon
+    dialog_expenditure_button_text: dialog_expenditure_button_text
+    dialog_transfer_button: dialog_expenditure_button
+    dialog_transfer_button_icon: dialog_transfer_button_icon
+    dialog_transfer_button_text: dialog_transfer_button_text
     
 
-    BoxLayout:
+    MDBoxLayout:
         orientation: 'horizontal'
-        MDRectangleFlatIconButton:
-            icon: "bank-plus"
-            text: "Income"
-            theme_text_color: "Custom"
+        size_hint_x: 1
+        size_hint_y: 1
+        MDCard:
+            size_hint_x: 0.333
             id: dialog_income_button
-            text_color: app.button_disable_onwhite_color
-            line_color: app.button_disable_onwhite_color
-            icon_color: app.button_disable_onwhite_color
             on_release: root.income_button_clicked()
-        MDRectangleFlatIconButton:
-            icon: "bank-minus"
-            text: "Expenditure"
-            theme_text_color: "Custom"
+            elevation: 0
+            MDBoxLayout:
+                orientation: "vertical"
+                MDIcon:
+                    id: dialog_income_button_icon
+                    icon: "bank-plus"
+                    theme_text_color: 'Custom'
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+                MDLabel:
+                    id: dialog_income_button_text
+                    text: "Income"
+                    theme_text_color: "Custom"
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+                    font_style: 'Caption'
+            
+        MDCard:
+            size_hint_x: 0.333
             id: dialog_expenditure_button
-            text_color: app.error_color
-            line_color: app.error_color
-            icon_color: app.error_color
             on_release: root.expenditure_button_clicked()
+            elevation: 0
+            MDBoxLayout:
+                orientation: "vertical"
+                MDIcon:
+                    id: dialog_expenditure_button_icon
+                    icon: "bank-minus"
+                    theme_text_color: 'Custom'
+                    color: app.error_color
+                    halign: 'center'
+                MDLabel:
+                    id: dialog_expenditure_button_text
+                    text: "Expenditure"
+                    theme_text_color: "Custom"
+                    color: app.error_color
+                    font_style: 'Caption'
+                    halign: 'center'
+
+        MDCard:
+            size_hint_x: 0.333
+            id: dialog_transfer_button
+            on_release: root.transfer_button_clicked()
+            elevation: 0
+            MDBoxLayout:
+                orientation: "vertical"
+                MDIcon:
+                    id: dialog_transfer_button_icon
+                    icon: "bank-transfer"
+                    theme_text_color: 'Custom'
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+                MDLabel:
+                    id: dialog_transfer_button_text
+                    text: "Transfer"
+                    theme_text_color: "Custom"
+                    font_style: 'Caption'
+                    color: app.button_disable_onwhite_color
+                    halign: 'center'
+
           
 
     MDTextField:
@@ -65,7 +119,7 @@
         line_color_focus: app.primary_color
         current_hint_text_color: app.primary_color
         text_color: app.primary_color
-        on_focus: if self.focus: root.focus_function()
+        on_focus: if self.focus: root.purposefield_function()
 
     MDBoxLayout:
         orientation: 'horizontal'

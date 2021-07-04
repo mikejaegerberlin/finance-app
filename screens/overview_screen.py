@@ -52,13 +52,61 @@ class MainScreen(Screen):
                         text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.add_value(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
                     ),
                 ],
             )
 
-    
-    def add_value(self, instance):  
+    def execute_money_transfer(self, instance):
+        if self.dialog_add_value.content_cls.ids.purposefield.hint_text == "Purpose":
+            self.add_value()
+        else:
+            self.transfer_value()
+
+    def transfer_value(self):
+        amount        = self.dialog_add_value.content_cls.ids.amountfield.text
+        account_from  = self.dialog_add_value.content_cls.ids.accountfield.text
+        account_to    = self.dialog_add_value.content_cls.ids.purposefield.text
+        date          = self.dialog_add_value.content_cls.ids.datefield.text
+        messagestring = ''
+        try:
+            amount = round(float(amount),2)
+        except:
+            messagestring += 'Amount field must be number. '
+        messagestring += 'Account field from is empty. ' if account_from=='' else ''
+        messagestring += 'Account field to is empty.' if account_to=='' else ''   
+        messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
+        if messagestring!='':
+            message = Snackbar(text=messagestring)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.dialog_add_value.dismiss()
+            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to))
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+            self.dialog_add_value.content_cls.ids.amountfield.text  = ''
+            self.dialog_add_value.content_cls.ids.accountfield.text = ''
+            self.dialog_add_value.content_cls.ids.purposefield.text = ''
+            self.dialog_add_value.content_cls.ids.datefield.text = data.today_str
+            
+            #insert transfer into transfers_list and update account status
+            if date in data.accounts[account_to]['Transfers'].keys():
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
+            else:
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
+            if date in data.accounts[account_from]['Transfers'].keys():
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
+            else:
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
+
+            data.fill_status_of_account(account_to)
+            data.fill_status_of_account(account_from)
+            data.save_accounts()
+
+    def add_value(self):  
         self.dialog_add_value.content_cls.focus_function()
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
         account       = self.dialog_add_value.content_cls.ids.accountfield.text
