@@ -32,11 +32,27 @@ class AddValueDialogContent(MDBoxLayout):
                 "on_release": lambda x=acc: self.set_acc_item(x),
             } for acc in data.accounts
         ]
+
+        self.cat_menu_items = [
+            {
+                "text": cat,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=cat: self.set_cat_item(x),
+            } for cat in data.categories
+        ]
         self.acc_dropdown = MDDropdownMenu(
             caller=self.ids.accountfield,
             items=self.acc_menu_items,
             position="bottom",
             width_mult=4,
+        )
+
+        self.cat_dropdown = MDDropdownMenu(
+            caller=self.ids.categoryfield,
+            items=self.cat_menu_items,
+            position="bottom",
+            width_mult=4
         )
 
         self.dialog_date = MDDatePicker(primary_color=Colors.primary_color, selector_color=Colors.primary_color, 
@@ -66,10 +82,25 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.focus     = False
         self.ids.amountfield.focus      = False
 
+    def open_cat_dropdown(self, categoryfield):
+        categoryfield.hide_keyboard()
+        self.cat_dropdown.caller = categoryfield
+        self.cat_dropdown.open()
+        self.ids.purposefield.focus     = False
+        self.ids.amountfield.focus      = False
+
     def set_acc_item(self, text_item):
         self.acc_dropdown.caller.text = text_item
         self.acc_dropdown.dismiss()
         self.acc_dropdown.caller.focus = False
+        self.ids.accountfield.focus = False
+        if self.ids.categoryfield.text != 'Transfer':
+            self.focus_function()
+
+    def set_cat_item(self, text_item):
+        self.cat_dropdown.caller.text = text_item
+        self.cat_dropdown.dismiss()
+        self.cat_dropdown.caller.focus = False
         self.focus_function()
 
     def purposefield_function(self):
@@ -89,6 +120,8 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.hint_text = "Purpose"
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
+        self.ids.categoryfield.text = ''
+        self.ids.categoryfield.disabled = False
 
         if self.ids.dialog_income_button_icon.color[1] == 0:
             self.ids.dialog_income_button_icon.color = Colors.green_color
@@ -109,6 +142,8 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.hint_text = "Purpose"
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
+        self.ids.categoryfield.text = ''
+        self.ids.categoryfield.disabled = False
 
         if self.ids.dialog_expenditure_button_icon.color[0] == 0:
             self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
@@ -125,11 +160,14 @@ class AddValueDialogContent(MDBoxLayout):
                 pass      
 
     def transfer_button_clicked(self):
+        self.ids.amountfield.text = ''
         self.ids.accountfield.hint_text = "Account (from)"
         self.ids.purposefield.text = ""
         self.ids.purposefield.hint_text = "Account (to)"
         self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
         self.ids.purposefield.keyboard_mode = 'managed'
+        self.ids.categoryfield.text = 'Transfer'
+        self.ids.categoryfield.disabled = True
 
         if self.ids.dialog_transfer_button_icon.color[0] == 0:
             self.ids.dialog_transfer_button_icon.color = Colors.primary_color

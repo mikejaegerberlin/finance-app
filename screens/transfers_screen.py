@@ -216,17 +216,19 @@ class TransfersScreen(Screen):
         card.add_widget(contentbox)
         return card
 
-    def generate_transfer_carditem(self, date, purpose, amount, cardnumber):
+    def generate_transfer_carditem(self, date, category, purpose, amount, cardnumber):
         if cardnumber==len(CardItemsBackend.cards_transferitem):
             CardItemsBackend.generate_carditems(1)
         card              = CardItemsBackend.cards_transferitem[cardnumber][0]
         box               = CardItemsBackend.cards_transferitem[cardnumber][1]
         datelabel         = CardItemsBackend.cards_transferitem[cardnumber][2]
-        purposelabel      = CardItemsBackend.cards_transferitem[cardnumber][3]
-        amountlabel       = CardItemsBackend.cards_transferitem[cardnumber][4]
+        catlabel          = CardItemsBackend.cards_transferitem[cardnumber][3]
+        purposelabel      = CardItemsBackend.cards_transferitem[cardnumber][4]
+        amountlabel       = CardItemsBackend.cards_transferitem[cardnumber][5]
         box.md_bg_color   = Colors.bg_color
         datelabel.text    = date
         purposelabel.text = purpose
+        catlabel.text     = category
         amountlabel.text  = str(amount)+' €'
         amountlabel.color = Colors.error_color if amount<0 else Colors.green_color
         card.on_release   = lambda x=box: self.open_transfer_dropdown(card, box, datelabel, purposelabel, amountlabel)
@@ -262,8 +264,9 @@ class TransfersScreen(Screen):
                     self.ids.transfers_list.add_widget(card)
 
                 for transfer in data.accounts[account]['Transfers'][date]:
-                    purpose = transfer[1]
-                    amount  = transfer[0]
-                    card = self.generate_transfer_carditem(date, purpose, amount, transfer_cards)
+                    category = transfer[2]
+                    purpose  = transfer[1]
+                    amount   = transfer[0]
+                    card = self.generate_transfer_carditem(date, category, purpose, amount, transfer_cards)
                     self.ids.transfers_list.add_widget(card)
                     transfer_cards += 1

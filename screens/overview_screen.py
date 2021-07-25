@@ -31,6 +31,7 @@ from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
 from kivymd.uix.picker import MDDatePicker
 from backend.colors import Colors
 from backend.totalplot import TotalPlot
+from backend.piechart import PieChart
 from backend.demo_setup import DemoData as data
 from backend.settings import Sizes
 from backend.carditems import CardItemsBackend
@@ -94,13 +95,13 @@ class MainScreen(Screen):
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account_to]['Transfers'].keys():
-                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
             else:
-                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']]
             if date in data.accounts[account_from]['Transfers'].keys():
-                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
             else:
-                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']] 
 
             data.fill_status_of_account(account_to)
             data.fill_status_of_account(account_from)
@@ -111,6 +112,7 @@ class MainScreen(Screen):
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
         account       = self.dialog_add_value.content_cls.ids.accountfield.text
         purpose       = self.dialog_add_value.content_cls.ids.purposefield.text
+        category      = self.dialog_add_value.content_cls.ids.categoryfield.text
         date          = self.dialog_add_value.content_cls.ids.datefield.text
         messagestring = ''
         try:
@@ -118,7 +120,8 @@ class MainScreen(Screen):
         except:
             messagestring += 'Amount field must be number. '
         messagestring += 'Account field is empty. ' if account=='' else ''
-        messagestring += 'Purpose field is empty.' if purpose=='' else ''   
+        messagestring += 'Purpose field is empty.' if purpose=='' else ''
+        messagestring += 'Category field is empty.' if category=='' else ''    
         if messagestring!='':
             message = Snackbar(text=messagestring)
             message.bg_color=Colors.black_color
@@ -133,14 +136,15 @@ class MainScreen(Screen):
             self.dialog_add_value.content_cls.ids.amountfield.text  = ''
             self.dialog_add_value.content_cls.ids.accountfield.text = ''
             self.dialog_add_value.content_cls.ids.purposefield.text = ''
+            self.dialog_add_value.content_cls.ids.categoryfield.text = ''
             self.dialog_add_value.content_cls.ids.datefield.text = data.today_str
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account]['Transfers'].keys():
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             else:
                 data.accounts[account]['Transfers'][date] = []
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             data.fill_status_of_account(account)
             data.fill_total_status()
             self.update_plot()
@@ -164,7 +168,7 @@ class MainScreen(Screen):
         #canvas    = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=False)
         #canvas.size_hint_y = 0.75
         #canvas.pos_hint = {'top': 0.98}
-
+        
         canvas2 = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=True)
         canvas2.size_hint_y = 0.98
         canvas2.pos_hint = {'top': 0.98}
@@ -173,6 +177,50 @@ class MainScreen(Screen):
         self.ids.assetview.clear_widgets()
         #self.ids.assetview.add_widget(canvas)
         self.ids.assetview.add_widget(canvas2)
+
+        piecanvas = PieChart.make_plot(data.categories)
+        piecanvas.size_hint_y = 1
+        piecanvas.size_hint_x = 0.75
+        piecanvas.pos_hint = {'top': 1, 'right': 1}
+        self.ids.piechartview.add_widget(piecanvas)
+
+        legendbox = MDBoxLayout(orientation='vertical', size_hint_x = 0.4, size_hint_y = 0.98)
+        for i, label in enumerate(data.categories):
+            subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
+            rectangle = MDIcon(icon='card', theme_text_color='Custom')
+            rectangle.color = Colors.piechart_colors[i]
+            rectangle.halign = 'right'
+            rectangle.size_hint_x = 0.25
+            label1 = MDLabel(text=label, font_style='Caption')
+            label1.color = Colors.text_color
+            label1.halign = 'left'
+            label1.size_hint_x = 0.75
+            subbox.add_widget(rectangle)
+            subbox.add_widget(label1)
+            legendbox.add_widget(subbox)
+
+            subbox2 = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
+            total = round(data.categories[label]/data.categories_total*100, 1)
+            label2 = MDLabel(text='')
+            label2.color = Colors.text_color
+            label2.halign = 'right'
+            label2.size_hint_x = 0.25
+            label3 = MDLabel(text=str(round(data.categories[label],2))+'€ = '+str(total)+'%', font_style='Caption')
+            label3.color = Colors.text_color
+            label3.halign = 'left'
+            label3.size_hint_x = 0.75
+            subbox2.add_widget(label2)
+            subbox2.add_widget(label3)
+            legendbox.add_widget(subbox2)
+            
+        self.ids.piechartview.add_widget(legendbox)
+        legendbox.pos_hint = {'top': 1, 'left': 0.85}
+
+
+       
+        #self.ids.piechartview.clear_widgets()
+        #self.ids.piechartview.add_widget(canvas3)
+
         #label = MDLabel(text='Total status (monthly)', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
         #label.color = Colors.text_color
         #self.ids.assetview.add_widget(label)
@@ -185,9 +233,11 @@ class MainScreen(Screen):
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
 
+        
+
     def add_things_to_screen(self):
        
-        self.ids.month_label.text = 'Status '+self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)
+        self.ids.month_label.text = 'Profit '+self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)
         profit = round(TotalPlot.profits_date[self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)], 2)
 
         self.ids.status_month_label.text = str(profit)+' €'

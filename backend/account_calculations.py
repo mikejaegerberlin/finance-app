@@ -148,9 +148,9 @@ class Calculations():
 
                         #add standingorder to transfers
                         if not date_str in self.accounts[acc]['Transfers'].keys():
-                            self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose']]]
+                            self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']]]
                         else:
-                            self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
+                            self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category']])
                         order['MonthListed'] = True
 
     def add_order_in_transfers(self, order):
@@ -170,6 +170,27 @@ class Calculations():
                 if date.month==self.today_date.month and date.year==self.today_date.year:
                     order['MonthListed'] = True
 
+    def filter_categories_within_dates(self, start_date, end_date):
+        self.categories = {}
+        for acc in self.accounts:
+            dates = list(self.accounts[acc]['Transfers'].keys())
+            dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
+            for date in dates:
+                if datetime.strptime(date, '%Y-%m-%d').date()>=start_date and datetime.strptime(date, '%Y-%m-%d').date()<=end_date:
+                    for transfer in self.accounts[acc]['Transfers'][date]:
+                        if transfer[0]<0:
+                            category = transfer[2]
+                            amount   = transfer[0]
+                            if not category in self.categories.keys():
+                                self.categories[category] = amount
+                            else:
+                                self.categories[category] += amount
+
+        self.categories_total = 0
+        for cat in self.categories:
+            self.categories_total += self.categories[cat]
+
+        
 
                         
     def calculate_end_month_status(self, acc):
@@ -191,9 +212,9 @@ class Calculations():
 
                 #add standingorder to transfers
                 if not date_str in self.accounts[acc]['Transfers'].keys():
-                    self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose']]]
+                    self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']]]
                 else:
-                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose']])
+                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category']])
                 if date.month==self.today_date.month and date.year==self.today_date.year:
                     order['MonthListed'] = True
 

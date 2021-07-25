@@ -194,23 +194,27 @@ class AccountsScreen(Screen):
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account_to]['Transfers'].keys():
-                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to)])
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
             else:
-                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to)]]
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']]
             if date in data.accounts[account_from]['Transfers'].keys():
-                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to)])
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
             else:
-                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to)]] 
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']] 
 
             data.fill_status_of_account(account_to)
             data.fill_status_of_account(account_from)
             data.save_accounts()
-
+            self.update_main_accountview(account_to)
+            self.update_main_accountview(account_from)
+            self.update_plot()
+    
     def add_value(self):  
         self.dialog_add_value.content_cls.focus_function()
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
         account       = self.dialog_add_value.content_cls.ids.accountfield.text
         purpose       = self.dialog_add_value.content_cls.ids.purposefield.text
+        category      = self.dialog_add_value.content_cls.ids.categoryfield.text
         date          = self.dialog_add_value.content_cls.ids.datefield.text
         messagestring = ''
         try:
@@ -218,7 +222,8 @@ class AccountsScreen(Screen):
         except:
             messagestring += 'Amount field must be number. '
         messagestring += 'Account field is empty. ' if account=='' else ''
-        messagestring += 'Purpose field is empty.' if purpose=='' else ''   
+        messagestring += 'Purpose field is empty.' if purpose=='' else ''  
+        messagestring += 'Category field is empty.' if category=='' else '' 
         if messagestring!='':
             message = Snackbar(text=messagestring)
             message.bg_color=Colors.black_color
@@ -233,14 +238,15 @@ class AccountsScreen(Screen):
             self.dialog_add_value.content_cls.ids.amountfield.text  = ''
             self.dialog_add_value.content_cls.ids.accountfield.text = ''
             self.dialog_add_value.content_cls.ids.purposefield.text = ''
+            self.dialog_add_value.content_cls.ids.categoryfield.text = ''
             self.dialog_add_value.content_cls.ids.datefield.text = data.today_str
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account]['Transfers'].keys():
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             else:
                 data.accounts[account]['Transfers'][date] = []
-                data.accounts[account]['Transfers'][date].append([amount, purpose])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             data.fill_status_of_account(account)
             self.update_main_accountview(account)
             self.update_plot()

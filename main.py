@@ -85,6 +85,7 @@ class DemoApp(MDApp):
         data.fill_total_status()          
         data.save_accounts()
         data.save_standingorders()
+        data.filter_categories_within_dates(datetime.strptime('2021-07-01', '%Y-%m-%d').date() ,data.today_date)    
 
         self.screen = Builder.load_file("main.kv")
         
@@ -93,7 +94,8 @@ class DemoApp(MDApp):
         self.on_kv_post_AccountsScreen()
         self.on_kv_post_StandingOrdersScreen()
         self.on_kv_post_CategoriesScreen()
-        
+
+          
 
     def on_kv_post_MainScreen(self):
         self.screen.ids.main.update_plot()

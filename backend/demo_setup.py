@@ -23,13 +23,14 @@ class DemoData(Calculations):
         self.current_month   = int(self.today_date.month)
         self.current_year    = int(self.today_date.year)
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.categories      = ['Freizeit', 'Musik', 'Möbel', 'Miete', 'Essen&Trinken', 'Reisen', 'Versicherung', 'Gehalt', 'Bekleidung']
         self.accounts        = {}
         self.standingorders  = {}
         self.total = {}
-        #self.create_new_setup() 
-        #self.save_accounts()
-        #self.save_standingorders()
-        self.load_setup()       
+        self.create_new_setup() 
+        self.save_accounts()
+        self.save_standingorders()
+        #self.load_setup()       
 
     def load_setup(self):
         with open('accounts.json', 'r') as infile:
@@ -44,9 +45,9 @@ class DemoData(Calculations):
     def create_new_setup(self):
         
         accounts_list = ['DKB', 'ING', 'Cash']
-        Purposes      = ['Eat & Drink', 'Culture', 'Miete', 'Anschaffung', 'Musik', 
-                         'Schuhe', 'Möbel', 'Restaurant', 'Eis', 'Cocktail', 'Flug', 
-                        'Ticket', 'Gitarre', 'Bier']
+        Purposes      = ['Wohnung', 'Proberaum', 'Schuhe', 'Schrank', 'Vedis', 'Eis', 'Cocktails', 'B-DD', 
+                        'Looperboard', 'Gitarre', 'Bier']
+        
         years         = [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
         #years         = [2019, 2020, 2021]
         #initialize dictionaries
@@ -62,7 +63,8 @@ class DemoData(Calculations):
                 month     = random.randint(1,12)
                 day       = random.randint(1,28)
                 amount    = round(float(random.randint(-100,100)) + round(random.random(),2),2)
-                purpose   = Purposes[random.randint(0,13)]
+                purpose   = Purposes[random.randint(0,10)]
+                category  = self.categories[random.randint(0,8)]
 
                 month_str = '0'+str(month) if month<10 else str(month)
                 day_str   = '0'+str(day) if day<10 else str(day)
@@ -70,9 +72,9 @@ class DemoData(Calculations):
 
                 if not datetime.strptime(date, '%Y-%m-%d').date()>self.today_date:
                     if date in self.accounts[acc]['Transfers'].keys():
-                        self.accounts[acc]['Transfers'][date].append([amount, purpose])
+                        self.accounts[acc]['Transfers'][date].append([amount, purpose, category])
                     else:
-                        self.accounts[acc]['Transfers'][date] = [[amount, purpose]]
+                        self.accounts[acc]['Transfers'][date] = [[amount, purpose, category]]
         
             dates = list(self.accounts[acc]['Transfers'].keys())
             
@@ -109,7 +111,7 @@ class DemoData(Calculations):
                 self.accounts[acc]['Profit'][year]['Total']      = year_income + year_expenditure
 
         
-        keys = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount', 'MonthListed']
+        keys = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount', 'Category', 'MonthListed']
         self.standingorders['Orders'] = {}
         for i in range(10):
             i = str(i)
@@ -119,11 +121,13 @@ class DemoData(Calculations):
             self.standingorders['Orders'][i][keys[2]] = self.months[random.randint(0,11)] + '\n' + str(random.randint(2022,2025))
             day       = random.randint(1,5)
             amount    = round(float(random.randint(-200,200)) + round(random.random(),2),2)
-            purpose   = Purposes[random.randint(0,13)] 
+            purpose   = Purposes[random.randint(0,10)] 
+            category  = self.categories[random.randint(0,8)]
             self.standingorders['Orders'][i][keys[3]] = str(day)+'.'
             self.standingorders['Orders'][i][keys[4]] = purpose
             self.standingorders['Orders'][i][keys[5]] = amount
-            self.standingorders['Orders'][i][keys[6]] = False
+            self.standingorders['Orders'][i][keys[6]] = category
+            self.standingorders['Orders'][i][keys[7]] = False
         self.standingorders['Reset date']   = self.today_str
         
         for acc in self.accounts:

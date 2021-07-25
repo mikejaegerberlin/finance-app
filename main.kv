@@ -32,6 +32,7 @@ ScreenManager:
     name: 'Main'
     
     assetview: assetview
+    piechartview: piechartview
     floating_button: floating_button
     main_content: main_content
     
@@ -119,7 +120,7 @@ ScreenManager:
 
         MDCard:
             md_bg_color: app.bg_color
-            size_hint_y: 0.4
+            size_hint_y: 0.35
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
@@ -140,7 +141,7 @@ ScreenManager:
                     id: month_label
                     theme_text_color: 'Custom'
                     color: app.text_color
-                    font_style: 'Button'
+                    font_style: 'H6'
                     halign: 'center'
                     size_hint_x: 0.7
                 MDLabel:
@@ -151,6 +152,23 @@ ScreenManager:
                     size_hint_x: 0.3
             MDBoxLayout:
                 size_hint_x: 0.1
+
+        MDCard:
+            md_bg_color: app.bg_color
+            size_hint_y: 0.35
+
+            MDFloatLayout:
+                size: root.width, root.height
+                md_bg_color: app.bg_color
+                id: piechartview
+
+            
+
+    
+                
+        
+        
+        
 
     MDBoxLayout:
         size_hint_y: 0.075
