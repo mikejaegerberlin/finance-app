@@ -268,7 +268,7 @@ class AccountsScreen(Screen):
         canvas.pos_hint = {'top': 1}
         self.ids.assetview.clear_widgets()
         self.ids.assetview.add_widget(canvas)
-        label = MDLabel(text='Trend of each account', font_style='Button', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
+        label = MDLabel(text='Trend of each account', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
 

@@ -181,6 +181,10 @@ class MainScreen(Screen):
         #label2.color = Colors.text_color
         #self.ids.assetview.add_widget(label2)
        
+        label = MDLabel(text='Monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
+        label.color = Colors.text_color
+        self.ids.assetview.add_widget(label)
+
     def add_things_to_screen(self):
        
         self.ids.month_label.text = 'Status '+self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)

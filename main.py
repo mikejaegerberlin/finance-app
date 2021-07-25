@@ -92,6 +92,7 @@ class DemoApp(MDApp):
         self.on_kv_post_MainScreen()
         self.on_kv_post_AccountsScreen()
         self.on_kv_post_StandingOrdersScreen()
+        self.on_kv_post_CategoriesScreen()
         
 
     def on_kv_post_MainScreen(self):
@@ -106,6 +107,11 @@ class DemoApp(MDApp):
         self.screen.ids.standingorders_screen.create_screen()
         ID = self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.ids.accountfield
         self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.acc_dropdown.caller = ID
+
+    def on_kv_post_CategoriesScreen(self):
+        self.screen.ids.categories_screen.create_screen()
+        #ID = self.screen.ids.categories_screen.dialog_add_standingorder.content_cls.ids.accountfield
+        #self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.acc_dropdown.caller = ID
         
     def go_to_accounts(self):
         self.screen.ids.main.manager.transition = FadeTransition()
