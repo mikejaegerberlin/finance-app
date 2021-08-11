@@ -20,6 +20,9 @@ class DemoData(Calculations):
         self.current_account = ''
         self.today_str       = datetime.today().strftime('%Y-%m-%d')
         self.today_date      = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
+        month                = '0'+str(self.today_date.month) if self.today_date.month<10 else str(self.today_date.month)
+        year                 = str(self.today_date.year)
+        self.first_of_month_date = datetime.strptime('{}-{}-01'.format(year, month), '%Y-%m-%d').date() 
         self.current_month   = int(self.today_date.month)
         self.current_year    = int(self.today_date.year)
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']

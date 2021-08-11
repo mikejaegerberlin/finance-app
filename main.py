@@ -85,7 +85,7 @@ class DemoApp(MDApp):
         data.fill_total_status()          
         data.save_accounts()
         data.save_standingorders()
-        data.filter_categories_within_dates(datetime.strptime('2021-07-01', '%Y-%m-%d').date() ,data.today_date)    
+        data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
 
         self.screen = Builder.load_file("main.kv")
         
@@ -104,6 +104,7 @@ class DemoApp(MDApp):
     def on_kv_post_AccountsScreen(self):
         self.screen.ids.accounts_screen.update_plot()
         self.screen.ids.accounts_screen.add_account_status_to_mainscreen()
+        self.screen.ids.accounts_screen.initialize_dialogs()
 
     def on_kv_post_StandingOrdersScreen(self):
         self.screen.ids.standingorders_screen.create_screen()

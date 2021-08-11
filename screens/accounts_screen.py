@@ -45,7 +45,7 @@ class AccountsScreen(Screen):
     def __init__(self, **kwargs):
         super(AccountsScreen, self).__init__(**kwargs)
 
-    def on_enter(self):
+    def initialize_dialogs(self):
         self.dialog_add_value = MDDialog(
                 type="custom",
                 content_cls=AddValueDialogContent(),
@@ -99,7 +99,7 @@ class AccountsScreen(Screen):
         for key in data.keys_list:
             data.accounts[account][key] = {}
         data.accounts[account]['Transfers'][date] = []
-        data.accounts[account]['Transfers'][date].append([amount, 'Start amount'])
+        data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
         data.fill_status_of_account(account)
         self.ids.accountsview.clear_widgets()
         self.AmountLabels = {}
@@ -248,9 +248,10 @@ class AccountsScreen(Screen):
                 data.accounts[account]['Transfers'][date] = []
                 data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             data.fill_status_of_account(account)
+            data.fill_total_status()
+            data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
             self.update_main_accountview(account)
             self.update_plot()
-            data.fill_total_status()
             self.app.screen.ids.main.update_plot()
             self.app.screen.ids.main.add_things_to_screen()
             data.save_accounts()

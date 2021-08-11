@@ -23,7 +23,7 @@ class PieChart():
             labels.append(label)
             values.append(-categories[label])
             colors.append(Colors.piechart_colors[i])
-        print (categories)
+      
         self.fig.patch.set_facecolor(Colors.bg_color_hex)
         piechart = self.ax.pie(values, labels = labels, autopct='%1.1f%%', startangle=15, shadow = True, colors=colors)
         self.ax.axis('equal')

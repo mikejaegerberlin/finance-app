@@ -1,7 +1,11 @@
 <CategoriesScreen>:
     name: 'Categories'
-    standing_orders_list: standing_orders_list
-    standingorder_header: standingorder_header
+    categoryview: categoryview
+    oneyear_button: oneyear_button
+    threeyears_button: threeyears_button
+    fiveyears_button: fiveyears_button
+    tenyears_button: tenyears_button
+    all_button: all_button
     
     MDFloatLayout:
         md_bg_color: app.bg_color
@@ -11,37 +15,80 @@
         MDToolbar:
             title: 'Categories'
             md_bg_color: app.primary_color
-            right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_standingorder.open()]]
+            right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_category.open()]]
             specific_text_color: app.text_color
                     
         MDBoxLayout:
             size_hint_y: 0.01
 
         MDBoxLayout:
-            size_hint_y: 0.048
+            size_hint_y: 0.03
+            size_hint_x: 1
+            id: account_tabs
             orientation: 'horizontal'
-            MDBoxLayout:
-                size_hint_x: 0.01
-            MDBoxLayout:
-                id: standingorder_header
-                orientation: 'horizontal'
-                size_hint_y: 1
-                size_hint_x: 0.98
-            MDBoxLayout:
-                size_hint_x: 0.01
+            
+           
 
-        MDBoxLayout:
-            size_hint_y: 0.8
-            orientation: 'horizontal'
-            MDBoxLayout:
-                size_hint_x: 0.01
-            ScrollView:   
+            MDFillRoundFlatButton:
+                id: oneyear_button
+                text: '1Y'
                 size_hint_y: 1
-                size_hint_x: 0.98
-                MDList:
-                    id: standing_orders_list
-            MDBoxLayout:
-                size_hint_x: 0.01
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.bg_color
+                md_bg_color: app.text_color
+                on_release: root.button_clicked(oneyear_button)
+
+            MDFillRoundFlatButton:
+                id: threeyears_button
+                text: '3Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(threeyears_button)
+
+            MDFillRoundFlatButton:
+                id: fiveyears_button
+                text: '5Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(fiveyears_button)
+
+            MDFillRoundFlatButton:
+                id: tenyears_button
+                text: '10Y'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(tenyears_button)
+
+            MDFillRoundFlatButton:
+                id: all_button
+                text: 'All'
+                size_hint_y: 1
+                size_hint_x: 0.125
+                font_style: 'Button'
+                text_color: app.text_color
+                md_bg_color: app.bg_color
+                on_release: root.button_clicked(all_button)
+
+        MDCard:
+            md_bg_color: app.bg_color
+            size_hint_y: 0.4
+            MDFloatLayout:
+                size: root.width, root.height
+                md_bg_color: app.bg_color
+                id: categoryview
+        MDBoxLayout:
+            size_hint_y: 0.1
+
 
     MDBoxLayout:
         size_hint_y: 0.075

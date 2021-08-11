@@ -171,27 +171,36 @@ class Calculations():
                     order['MonthListed'] = True
 
     def filter_categories_within_dates(self, start_date, end_date):
-        self.categories = {}
+        self.categories_amounts = {}
         for acc in self.accounts:
             dates = list(self.accounts[acc]['Transfers'].keys())
             dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
             for date in dates:
                 if datetime.strptime(date, '%Y-%m-%d').date()>=start_date and datetime.strptime(date, '%Y-%m-%d').date()<=end_date:
                     for transfer in self.accounts[acc]['Transfers'][date]:
-                        if transfer[0]<0:
-                            category = transfer[2]
-                            amount   = transfer[0]
-                            if not category in self.categories.keys():
-                                self.categories[category] = amount
-                            else:
-                                self.categories[category] += amount
+                        category = transfer[2]
+                        amount   = transfer[0]
+                        if not category in self.categories_amounts.keys():
+                            self.categories_amounts[category] = amount
+                        else:
+                            self.categories_amounts[category] += amount
 
         self.categories_total = 0
-        for cat in self.categories:
-            self.categories_total += self.categories[cat]
+        for cat in self.categories_amounts:
+            self.categories_total += self.categories_amounts[cat]
 
+        self.categories_amounts = dict(sorted(self.categories_amounts.items(), key=lambda item: item[1]))
         
+        to_delete = []
+        for cat in self.categories_amounts:
+            if self.categories_amounts[cat]>=0:
+                to_delete.append(cat)
+        for key in to_delete:
+            del self.categories_amounts[key]
 
+        self.categories_total = 0
+        for cat in self.categories_amounts:
+            self.categories_total += self.categories_amounts[cat]
                         
     def calculate_end_month_status(self, acc):
         pass

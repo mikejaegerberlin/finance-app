@@ -147,9 +147,11 @@ class MainScreen(Screen):
                 data.accounts[account]['Transfers'][date].append([amount, purpose, category])
             data.fill_status_of_account(account)
             data.fill_total_status()
+            data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
             self.update_plot()
             self.add_things_to_screen()
             data.save_accounts()
+            
         
         
     def button_clicked(self, instance):
@@ -178,14 +180,14 @@ class MainScreen(Screen):
         #self.ids.assetview.add_widget(canvas)
         self.ids.assetview.add_widget(canvas2)
 
-        piecanvas = PieChart.make_plot(data.categories)
+        piecanvas = PieChart.make_plot(data.categories_amounts)
         piecanvas.size_hint_y = 1
         piecanvas.size_hint_x = 0.75
         piecanvas.pos_hint = {'top': 1, 'right': 1}
         self.ids.piechartview.add_widget(piecanvas)
 
         legendbox = MDBoxLayout(orientation='vertical', size_hint_x = 0.4, size_hint_y = 0.98)
-        for i, label in enumerate(data.categories):
+        for i, label in enumerate(data.categories_amounts):
             subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
             rectangle = MDIcon(icon='card', theme_text_color='Custom')
             rectangle.color = Colors.piechart_colors[i]
@@ -200,21 +202,21 @@ class MainScreen(Screen):
             legendbox.add_widget(subbox)
 
             subbox2 = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
-            total = round(data.categories[label]/data.categories_total*100, 1)
+            total = round(data.categories_amounts[label]/data.categories_total*100, 1)
             label2 = MDLabel(text='')
             label2.color = Colors.text_color
             label2.halign = 'right'
             label2.size_hint_x = 0.25
-            label3 = MDLabel(text=str(round(data.categories[label],2))+'€ = '+str(total)+'%', font_style='Caption')
+            label3 = MDLabel(text=str(round(data.categories_amounts[label],2))+'€ = '+str(total)+'%', font_style='Caption')
             label3.color = Colors.text_color
             label3.halign = 'left'
             label3.size_hint_x = 0.75
             subbox2.add_widget(label2)
             subbox2.add_widget(label3)
             legendbox.add_widget(subbox2)
-            
+
         self.ids.piechartview.add_widget(legendbox)
-        legendbox.pos_hint = {'top': 1, 'left': 0.85}
+        legendbox.pos_hint = {'top': 1, 'left': 0.4}
 
 
        

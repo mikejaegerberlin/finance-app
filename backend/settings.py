@@ -8,7 +8,7 @@ class Sizes():
         settings = {}
         settings['Labelsize'] = 12
         settings['Titlesize'] = 20
-        settings['Linewidth'] = 5
+        settings['Linewidth'] = 3
         settings['Markersize'] = 2
 
         with open('settings.json', 'w') as qt:
