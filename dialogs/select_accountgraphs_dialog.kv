@@ -1,0 +1,24 @@
+<ListItemWithCheckbox>:
+    iconleft: iconleft
+    checkboxright: checkboxright
+    IconLeftWidget:
+        icon: root.icon
+        id: iconleft
+
+    RightCheckbox:
+        id: checkboxright
+
+
+<GraphSelectionDialogContent>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "200dp"
+
+    confirm_list: confirm_list
+
+    ScrollView:
+        MDList:
+            id: confirm_list
+    
+    

@@ -21,12 +21,13 @@ class Colors(object):
 
         self.piechart_colors   = []#(1,0,0,0.7), (252/255, 186/255, 3/255, 1), (255/255, 251/255, 38/255, 1), (0/255, 7/255, 143/255, 1), (4/255, 237/255, 0/255, 1),
                                   #(166/255, 0/255, 237/255, 1), (143/255, 75/255, 7/255, 1)]
-                            
+        self.piechart_colors_hex = []                
         for i in range(50):
-            c1 = random.randint(10,255)
-            c2 = random.randint(10,255)
-            c3 = random.randint(10,255)
+            c1 = random.randint(50,255)
+            c2 = random.randint(50,255)
+            c3 = random.randint(50,255)
             self.piechart_colors.append((c1/255, c2/255, c3/255, 1))
+            self.piechart_colors_hex.append(str(matplotlib.colors.to_hex([c1/255, c2/255, c3/255, 1], keep_alpha=True)))
 
         self.matplotlib_colors = ['r', 'b', 'g', 'r', 'b', 'g', 'r', 'b', 'g']
         self.matplotlib_rgba   = [(1, 0, 0, 0.7), (0, 0, 1, 0.7), (0, 180/255, 0, 1), (1, 0, 0, 0.7), (0, 0, 1, 0.7), (0, 180/255, 0, 1), (1, 0, 0, 0.7), (0, 0, 1, 0.7), (0, 180/255, 0, 1)]

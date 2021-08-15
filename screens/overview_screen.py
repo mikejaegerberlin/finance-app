@@ -181,12 +181,14 @@ class MainScreen(Screen):
         self.ids.assetview.add_widget(canvas2)
 
         piecanvas = PieChart.make_plot(data.categories_amounts)
-        piecanvas.size_hint_y = 1
-        piecanvas.size_hint_x = 0.75
+        piecanvas.size_hint_y = 0.95
+        piecanvas.size_hint_x = 0.7
         piecanvas.pos_hint = {'top': 1, 'right': 1}
         self.ids.piechartview.add_widget(piecanvas)
 
-        legendbox = MDBoxLayout(orientation='vertical', size_hint_x = 0.4, size_hint_y = 0.98)
+        legendbox = MDBoxLayout(orientation='vertical')
+        legendbox.size_hint_x = 0.35
+        legendbox.size_hint_y = 1
         for i, label in enumerate(data.categories_amounts):
             subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
             rectangle = MDIcon(icon='card', theme_text_color='Custom')
@@ -214,9 +216,9 @@ class MainScreen(Screen):
             subbox2.add_widget(label2)
             subbox2.add_widget(label3)
             legendbox.add_widget(subbox2)
-
+        legendbox.pos_hint = {'top': 1, 'right': 0.42}
         self.ids.piechartview.add_widget(legendbox)
-        legendbox.pos_hint = {'top': 1, 'left': 0.4}
+        
 
 
        

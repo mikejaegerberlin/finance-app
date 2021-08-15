@@ -38,8 +38,11 @@ from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from dialogs.add_value_dialog import AddValueDialogContent
+from dialogs.select_accountgraphs_dialog import GraphSelectionDialogContent
 from screens.transfers_screen import TransfersScreen
 from kivy.uix.screenmanager import SlideTransition
+from backend.settings import ScreenSettings
+
 
 class AccountsScreen(Screen):
     def __init__(self, **kwargs):
@@ -72,6 +75,25 @@ class AccountsScreen(Screen):
                 ],
             )
 
+        self.dialog_graph_selection = MDDialog(
+                type="custom",
+                content_cls=GraphSelectionDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_graph_selection.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_graph_selection(x)
+                    ),
+                ],
+            )
+
+    def execute_graph_selection(self, instance):
+        self.dialog_graph_selection.dismiss()
+        self.update_plot()
+        for acc in data.accounts:
+            self.update_main_accountview(acc)
+        ScreenSettings.save()
 
     def on_pre_enter(self):
         for acc in data.accounts:
@@ -103,8 +125,9 @@ class AccountsScreen(Screen):
         data.fill_status_of_account(account)
         self.ids.accountsview.clear_widgets()
         self.AmountLabels = {}
+        self.IconBoxes = {}
         for i, acc in enumerate(data.accounts):
-            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
+            carditem = self.generate_main_carditem(acc, i)
             self.ids.accountsview.add_widget(carditem)
             self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
@@ -129,8 +152,9 @@ class AccountsScreen(Screen):
         del data.accounts[account]
         self.ids.accountsview.clear_widgets()
         self.AmountLabels = {}
+        self.IconBoxes = {}
         for i, acc in enumerate(data.accounts):
-            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
+            carditem = self.generate_main_carditem(acc, i)
             self.ids.accountsview.add_widget(carditem)
             self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
@@ -266,7 +290,8 @@ class AccountsScreen(Screen):
                 button.md_bg_color = Colors.bg_color
                 button.text_color  = Colors.text_color
         self.update_plot()
- 
+
+    
     def update_plot(self):
         self.filter_buttons = [self.ids.onemonth_button, self.ids.threemonths_button, self.ids.sixmonths_button, 
                                self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
@@ -285,6 +310,12 @@ class AccountsScreen(Screen):
                 self.AmountLabels[account].color = Colors.error_color
             else:
                 self.AmountLabels[account].color = Colors.green_color
+
+            for acc in data.accounts:
+                if ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc]=='down': 
+                    self.IconBoxes[acc].icon = 'vector-line'
+                else:
+                    self.IconBoxes[acc].icon = 'blank'
            
 
     def go_to_account(self, acc):
@@ -292,22 +323,22 @@ class AccountsScreen(Screen):
         self.app.screen.ids.main.manager.transition = SlideTransition()
         self.app.screen.ids.main.manager.current = 'Transfers'
 
-    def generate_main_carditem(self, acc, color):
+    def generate_main_carditem(self, acc, i):
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=acc:self.go_to_account(acc))
         contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])   
 
         subbox = MDBoxLayout(orientation='horizontal')
         icon = MDIcon(icon='vector-line', theme_text_color='Custom')
-        icon.color=color
+        icon.color=Colors.piechart_colors[i]
         icon.halign = 'right'
         label2 = MDLabel(text=acc, font_style='Caption')
         label2.color = Colors.text_color
         label2.halign = 'left'
+        if ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc]=='normal':
+            icon.icon = 'blank'
+        self.IconBoxes[acc] = icon
         subbox.add_widget(icon)
         subbox.add_widget(label2)   
-        #acclabel   = MDLabel(text=acc, font_style='Subtitle2')
-        #acclabel.color = Colors.text_color
-        #acclabel.halign = 'center'
         contentbox.add_widget(subbox)
     
         last_date = list(data.accounts[acc]['Status'].keys())
@@ -333,6 +364,7 @@ class AccountsScreen(Screen):
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
         self.AmountLabels = {}
+        self.IconBoxes = {}
 
         #header of table scrollview
         header = self.ids.accountsview_header
@@ -349,7 +381,7 @@ class AccountsScreen(Screen):
 
         #scrollview items
         for i, acc in enumerate(data.accounts):
-            carditem = self.generate_main_carditem(acc, color=Colors.matplotlib_rgba[i])
+            carditem = self.generate_main_carditem(acc, i)
             self.ids.accountsview.add_widget(carditem)
             self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
         card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)

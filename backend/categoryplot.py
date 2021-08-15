@@ -118,7 +118,7 @@ class CategoryPlot():
 
             for year in years:
                 for i in range(1,13):
-                    if int(year)<=self.today_date.year and i<=self.today_date.month:
+                    if (int(year)<self.today_date.year) or (int(year)==self.today_date.year and i<=self.today_date.month):
                         i_str = '0'+str(i) if i<10 else str(i)
                         amounts_cumulative = 0
                         for transfer in transfer_list:
@@ -142,7 +142,7 @@ class CategoryPlot():
             if end_date<date:
                 break
 
-        colors = Colors.piechart_colors
+        colors = Colors.piechart_colors_hex
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.grid(axis='y', linestyle=':', linewidth=0.05)
         self.ax.grid(axis='x', linestyle=':', linewidth=0.05, alpha=0.3)
@@ -158,12 +158,25 @@ class CategoryPlot():
         max_amounts = []
         min_amounts = []
         for key in category_y_axis:
-            max_amounts.append(max(category_y_axis[key][q:]))
-            min_amounts.append(min(category_y_axis[key][q:]))
+            try:
+                max_amounts.append(max(category_y_axis[key][q:]))
+                min_amounts.append(min(category_y_axis[key][q:]))
+            except:
+                pass
         y_axis_max = int(max(max_amounts)+100)
         y_axis_min = int(min(min_amounts)-100)
         for h, key in enumerate(category_x_axis):
-            self.ax.plot(category_x_axis[key], category_y_axis[key], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label=key)
+            self.ax.plot(category_x_axis[key], category_y_axis[key], colors[h], linestyle='None', marker='o', markersize=Sizes.markersize)
+            #start_value = 0
+            #first_zero = False
+            #for k, value in enumerate(category_y_axis[key]):
+            #    if value==0 and first_zero==False:
+            #        self.ax.plot(category_x_axis[key][start_value:k+1], category_y_axis[key][start_value:k+1], colors[h], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
+            #        start_value = k
+            #        first_zero = True
+            #    if value!=0:
+            #        first_zero = False
+
         
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)

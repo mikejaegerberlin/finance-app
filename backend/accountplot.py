@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from backend.settings import Sizes
 from backend.colors import Colors
+from backend.settings import ScreenSettings
 
 class AccountPlot():
     def __init__(self):  
@@ -74,20 +75,21 @@ class AccountPlot():
                     rest_years        = int(int(rest_days / 365) / 3)
                     self.exceed_years = 1 + rest_years
        
-        colors = Colors.matplotlib_colors
         maxes  = []
         mines  = []
         for i, acc in enumerate(data.accounts):
-            self.ax.plot(dates[acc], amounts[acc], colors[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label=acc)
-            maxes.append(max(amounts[acc]))
-            mines.append(min(amounts[acc]))
+            if ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc] == 'down':
+                self.ax.plot(dates[acc], amounts[acc], Colors.piechart_colors_hex[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label=acc)
+                maxes.append(max(amounts[acc]))
+                mines.append(min(amounts[acc]))
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
         y_axis_max = int(max(maxes)+100)
         y_axis_min = int(min(mines)-100)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
-        self.fig.patch.set_facecolor(Colors.bg_color_hex)
+        #self.fig.patch.set_facecolor(Colors.bg_color_hex)
+        self.fig.patch.set_alpha(0)
         self.ax.grid(linestyle=':', linewidth=0.05)
         self.ax.spines['left'].set_color(Colors.text_color_hex)
         self.ax.spines['right'].set_color(Colors.text_color_hex)

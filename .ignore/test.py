@@ -1,52 +1,50 @@
-from kivymd.app import MDApp
 from kivy.lang import Builder
+from kivy.properties import StringProperty
+
+from kivymd.app import MDApp
+from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem
+from kivymd.uix.selectioncontrol import MDCheckbox
+from kivymd.icon_definitions import md_icons
 
 
-class Test(MDApp):
+KV = '''
+<ListItemWithCheckbox>:
 
-    def build(self):
-        self.theme_cls.primary_palette = "Gray"
-        return Builder.load_string(
-            '''
+    IconLeftWidget:
+        icon: root.icon
+
+    RightCheckbox:
+
+
 BoxLayout:
-    orientation:'vertical'
 
-    MDToolbar:
-        title: 'Bottom navigation'
-        md_bg_color: .2, .2, .2, 1
-        specific_text_color: 1, 1, 1, 1
+    ScrollView:
 
-    MDBottomNavigation:
-        panel_color: .2, .2, .2, 1
-
-        MDBottomNavigationItem:
-            name: 'screen 1'
-            text: 'Python'
-            icon: 'language-python'
-
-            MDLabel:
-                text: 'Python'
-                halign: 'center'
-
-        MDBottomNavigationItem:
-            name: 'screen 2'
-            text: 'C++'
-            icon: 'language-cpp'
-
-            MDLabel:
-                text: 'I programming of C++'
-                halign: 'center'
-
-        MDBottomNavigationItem:
-            name: 'screen 3'
-            text: 'JS'
-            icon: 'language-javascript'
-
-            MDLabel:
-                text: 'JS'
-                halign: 'center'
+        MDList:
+            id: scroll
 '''
-        )
 
 
-Test().run()
+class ListItemWithCheckbox(OneLineAvatarIconListItem):
+    '''Custom list item.'''
+
+    icon = StringProperty("android")
+
+
+class RightCheckbox(IRightBodyTouch, MDCheckbox):
+    '''Custom right container.'''
+
+
+class MainApp(MDApp):
+    def build(self):
+        return Builder.load_string(KV)
+
+    def on_start(self):
+        icons = list(md_icons.keys())
+        for i in range(30):
+            self.root.ids.scroll.add_widget(
+                ListItemWithCheckbox(text=f"Item {i}", icon=icons[i])
+            )
+
+
+MainApp().run()

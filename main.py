@@ -48,7 +48,7 @@ class MainScreen(Screen):
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Window.size = (400,700)
+        #Window.size = (400,700)
         
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
@@ -102,9 +102,10 @@ class DemoApp(MDApp):
         self.screen.ids.main.add_things_to_screen()
 
     def on_kv_post_AccountsScreen(self):
+        self.screen.ids.accounts_screen.initialize_dialogs()
         self.screen.ids.accounts_screen.update_plot()
         self.screen.ids.accounts_screen.add_account_status_to_mainscreen()
-        self.screen.ids.accounts_screen.initialize_dialogs()
+        
 
     def on_kv_post_StandingOrdersScreen(self):
         self.screen.ids.standingorders_screen.create_screen()
