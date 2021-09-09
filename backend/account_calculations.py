@@ -60,6 +60,10 @@ class Calculations():
                     self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][previous_date] + transfer[0], 2)
                 else:
                     self.accounts[acc]['Status'][date] = round(self.accounts[acc]['Status'][date] + transfer[0], 2)
+
+            if len(self.accounts[acc]['Transfers'][date])==0 and len(self.accounts[acc]['Status'].keys())!=0:
+                self.accounts[acc]['Status'][date] = self.accounts[acc]['Status'][dates[i-1]]
+
                 
         if not self.today_str in self.accounts[acc]['Status'].keys():
             self.accounts[acc]['Status'][self.today_str] = round(self.accounts[acc]['Status'][dates[-1]], 2)
@@ -73,25 +77,31 @@ class Calculations():
         for acc in self.accounts:
             dates = list(self.accounts[acc]['Transfers'].keys())
             dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
-            date_min.append(datetime.strptime(dates[0], '%Y-%m-%d').date() )
-        date = min(date_min)
+            date_min.append(datetime.strptime(dates[0], '%Y-%m-%d').date())
+        try:
+            date = min(date_min)
 
-        while date<=self.today_date:
-            date_str = date.strftime('%Y-%m-%d')
-            for i, acc in enumerate(self.accounts):
-                if date_str in self.accounts[acc]['Transfers'].keys():
-                    for transfer in self.accounts[acc]['Transfers'][date_str]:
-                        if len(self.total['Status'].keys())==0:
-                            self.total['Status'][date_str] = round(transfer[0], 2)
-                        elif not date_str in self.total['Status'].keys():
-                            self.total['Status'][date_str] = round(self.total['Status'][previous_date_str] + transfer[0], 2)
-                        else:
-                            self.total['Status'][date_str] = round(self.total['Status'][date_str] + transfer[0], 2)
-                    previous_date_str = date_str
-            date = date + relativedelta(days=1)
+            while date<=self.today_date:
+                date_str = date.strftime('%Y-%m-%d')
+                for i, acc in enumerate(self.accounts):
+                    if date_str in self.accounts[acc]['Transfers'].keys():
+                        for transfer in self.accounts[acc]['Transfers'][date_str]:
+                            if len(self.total['Status'].keys())==0:
+                                self.total['Status'][date_str] = round(transfer[0], 2)
+                            elif not date_str in self.total['Status'].keys():
+                                self.total['Status'][date_str] = round(self.total['Status'][previous_date_str] + transfer[0], 2)
+                            else:
+                                self.total['Status'][date_str] = round(self.total['Status'][date_str] + transfer[0], 2)
+                        previous_date_str = date_str
+                date = date + relativedelta(days=1)
+        except:
+            pass
       
         if not self.today_str in self.total['Status'].keys():
-            self.total['Status'][self.today_str] = round(self.total['Status'][dates[-1]], 2)
+            try:
+                self.total['Status'][self.today_str] = round(self.total['Status'][dates[-1]], 2)
+            except:
+                pass
 
     def make_dates(self, from_str, to, day):
         day = day.replace('.','')
@@ -172,6 +182,7 @@ class Calculations():
 
     def filter_categories_within_dates(self, start_date, end_date):
         self.categories_amounts = {}
+        self.categories_expenditures = {}
         for acc in self.accounts:
             dates = list(self.accounts[acc]['Transfers'].keys())
             dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
@@ -185,12 +196,20 @@ class Calculations():
                         else:
                             self.categories_amounts[category] += amount
 
+                        if not category in self.categories_expenditures.keys() and amount<0:
+                            self.categories_expenditures[category] = amount
+                        elif amount<0:
+                            self.categories_expenditures[category] += amount
+        
+
         self.categories_total = 0
         for cat in self.categories_amounts:
             self.categories_total += self.categories_amounts[cat]
 
         self.categories_amounts = dict(sorted(self.categories_amounts.items(), key=lambda item: item[1]))
+        self.categories_expenditures = dict(sorted(self.categories_expenditures.items(), key=lambda item: item[1]))
         
+        #delete amounts >= 0
         to_delete = []
         for cat in self.categories_amounts:
             if self.categories_amounts[cat]>=0:
@@ -198,15 +217,43 @@ class Calculations():
         for key in to_delete:
             del self.categories_amounts[key]
 
+        #needed for percentage
         self.categories_total = 0
         for cat in self.categories_amounts:
             self.categories_total += self.categories_amounts[cat]
-                        
-    def calculate_end_month_status(self, acc):
-        pass
 
-    def calculate_month_summary(self, acc, month):
-        pass
+        self.categories_expenditures_total = 0
+        for cat in self.categories_expenditures:
+            self.categories_expenditures_total += self.categories_expenditures[cat]
+
+    def get_sum_of_category(self, cat, start_date, end_date):
+        amount = 0
+        for acc in self.accounts:
+            dates = list(self.accounts[acc]['Transfers'].keys())
+            dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
+            for date in dates:
+                if datetime.strptime(date, '%Y-%m-%d').date()>=start_date and datetime.strptime(date, '%Y-%m-%d').date()<=end_date:
+                    for transfer in self.accounts[acc]['Transfers'][date]:
+                        category = transfer[2]
+                        if category==cat:
+                            amount += transfer[0]
+                         
+        return amount
+                        
+    def get_all_months_of_transfers(self):
+        dates = list(self.total['Status'].keys())
+        dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
+        date_min = datetime.strptime(dates[0], '%Y-%m-%d').date()
+        date_max = datetime.strptime(dates[-1], '%Y-%m-%d').date()
+ 
+        date = date_max - relativedelta(months=1)
+        months = [self.months_text[date_max.month-1]+' '+str(date_max.year)]
+        while date.year>=date_min.year and date.month>=date_min.month:
+            months.append(self.months_text[date.month-1]+' '+str(date.year))
+            date = date - relativedelta(months=1)
+        return months
+        
+
 
     ####################################################################################################################################################
     ############################################################ FUNCTIONS ONLY FOR DEMOSETUP ##########################################################

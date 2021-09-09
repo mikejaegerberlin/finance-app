@@ -4,6 +4,7 @@ from datetime import datetime
 from backend.settings import Sizes
 from backend.colors import Colors
 from copy import deepcopy
+from backend.settings import ScreenSettings
 
 class CategoryPlot():
     def __init__(self):  
@@ -61,7 +62,10 @@ class CategoryPlot():
         dates_daily  = []
         possible_dates = list(data.total['Status'].keys())
         possible_dates.sort(reverse=True)
-        min_date = possible_dates[-1]
+        try:
+            min_date = possible_dates[-1]
+        except:
+            min_date = data.today_str
         for date in possible_dates:
             if datetime.strptime(date, '%Y-%m-%d').date()>start_date:
                 pass
@@ -110,12 +114,14 @@ class CategoryPlot():
             
             sorted_date_list = deepcopy(date_list)
             sorted_date_list.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
-
-            years = [sorted_date_list[0][0:4]]
-            for date in sorted_date_list:
-                if date[0:4]!=years[-1]:
-                    years.append(date[0:4])
-
+            
+            try:
+                years = [sorted_date_list[0][0:4]]
+                for date in sorted_date_list:
+                    if date[0:4]!=years[-1]:
+                        years.append(date[0:4])
+            except:
+                years = []
             for year in years:
                 for i in range(1,13):
                     if (int(year)<self.today_date.year) or (int(year)==self.today_date.year and i<=self.today_date.month):
@@ -159,25 +165,88 @@ class CategoryPlot():
         min_amounts = []
         for key in category_y_axis:
             try:
-                max_amounts.append(max(category_y_axis[key][q:]))
-                min_amounts.append(min(category_y_axis[key][q:]))
+                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
+                    max_amounts.append(max(category_y_axis[key][q:]))
+                    min_amounts.append(min(category_y_axis[key][q:]))
             except:
                 pass
-        y_axis_max = int(max(max_amounts)+100)
-        y_axis_min = int(min(min_amounts)-100)
+        try:
+            y_axis_max = int(max(max_amounts)+100)
+            y_axis_min = int(min(min_amounts)-100)
+        except:
+            y_axis_max = 10
+            y_axis_min = -10
+        offset = [[],[],[],[],[]]
+        for k in range(len(category_x_axis[key])):
+            for i in range(5):
+                offset[i].append(0)
+        graph_no = 0
         for h, key in enumerate(category_x_axis):
-            self.ax.plot(category_x_axis[key], category_y_axis[key], colors[h], linestyle='None', marker='o', markersize=Sizes.markersize)
-            #start_value = 0
-            #first_zero = False
-            #for k, value in enumerate(category_y_axis[key]):
-            #    if value==0 and first_zero==False:
-            #        self.ax.plot(category_x_axis[key][start_value:k+1], category_y_axis[key][start_value:k+1], colors[h], linewidth=Sizes.linewidth, markersize=Sizes.markersize)
-            #        start_value = k
-            #        first_zero = True
-            #    if value!=0:
-            #        first_zero = False
+            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
+                #self.ax.plot(category_x_axis[key], category_y_axis[key], colors[h], linestyle='-', linewidth=Sizes.linewidth, marker='o', markersize=Sizes.markersize)
+                for k, value in enumerate(category_y_axis[key]):
+                    if graph_no==0:
+                        self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=offset[graph_no][k])
+                        offset[graph_no+1][k] += value
 
-        
+                    elif graph_no==1:
+                        if (offset[graph_no][k]<0 and value<0) or (offset[graph_no][k]>0 and value>0):
+                            self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=offset[graph_no][k])
+                            offset[graph_no+1][k] += offset[graph_no][k] + value
+                        if (offset[graph_no][k]<0 and value>0) or (offset[graph_no][k]>0 and value<0):
+                            self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
+                            offset[graph_no+1][k] += value
+
+                    elif graph_no==2:
+                        if value>0:
+                            max_offset = max([offset[1][k], offset[2][k]])
+                            if max_offset<0:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
+                                offset[graph_no+1][k] += value
+                            else:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=max_offset)
+                                offset[graph_no+1][k] += max_offset + value
+                        if value<0:
+                            min_offset = min([offset[1][k], offset[2][k]])
+                            if min_offset>0:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
+                                offset[graph_no+1][k] += value
+                            else:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=min_offset)
+                                offset[graph_no+1][k] += min_offset + value
+
+                    elif graph_no==3:
+                        if value>0:
+                            max_offset = max([offset[1][k], offset[2][k], offset[3][k]])
+                            if max_offset<0:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
+                                offset[graph_no+1][k] += value
+                            else:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=max_offset)
+                                offset[graph_no+1][k] += max_offset + value
+                        if value<0:
+                            min_offset = min([offset[1][k], offset[2][k], offset[3][k]])
+                            if min_offset>0:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
+                                offset[graph_no+1][k] += value
+                            else:
+                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=min_offset)
+                                offset[graph_no+1][k] += min_offset + value
+                         
+                graph_no += 1
+
+        #get y_min y_max
+        for q, date in enumerate(category_x_axis[key]):
+            if date>=end_date:
+                break
+        offsets_min, offsets_max = [], []
+        for i in range(5):
+            offsets_min.append(min(offset[i][q:]))
+            offsets_max.append(max(offset[i][q:]))
+        y_axis_min = min(offsets_min)-100
+        y_axis_max = max(offsets_max)+100
+
+        self.for_legend = category_y_axis
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.fig.patch.set_alpha(0)
@@ -186,9 +255,11 @@ class CategoryPlot():
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
-        self.ax.axis([end_date, dates_monthly[-1],y_axis_min,y_axis_max])
-        #self.ax.legend(loc='best', ncol=4, fontsize='medium', facecolor=Colors.bg_color_light_hex, edgecolor=Colors.bg_color_hex, bbox_to_anchor=(0.8, -0.06))
-        #print (dir(self.ax.legend))
+        try:
+            self.ax.axis([end_date, dates_monthly[-1],y_axis_min,y_axis_max])
+        except:
+            pass
+        
         canvas = self.fig.canvas  
         
         return canvas        

@@ -6,6 +6,10 @@
     fiveyears_button: fiveyears_button
     tenyears_button: tenyears_button
     all_button: all_button
+    legendview: legendview
+    category_header: category_header
+    category_list: category_list
+    on_kv_post: root.app = app
     
     MDFloatLayout:
         md_bg_color: app.bg_color
@@ -81,13 +85,48 @@
 
         MDCard:
             md_bg_color: app.bg_color
-            size_hint_y: 0.4
+            size_hint_y: 0.35
+            on_release: root.dialog_graph_selection.open()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: categoryview
         MDBoxLayout:
-            size_hint_y: 0.1
+            size_hint_y: 0.028
+
+        MDCard:
+            md_bg_color: app.bg_color
+            size_hint_y: 0.06
+
+            MDFloatLayout:
+                size: root.width, root.height
+                md_bg_color: app.bg_color
+                id: legendview
+        MDBoxLayout:
+            size_hint_y: 0.048
+            orientation: 'horizontal'
+            MDBoxLayout:
+                size_hint_x: 0.1
+            MDBoxLayout:
+                id: category_header
+                orientation: 'horizontal'
+                size_hint_y: 1
+                size_hint_x: 0.8
+            MDBoxLayout:
+                size_hint_x: 0.1
+
+        MDBoxLayout:
+            size_hint_y: 0.4
+            orientation: 'horizontal'
+            MDBoxLayout:
+                size_hint_x: 0.1
+            ScrollView:   
+                size_hint_y: 1
+                size_hint_x: 0.8
+                MDList:
+                    id: category_list
+            MDBoxLayout:
+                size_hint_x: 0.1
 
 
     MDBoxLayout:

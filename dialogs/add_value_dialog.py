@@ -22,6 +22,17 @@ class AddValueDialogContent(MDBoxLayout):
 
         self.acc_dropdown.items = self.acc_menu_items
 
+        self.cat_menu_items = [
+            {
+                "text": cat,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=cat: self.set_cat_item(x),
+            } for cat in data.categories
+        ]
+
+        self.cat_dropdown.items = self.cat_menu_items
+
 
     def on_kv_post(self, instance):
         self.acc_menu_items = [
@@ -51,7 +62,7 @@ class AddValueDialogContent(MDBoxLayout):
         self.cat_dropdown = MDDropdownMenu(
             caller=self.ids.categoryfield,
             items=self.cat_menu_items,
-            position="bottom",
+            position="auto",
             width_mult=4
         )
 

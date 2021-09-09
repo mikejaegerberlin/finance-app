@@ -3,7 +3,7 @@ from kivy.lang import Builder
 from kivy.core.window import Window
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
-from kivymd.uix.label import MDLabel
+from kivymd.uix.label import MDLabel, MDIcon
 from kivymd.uix.snackbar import Snackbar
 from kivy.metrics import dp
 from kivymd import images_path
@@ -23,6 +23,10 @@ from kivymd.uix.button import MDFlatButton
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from backend.categoryplot import CategoryPlot
+from dialogs.selection_dialogs import GraphSelectionDialogCategoriesContent
+from dialogs.add_category_dialog import AddCategoryDialogContent
+from backend.settings import ScreenSettings
+from dialogs.dialogs_empty_pythonside import Spacer_Horizontal
 
 class CategoriesScreen(Screen):
     def __init__(self, **kwargs):
@@ -34,6 +38,60 @@ class CategoriesScreen(Screen):
         self.filter_buttons = [self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
                                self.ids.tenyears_button, self.ids.all_button]
         self.update_plot()
+        self.create_mainlist()
+        self.dialog_graph_selection = MDDialog(
+                type="custom",
+                content_cls=GraphSelectionDialogCategoriesContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_graph_selection.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_graph_selection(x)
+                    ),
+                ],
+            )
+
+        self.dialog_add_category = MDDialog(
+                type="custom",
+                content_cls=AddCategoryDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_category.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_add_remove_category(x)
+                    ),
+                ],
+            )
+
+    def execute_add_remove_category(self, instance):
+        category = self.dialog_add_category.content_cls.namefield.text
+        #add category
+        if self.dialog_add_category.content_cls.namefield.hint_text == "Category name":
+            data.categories.append(category)
+        #remove category
+        else:
+            for i, cat in enumerate(data.categories):
+                if cat==category:
+                    data.categories.pop(i)
+                    break
+        self.app.global_update()
+
+    def remove_category_from_transfers(self, category):
+        for acc in data.accounts:
+            for date in data.accounts[acc]['Transfers']:
+                to_delete = []
+                for i, transfer in enumerate(data.accounts[acc]['Transfers'][date]):
+                    if transfer[2]==category:
+                        to_delete.append(i)  
+                for q, spot in enumerate(to_delete):
+                    del data.accounts[acc]['Transfers'][date][spot-q]
+
+    def execute_graph_selection(self, instance):
+        self.dialog_graph_selection.dismiss()
+        self.update_plot()
+        ScreenSettings.save()
 
     def button_clicked(self, instance):
         for button in self.filter_buttons:
@@ -46,7 +104,7 @@ class CategoriesScreen(Screen):
         self.update_plot()
 
     def update_plot(self):
-        
+        self.ids.categoryview.clear_widgets()
         canvas    = CategoryPlot.make_plot(self.filter_buttons, data)
         canvas.pos_hint = {'top': 1}
         self.ids.categoryview.clear_widgets()
@@ -54,6 +112,100 @@ class CategoriesScreen(Screen):
         label = MDLabel(text='Trend of each category', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
         label.color = Colors.text_color
         self.ids.categoryview.add_widget(label)
+
+        legendbox = MDBoxLayout(orientation='vertical')
+        legendbox.size_hint_x = 1
+        legendbox.size_hint_y = 1
+        
+        subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
+        subbox.add_widget(MDBoxLayout(md_bg_color=Colors.bg_color, size_hint_x=0.05))
+        icons, labels = [], []
+        for i in range(4):
+            rectangle = MDIcon(icon='blank', theme_text_color='Custom')
+            rectangle.size_hint_x = 0.0325
+            rectangle.halign = 'left'
+            label1 = MDLabel(text='', font_style='Caption')
+            label1.color = Colors.text_color
+            label1.halign = 'left'
+            label1.size_hint_x = 0.08
+            icons.append(rectangle)
+            labels.append(label1)
+            subbox.add_widget(rectangle)
+            subbox.add_widget(label1)
+        subbox.add_widget(MDBoxLayout(md_bg_color=Colors.bg_color, size_hint_x=0.05))
+
+        items = 0
+        for i, label in enumerate(CategoryPlot.for_legend):
+            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][label] == 'down' and items<4:
+                icons[items].icon='card'
+                icons[items].color = Colors.piechart_colors[i]
+                labels[items].text = label
+                items += 1
+        legendbox.add_widget(subbox)
+        legendbox.pos_hint = {'top': 1, 'right': 1}
+        self.ids.legendview.add_widget(legendbox)
+
+        #scrollview items
+        self.ids.category_list.clear_widgets()
+        sorted_categories = {}
+        total_expenditure = 0
+        for cat in data.categories:
+            sum = data.get_sum_of_category(cat, data.first_of_month_date, data.today_date)
+            sorted_categories[cat] = sum
+            if sum<=0:
+                total_expenditure += sum
+        sorted_categories = dict(sorted(sorted_categories.items(), key=lambda item: item[1]))
+
+        for cat in sorted_categories:
+            if sorted_categories[cat]!=0:
+                carditem = self.generate_main_carditem(cat, sorted_categories[cat], total_expenditure)
+                self.ids.category_list.add_widget(carditem)
+                self.ids.category_list.add_widget(Spacer_Vertical('6dp'))
+        
+        card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        self.ids.category_list.add_widget(card)
+
+    def create_mainlist(self):
+        #header of table scrollview
+        header = self.ids.category_header
+        header.md_bg_color = Colors.primary_color
+        header.radius = [20,20,20,20]
+        header.add_widget(Spacer_Horizontal(0.05))
+        
+        labels = ['Category', 'Sum', 'Percentage']
+        for label in labels:
+            header_label = MDLabel(text=label, font_style="Subtitle2")
+            header_label.color = Colors.text_color
+            header_label.halign = 'center'
+            header.add_widget(header_label)
+
+        
+
+    def generate_main_carditem(self, cat, sum, total):
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
+        contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])   
+
+        label1 = MDLabel(text=cat, font_style='Caption')
+        label1.color = Colors.text_color
+        label1.halign = 'center'
+        contentbox.add_widget(label1)
+
+        amlabel = MDLabel(text=str(round(sum,2))+' €', font_style='Subtitle2')
+        amlabel.color = Colors.error_color if sum<0 else Colors.green_color
+        amlabel.halign = 'center'
+        contentbox.add_widget(amlabel)
+
+        if sum<0:
+            perclabel = MDLabel(text=str(round(sum/total*100,2))+' %', font_style='Subtitle2')
+        else:
+            perclabel = MDLabel(text='-', font_style='Subtitle2')
+        perclabel.color = Colors.text_color
+        perclabel.halign = 'center'
+        contentbox.add_widget(perclabel)
+
+        card.add_widget(contentbox)
+        
+        return card
         
        
     

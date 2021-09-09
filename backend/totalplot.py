@@ -12,7 +12,7 @@ class TotalPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)    
 
-    def make_plot(self, filter_buttons, data, set_xticks):
+    def make_plot(self, filter_buttons, data, month_to_highlight, year_to_highlight, set_xticks):
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)
         self.ax      = self.fig.add_subplot(111)
@@ -42,7 +42,10 @@ class TotalPlot():
         dates_daily  = []
         possible_dates = list(data.total['Status'].keys())
         possible_dates.sort(reverse=True)
-        min_date = possible_dates[-1]
+        try:
+            min_date = possible_dates[-1]
+        except:
+            min_date = data.today_str
         for date in possible_dates:
             if datetime.strptime(date, '%Y-%m-%d').date()>start_date:
                 pass
@@ -85,7 +88,10 @@ class TotalPlot():
         
         possible_dates = list(data.total['Status'].keys())
         possible_dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
-        years = [possible_dates[0][0:4]]
+        try:
+            years = [possible_dates[0][0:4]]
+        except:
+            years = []
         for date in possible_dates:
             if date[0:4]!=years[-1]:
                 years.append(date[0:4])
@@ -130,23 +136,28 @@ class TotalPlot():
         self.ax.spines['top'].set_color(Colors.text_color_hex)
         self.ax.spines['bottom'].set_color(Colors.text_color_hex)
         if set_xticks:
-            y_axis_max = int(max(self.profits[q:])+10)
-            y_axis_min = int(min(self.profits[q:])-10)
+            try:
+                y_axis_max = int(max(self.profits[q:])+10)
+                y_axis_min = int(min(self.profits[q:])-10)
+            except:
+                y_axis_max = 10
+                y_axis_min = -10
             xticks = xticks
             xticklabels = xticklabels
             self.ax.set_xticks(xticks)
             self.ax.set_xticklabels(xticklabels)
             for j, profit in enumerate(self.profits):
-                if profit>=0:
-                    self.ax.bar(dates_monthly[j], profit, color='forestgreen', width=30)
-                else:
-                    self.ax.bar(dates_monthly[j], profit, color='firebrick', width=30)
+                if dates_monthly[j]>=end_date:
+                    if profit>=0:
+                        self.ax.bar(dates_monthly[j], profit, color='forestgreen', width=30)
+                    else:
+                        self.ax.bar(dates_monthly[j], profit, color='firebrick', width=30)
         else:
             y_axis_max = int(max(amounts_monthly[q:])+100)
             y_axis_min = int(min(amounts_monthly[q:])-100)
             self.ax.set_xticks(xticks)
             self.ax.set_xticklabels([])
-            self.ax.plot(dates_monthly, amounts_monthly, colors[1], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label='Total')
+            self.ax.plot(dates_monthly, amounts_monthly, colors[1], linewidth=Sizes.linewidth, marker='o', markersize=Sizes.markersize)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.fig.patch.set_alpha(0)
@@ -156,6 +167,8 @@ class TotalPlot():
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
         self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
+        date_to_highlight = datetime.strptime('{}-{}-01'.format(year_to_highlight, month_to_highlight), '%Y-%m-%d').date()
+        self.ax.plot(date_to_highlight, y_axis_min, marker='x', markersize=10, color=Colors.text_color)
         #self.ax.legend(loc='best', ncol=4, fontsize='medium', facecolor=Colors.bg_color_light_hex, edgecolor=Colors.bg_color_hex, bbox_to_anchor=(0.8, -0.06))
         #print (dir(self.ax.legend))
         canvas = self.fig.canvas  

@@ -51,7 +51,10 @@ class AccountPlot():
         
         self.exceed_years = 0
         if adjust_plot:
-            end_date = datetime.strptime(min(min_dates), '%Y-%m-%d').date()
+            try:
+                end_date = datetime.strptime(min(min_dates), '%Y-%m-%d').date()
+            except:
+                end_date = data.today_date
             delta    = start_date - end_date
             if delta.days<=30:
                 self.filter_index = 0
@@ -79,14 +82,22 @@ class AccountPlot():
         mines  = []
         for i, acc in enumerate(data.accounts):
             if ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc] == 'down':
-                self.ax.plot(dates[acc], amounts[acc], Colors.piechart_colors_hex[i], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label=acc)
-                maxes.append(max(amounts[acc]))
-                mines.append(min(amounts[acc]))
+                self.ax.plot(dates[acc], amounts[acc], Colors.piechart_colors_hex[i], linewidth=Sizes.linewidth, marker='o', markersize=Sizes.markersize, label=acc)
+                try:
+                    maxes.append(max(amounts[acc]))
+                    mines.append(min(amounts[acc]))
+                except:
+                    pass
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
-        y_axis_max = int(max(maxes)+100)
-        y_axis_min = int(min(mines)-100)
+        try:
+            y_axis_max = int(max(maxes)+100)
+            y_axis_min = int(min(mines)-100)
+        except:
+            y_axis_max = 10
+            y_axis_min = -10
+
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.fig.patch.set_alpha(0)

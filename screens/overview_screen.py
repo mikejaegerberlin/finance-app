@@ -38,11 +38,14 @@ from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from screens.transfers_screen import TransfersScreen
+from dialogs.selection_dialogs import MonthSelectionDialogContent
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
-        self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.months_text          = ['January', 'February', 'March', 'April', 'Mai', 'June', 'July', 'August', 'September', 'Oktober', 'November', 'December']
+        self.months               = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+
 
     def on_kv_post(self, instance):
         self.dialog_add_value = MDDialog(
@@ -58,11 +61,47 @@ class MainScreen(Screen):
                 ],
             )
 
+        self.dialog_select_month = MDDialog(
+                type="custom",
+                content_cls=MonthSelectionDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_select_month.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.change_month_overview(x)
+                    ),
+                ],
+            )
+
+        self.selected_month = data.today_date.month
+        self.selected_year = data.today_date.year
+
+    def change_month_overview(self, instance):
+        self.dialog_select_month.dismiss()
+        month = data.months_rev[self.dialog_select_month.content_cls.month_field.text]
+        year = int(self.dialog_select_month.content_cls.year_field.text)
+        
+        start_date = datetime.strptime('{}-{}-01'.format(year, month), '%Y-%m-%d').date()
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                end_date   = datetime.strptime('{}-{}-{}'.format(year, month, day), '%Y-%m-%d').date() 
+                break
+            except:
+                pass
+        self.selected_month = month
+        self.selected_year = year
+        data.filter_categories_within_dates(start_date, end_date)  
+        self.update_plot()
+        self.add_things_to_screen()  
+
     def execute_money_transfer(self, instance):
         if self.dialog_add_value.content_cls.ids.purposefield.hint_text == "Purpose":
             self.add_value()
         else:
             self.transfer_value()
+        self.app.global_update()
 
     def transfer_value(self):
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
@@ -103,10 +142,6 @@ class MainScreen(Screen):
             else:
                 data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']] 
 
-            data.fill_status_of_account(account_to)
-            data.fill_status_of_account(account_from)
-            data.save_accounts()
-
     def add_value(self):  
         self.dialog_add_value.content_cls.focus_function()
         amount        = self.dialog_add_value.content_cls.ids.amountfield.text
@@ -145,15 +180,7 @@ class MainScreen(Screen):
             else:
                 data.accounts[account]['Transfers'][date] = []
                 data.accounts[account]['Transfers'][date].append([amount, purpose, category])
-            data.fill_status_of_account(account)
-            data.fill_total_status()
-            data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
-            self.update_plot()
-            self.add_things_to_screen()
-            data.save_accounts()
-            
-        
-        
+               
     def button_clicked(self, instance):
         for button in self.filter_buttons:
             if button==instance:
@@ -171,7 +198,7 @@ class MainScreen(Screen):
         #canvas.size_hint_y = 0.75
         #canvas.pos_hint = {'top': 0.98}
         
-        canvas2 = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=True)
+        canvas2 = TotalPlot.make_plot(self.filter_buttons, data, self.selected_month, self.selected_year, set_xticks=True)
         canvas2.size_hint_y = 0.98
         canvas2.pos_hint = {'top': 0.98}
 
@@ -180,16 +207,19 @@ class MainScreen(Screen):
         #self.ids.assetview.add_widget(canvas)
         self.ids.assetview.add_widget(canvas2)
 
-        piecanvas = PieChart.make_plot(data.categories_amounts)
+        self.ids.piechartview.clear_widgets()
+        piecanvas = PieChart.make_plot(data.categories_expenditures)
         piecanvas.size_hint_y = 0.95
         piecanvas.size_hint_x = 0.7
         piecanvas.pos_hint = {'top': 1, 'right': 1}
+        self.ids.piechartview.size = 100, 100
         self.ids.piechartview.add_widget(piecanvas)
+       
+        self.ids.legend_list.clear_widgets()
+        for i, label in enumerate(data.categories_expenditures):
+            card = MDCard(size_hint_y=None, height='40dp', md_bg_color=Colors.bg_color)
+            contentbox = MDBoxLayout(orientation='vertical', md_bg_color=Colors.bg_color)
 
-        legendbox = MDBoxLayout(orientation='vertical')
-        legendbox.size_hint_x = 0.35
-        legendbox.size_hint_y = 1
-        for i, label in enumerate(data.categories_amounts):
             subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
             rectangle = MDIcon(icon='card', theme_text_color='Custom')
             rectangle.color = Colors.piechart_colors[i]
@@ -201,25 +231,37 @@ class MainScreen(Screen):
             label1.size_hint_x = 0.75
             subbox.add_widget(rectangle)
             subbox.add_widget(label1)
-            legendbox.add_widget(subbox)
-
+            contentbox.add_widget(subbox)
+          
             subbox2 = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
-            total = round(data.categories_amounts[label]/data.categories_total*100, 1)
+            total = round(data.categories_expenditures[label]/data.categories_expenditures_total*100, 1)
             label2 = MDLabel(text='')
             label2.color = Colors.text_color
-            label2.halign = 'right'
+            label2.halign = 'left'
             label2.size_hint_x = 0.25
-            label3 = MDLabel(text=str(round(data.categories_amounts[label],2))+'€ = '+str(total)+'%', font_style='Caption')
+
+            label3 = MDLabel(text=str(round(data.categories_expenditures[label],2))+'€', font_style='Caption')
             label3.color = Colors.text_color
             label3.halign = 'left'
-            label3.size_hint_x = 0.75
+            label3.size_hint_x = 0.35
+
+            label4 = MDLabel(text='=', font_style='Caption')
+            label4.color = Colors.text_color
+            label4.halign = 'center'
+            label4.size_hint_x = 0.05
+
+            label5 = MDLabel(text=str(total)+'%', font_style='Caption')
+            label5.color = Colors.text_color
+            label5.halign = 'right'
+            label5.size_hint_x = 0.35
             subbox2.add_widget(label2)
             subbox2.add_widget(label3)
-            legendbox.add_widget(subbox2)
-        legendbox.pos_hint = {'top': 1, 'right': 0.42}
-        self.ids.piechartview.add_widget(legendbox)
-        
+            subbox2.add_widget(label4)
+            subbox2.add_widget(label5)
+            contentbox.add_widget(subbox2)
 
+            card.add_widget(contentbox)
+            self.ids.legend_list.add_widget(card)
 
        
         #self.ids.piechartview.clear_widgets()
@@ -233,7 +275,7 @@ class MainScreen(Screen):
         #label2.color = Colors.text_color
         #self.ids.assetview.add_widget(label2)
        
-        label = MDLabel(text='Monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
+        label = MDLabel(text='Trend of monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
         label.color = Colors.text_color
         self.ids.assetview.add_widget(label)
 
@@ -241,9 +283,15 @@ class MainScreen(Screen):
 
     def add_things_to_screen(self):
        
-        self.ids.month_label.text = 'Profit '+self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)
-        profit = round(TotalPlot.profits_date[self.months[int(data.today_date.month)-1]+' '+str(data.today_date.year)], 2)
+        self.ids.month_button.text = self.months_text[self.selected_month-1]+' '+str(self.selected_year)
+        try:
+            profit = round(TotalPlot.profits_date[self.months[self.selected_month-1]+' '+str(self.selected_year)], 2)
+        except:
+            profit = 0
 
         self.ids.status_month_label.text = str(profit)+' €'
         self.ids.status_month_label.color = Colors.green_color if profit>=0 else Colors.error_color
+
+        self.ids.status_expenditures_label.text = str(round(data.categories_expenditures_total, 2))+' €'
+        self.ids.status_expenditures_label.color = Colors.green_color if data.categories_expenditures_total>=0 else Colors.error_color
    

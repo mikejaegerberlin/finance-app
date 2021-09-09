@@ -39,6 +39,7 @@ from screens.accounts_screen import AccountsScreen
 from screens.overview_screen import MainScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.uix.screenmanager import FadeTransition
+from backend.settings import ScreenSettings
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -48,7 +49,7 @@ class MainScreen(Screen):
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        #Window.size = (400,700)
+        Window.size = (400,700)
         
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
@@ -95,8 +96,47 @@ class DemoApp(MDApp):
         self.on_kv_post_StandingOrdersScreen()
         self.on_kv_post_CategoriesScreen()
 
-          
+    def get_start_and_end_date(self, year, month):
+        start_date = datetime.strptime('{}-{}-01'.format(year, month), '%Y-%m-%d').date()
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                end_date   = datetime.strptime('{}-{}-{}'.format(year, month, day), '%Y-%m-%d').date() 
+                break
+            except:
+                pass
+        return start_date, end_date
 
+    def global_update(self):
+        #MainScreen
+        start_date, end_date = self.get_start_and_end_date(self.screen.ids.main.selected_year, self.screen.ids.main.selected_month)
+        data.filter_categories_within_dates(start_date, end_date)  
+        self.screen.ids.main.dialog_add_value.content_cls.update_acc_items()
+        self.screen.ids.main.update_plot()
+        self.screen.ids.main.add_things_to_screen()
+        
+        #AccountsScreen
+        self.screen.ids.accounts_screen.dialog_add_value.content_cls.update_acc_items()
+        self.screen.ids.accounts_screen.update_plot()
+        self.screen.ids.accounts_screen.dialog_manage_accounts.content_cls.update_acc_items()
+        self.screen.ids.accounts_screen.dialog_graph_selection.content_cls.update_list()
+
+        #CategoriesScreen
+        self.screen.ids.categories_screen.dialog_add_category.content_cls.update_category_items()
+        self.screen.ids.categories_screen.update_plot()
+        self.screen.ids.categories_screen.dialog_graph_selection.content_cls.update_list()
+        
+        for acc in data.accounts:
+            data.fill_status_of_account(acc)
+            self.screen.ids.accounts_screen.update_main_accountview(acc)   
+        data.fill_total_status() 
+        data.save_accounts()
+        ScreenSettings.save()
+
+    def update_all(self):
+        self.screen.ids.main.update_plot()
+        self.screen.ids.accounts_screen.update_plot()
+       
     def on_kv_post_MainScreen(self):
         self.screen.ids.main.update_plot()
         self.screen.ids.main.add_things_to_screen()
@@ -114,6 +154,7 @@ class DemoApp(MDApp):
 
     def on_kv_post_CategoriesScreen(self):
         self.screen.ids.categories_screen.create_screen()
+        
         #ID = self.screen.ids.categories_screen.dialog_add_standingorder.content_cls.ids.accountfield
         #self.screen.ids.standingorders_screen.dialog_add_standingorder.content_cls.acc_dropdown.caller = ID
         

@@ -6,7 +6,8 @@
 #:include dialogs/change_transferitem_dialog.kv
 #:include dialogs/add_standingorder_dialog.kv
 #:include dialogs/manage_accounts_dialog.kv
-#:include dialogs/select_accountgraphs_dialog.kv
+#:include dialogs/selection_dialogs.kv
+#:include dialogs/add_category_dialog.kv
 
 ScreenManager:
     main: main
@@ -42,12 +43,30 @@ ScreenManager:
     fiveyears_button: fiveyears_button
     tenyears_button: tenyears_button
     all_button: all_button
-    month_label: status_month_label
+    month_button: month_button
+    status_month_label: status_month_label
+    status_expenditures_label: status_expenditures_label
+    legend_list: legend_list
     on_kv_post: root.app = app
 
     MDFloatLayout:
         md_bg_color: app.bg_color
     
+    MDFloatLayout:
+        MDCard:
+            md_bg_color: app.bg_color
+            size_hint_y: 0.375
+            pos_hint:  {'top': 0.41, 'right': 1.015}    
+            MDFloatLayout:
+                size: root.width, root.height
+                md_bg_color: app.bg_color
+                id: piechartview
+    
+
+    
+
+
+
     StackLayout:
         id: main_content
 
@@ -127,45 +146,109 @@ ScreenManager:
                 md_bg_color: app.bg_color
                 id: assetview
         MDBoxLayout:
-            size_hint_y: 0.03
+            size_hint_y: 0.06
         
 
         MDBoxLayout:
             orientation: 'horizontal'
             md_bg_color: app.bg_color
-            size_hint_y: 0.05
+            size_hint_y: 0.03
             MDBoxLayout:
                 size_hint_x: 0.1
-            MDBoxLayout:
-                size_hint_x: 0.8
-                MDLabel:
-                    id: month_label
-                    theme_text_color: 'Custom'
-                    color: app.text_color
-                    font_style: 'H6'
-                    halign: 'center'
-                    size_hint_x: 0.7
-                MDLabel:
-                    theme_text_color: 'Custom'
-                    font_style: 'Button'
-                    halign: 'left'
-                    id: status_month_label
-                    size_hint_x: 0.3
+           
+            MDLabel:
+                size_hint_x: 0.35
+                text: ''
+
+            MDFillRoundFlatButton:
+                id: month_button
+                theme_text_color: 'Custom'
+                md_bg_color: app.bg_color_light
+                text_color: app.text_color
+                font_style: 'Subtitle2'
+                halign: 'center'
+                size_hint_x: 0.45
+                on_release: root.dialog_select_month.open()
+                
             MDBoxLayout:
                 size_hint_x: 0.1
 
-        MDCard:
+        MDBoxLayout:
+            size_hint_y: 0.01
+     
+        MDBoxLayout:
+            orientation: 'horizontal'
             md_bg_color: app.bg_color
-            size_hint_y: 0.35
+            size_hint_y: 0.03
+            MDBoxLayout:
+                size_hint_x: 0.1
+           
+            MDLabel:
+                size_hint_x: 0.35
+                text: 'Profit:'
+                font_style: 'Subtitle2'
+                theme_text_color: 'Custom'
+                text_color: app.text_color
+                halign: 'left'
 
-            MDFloatLayout:
-                size: root.width, root.height
-                md_bg_color: app.bg_color
-                id: piechartview
+            MDLabel:
+                id: status_month_label
+                font_style: 'Subtitle2'
+                halign: 'center'
+                size_hint_x: 0.45
+                
+            MDBoxLayout:
+                size_hint_x: 0.1
 
-            
+        MDBoxLayout:
+            size_hint_y: 0.01
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            md_bg_color: app.bg_color
+            size_hint_y: 0.03
+            MDBoxLayout:
+                size_hint_x: 0.1
+           
+            MDLabel:
+                size_hint_x: 0.35
+                text: 'Expenditures:'
+                font_style: 'Subtitle2'
+                theme_text_color: 'Custom'
+                text_color: app.text_color
+                halign: 'left'
+
+            MDLabel:
+                id: status_expenditures_label
+                font_style: 'Subtitle2'
+                halign: 'center'
+                size_hint_x: 0.45
+                
+            MDBoxLayout:
+                size_hint_x: 0.1
+
+        MDBoxLayout:
+            size_hint_y: 0.02
 
     
+
+    MDFloatLayout:
+        MDLabel:
+            size_hint_x: 0.5
+            text: 'Select month and year:'
+            font_style: 'Caption'
+            theme_text_color: 'Custom'
+            text_color: app.text_color
+            pos_hint:  {'top': 0.955, 'right': 0.6}  
+
+    MDFloatLayout:
+        ScrollView:
+            size_hint_y: 0.24
+            size_hint_x: 0.425
+            pos_hint: {'top': 0.33, 'right': 0.475}    
+            MDList:
+                id: legend_list
+  
                 
         
         

@@ -1,9 +1,10 @@
 import json
+from backend.demo_setup import DemoData as data
 
 class ScreenSettings():
     def __init__(self):
-        #self.make_structure()
-        self.load_settings()
+        self.make_structure()
+        #self.load_settings()
 
     def make_structure(self):
         self.settings = {}
@@ -12,6 +13,11 @@ class ScreenSettings():
         self.settings['AccountScreen']['SelectedGraphs']['DKB'] = 'down'
         self.settings['AccountScreen']['SelectedGraphs']['ING'] = 'down'
         self.settings['AccountScreen']['SelectedGraphs']['Cash'] = 'down'
+
+        self.settings['CategoriesScreen'] = {}
+        self.settings['CategoriesScreen']['SelectedGraphs'] = {}
+        for q, cat in enumerate(data.categories):
+            self.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down' if q<4 else 'normal'
 
     def load_settings(self):
 
@@ -26,10 +32,10 @@ class Sizes():
     def __init__(self):  
 
         settings = {}
-        settings['Labelsize'] = 28
+        settings['Labelsize'] = 12
         settings['Titlesize'] = 20
         settings['Linewidth'] = 5
-        settings['Markersize'] = 4
+        settings['Markersize'] = 3
 
         #with open('settings.json', 'w') as qt:
         #    json.dump(settings, qt)

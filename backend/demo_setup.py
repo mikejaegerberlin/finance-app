@@ -26,6 +26,9 @@ class DemoData(Calculations):
         self.current_month   = int(self.today_date.month)
         self.current_year    = int(self.today_date.year)
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
+        self.months_rev      = {'January': 1, 'February': 2, 'March': 3, 'April':4, 'Mai': 5, 'June': 6, 'July': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'December': 12,
+                                'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr':4, 'Mai': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dez': 12}
+        self.months_text     = ['January', 'February', 'March', 'April', 'Mai', 'June', 'July', 'August', 'September', 'Oktober', 'November', 'December']
         self.categories      = ['Freizeit', 'Musik', 'Möbel', 'Miete', 'Essen&Trinken', 'Reisen', 'Versicherung', 'Gehalt', 'Bekleidung']
         self.accounts        = {}
         self.standingorders  = {}

@@ -38,7 +38,7 @@ from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from dialogs.add_value_dialog import AddValueDialogContent
-from dialogs.select_accountgraphs_dialog import GraphSelectionDialogContent
+from dialogs.selection_dialogs import GraphSelectionDialogContent
 from screens.transfers_screen import TransfersScreen
 from kivy.uix.screenmanager import SlideTransition
 from backend.settings import ScreenSettings
@@ -105,10 +105,7 @@ class AccountsScreen(Screen):
             self.add_account()
         else:
             self.remove_account()
-        self.dialog_manage_accounts.content_cls.update_acc_items()
-        self.dialog_add_value.content_cls.update_acc_items()
-        self.app.screen.ids.main.dialog_add_value.content_cls.update_acc_items()
-        
+        self.app.global_update()
 
     def add_account(self):
         account = self.dialog_manage_accounts.content_cls.accountfield.text
@@ -122,6 +119,8 @@ class AccountsScreen(Screen):
             data.accounts[account][key] = {}
         data.accounts[account]['Transfers'][date] = []
         data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
+        ScreenSettings.settings['AccountScreen']['SelectedGraphs'][account] = 'down'
+        self.dialog_graph_selection.content_cls.update_list()
         data.fill_status_of_account(account)
         self.ids.accountsview.clear_widgets()
         self.AmountLabels = {}
@@ -144,9 +143,7 @@ class AccountsScreen(Screen):
         message.bg_color=Colors.black_color
         message.text_color=Colors.text_color
         message.open()
-        self.update_plot()
-        data.save_accounts()
-
+        
     def remove_account(self):
         account = self.dialog_manage_accounts.content_cls.accountfield.text
         del data.accounts[account]
@@ -171,14 +168,10 @@ class AccountsScreen(Screen):
         message.bg_color=Colors.black_color
         message.text_color=Colors.text_color
         message.open()
-        self.update_plot()
+        data.filter_categories_within_dates(data.first_of_month_date, data.today_date)  
         self.dialog_manage_accounts.content_cls.accountfield.text = ''
         self.dialog_manage_accounts.content_cls.amountfield.text = ''
-        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str
-        data.save_accounts()
-
-
-        
+        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str    
 
 
     def execute_money_transfer(self, instance):
@@ -226,12 +219,7 @@ class AccountsScreen(Screen):
             else:
                 data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']] 
 
-            data.fill_status_of_account(account_to)
-            data.fill_status_of_account(account_from)
-            data.save_accounts()
-            self.update_main_accountview(account_to)
-            self.update_main_accountview(account_from)
-            self.update_plot()
+            self.app.global_update()
     
     def add_value(self):  
         self.dialog_add_value.content_cls.focus_function()
@@ -271,14 +259,7 @@ class AccountsScreen(Screen):
             else:
                 data.accounts[account]['Transfers'][date] = []
                 data.accounts[account]['Transfers'][date].append([amount, purpose, category])
-            data.fill_status_of_account(account)
-            data.fill_total_status()
-            data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
-            self.update_main_accountview(account)
-            self.update_plot()
-            self.app.screen.ids.main.update_plot()
-            self.app.screen.ids.main.add_things_to_screen()
-            data.save_accounts()
+            self.app.global_update()
  
         
     def button_clicked(self, instance):
