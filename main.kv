@@ -37,14 +37,14 @@ ScreenManager:
     piechartview: piechartview
     floating_button: floating_button
     main_content: main_content
-    
+    overview_header: overview_header
     oneyear_button: oneyear_button
     threeyears_button: threeyears_button
     fiveyears_button: fiveyears_button
     tenyears_button: tenyears_button
     all_button: all_button
-    month_button: month_button
     status_month_label: status_month_label
+    status_income_label: status_income_label
     status_expenditures_label: status_expenditures_label
     legend_list: legend_list
     on_kv_post: root.app = app
@@ -54,35 +54,32 @@ ScreenManager:
     
     MDFloatLayout:
         MDCard:
+            elevation: 0
             md_bg_color: app.bg_color
-            size_hint_y: 0.375
-            pos_hint:  {'top': 0.41, 'right': 1.015}    
+            size_hint: 1, 0.3
+            pos_hint:  {'top': 0.39, 'right': 1.03}    
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: piechartview
     
-
-    
-
-
-
     StackLayout:
         id: main_content
+      
 
         MDToolbar:
             id: main_toolbar
             title: 'Overview'
             halign: 'center'
+            right_action_items: [["cog", lambda x: root.dropdown_settings.open()]]
             md_bg_color: app.primary_color
-            specific_text_color: app.text_color
+            specific_text_color: app.bg_color
     
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.01
 
         MDBoxLayout:
-            size_hint_y: 0.03
-            size_hint_x: 1
+            size_hint: 1, 0.03
             id: account_tabs
             orientation: 'horizontal'
             
@@ -91,8 +88,7 @@ ScreenManager:
             MDFillRoundFlatButton:
                 id: oneyear_button
                 text: '1Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.bg_color
                 md_bg_color: app.text_color
@@ -101,8 +97,7 @@ ScreenManager:
             MDFillRoundFlatButton:
                 id: threeyears_button
                 text: '3Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -111,8 +106,7 @@ ScreenManager:
             MDFillRoundFlatButton:
                 id: fiveyears_button
                 text: '5Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -121,8 +115,7 @@ ScreenManager:
             MDFillRoundFlatButton:
                 id: tenyears_button
                 text: '10Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -131,87 +124,76 @@ ScreenManager:
             MDFillRoundFlatButton:
                 id: all_button
                 text: 'All'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
                 on_release: root.button_clicked(all_button)
 
         MDCard:
+            elevation: 0
             md_bg_color: app.bg_color
-            size_hint_y: 0.35
+            size_hint: 1, 0.35
+            on_release: root.dialog_select_month.open()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: assetview
-        MDBoxLayout:
-            size_hint_y: 0.06
-        
 
         MDBoxLayout:
+            size_hint: 1, 0.03
+        MDBoxLayout:
+            size_hint: 1, 0.048
             orientation: 'horizontal'
-            md_bg_color: app.bg_color
-            size_hint_y: 0.03
             MDBoxLayout:
-                size_hint_x: 0.1
-           
-            MDLabel:
-                size_hint_x: 0.35
-                text: ''
-
-            MDFillRoundFlatButton:
-                id: month_button
-                theme_text_color: 'Custom'
-                md_bg_color: app.bg_color_light
-                text_color: app.text_color
-                font_style: 'Subtitle2'
-                halign: 'center'
-                size_hint_x: 0.45
-                on_release: root.dialog_select_month.open()
+                size_hint: 0.1, 1
+            MDBoxLayout:
+                id: overview_header
+                orientation: 'horizontal'
                 
+                size_hint: 0.8, 1
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
 
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.005
      
         MDBoxLayout:
             orientation: 'horizontal'
             md_bg_color: app.bg_color
-            size_hint_y: 0.03
+            size_hint: 1, 0.03
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.2, 1
            
             MDLabel:
-                size_hint_x: 0.35
-                text: 'Profit:'
+                size_hint: 0.25, 1
+                text: 'Income:'
                 font_style: 'Subtitle2'
                 theme_text_color: 'Custom'
                 text_color: app.text_color
                 halign: 'left'
 
             MDLabel:
-                id: status_month_label
+                id: status_income_label
                 font_style: 'Subtitle2'
                 halign: 'center'
-                size_hint_x: 0.45
+                size_hint: 0.45, 1
                 
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
 
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.005
 
         MDBoxLayout:
             orientation: 'horizontal'
             md_bg_color: app.bg_color
-            size_hint_y: 0.03
+            size_hint: 1, 0.03
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.2, 1
            
             MDLabel:
-                size_hint_x: 0.35
+                size_hint: 0.25, 1
                 text: 'Expenditures:'
                 font_style: 'Subtitle2'
                 theme_text_color: 'Custom'
@@ -222,30 +204,55 @@ ScreenManager:
                 id: status_expenditures_label
                 font_style: 'Subtitle2'
                 halign: 'center'
-                size_hint_x: 0.45
+                size_hint: 0.45, 1
                 
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
 
         MDBoxLayout:
-            size_hint_y: 0.02
+            size_hint: 1, 0.005
+
+        MDBoxLayout:
+            orientation: 'horizontal'
+            md_bg_color: app.bg_color
+            size_hint: 1, 0.03
+            MDBoxLayout:
+                size_hint: 0.2, 1
+           
+            MDLabel:
+                size_hint: 0.25, 1
+                text: 'Profit:'
+                font_style: 'Subtitle2'
+                theme_text_color: 'Custom'
+                text_color: app.text_color
+                halign: 'left'
+
+            MDLabel:
+                id: status_month_label
+                font_style: 'Subtitle2'
+                halign: 'center'
+                size_hint: 0.45, 1
+                
+            MDBoxLayout:
+                size_hint: 0.1, 1
+
+        MDBoxLayout:
+            size_hint: 1, 0.02
 
     
 
     MDFloatLayout:
-        MDLabel:
-            size_hint_x: 0.5
-            text: 'Select month and year:'
-            font_style: 'Caption'
+        MDIconButton:
+            icon: 'gesture-tap'
+            size_hint: 0.5, 1
             theme_text_color: 'Custom'
             text_color: app.text_color
-            pos_hint:  {'top': 0.955, 'right': 0.6}  
+            pos_hint:  {'top': 0.855, 'right': 0.95}  
 
     MDFloatLayout:
         ScrollView:
-            size_hint_y: 0.24
-            size_hint_x: 0.425
-            pos_hint: {'top': 0.33, 'right': 0.475}    
+            size_hint: 0.425, 0.25
+            pos_hint: {'top': 0.34, 'right': 0.475}    
             MDList:
                 id: legend_list
   
@@ -255,32 +262,31 @@ ScreenManager:
         
 
     MDBoxLayout:
-        size_hint_y: 0.075
-        size_hint_x: 1
+        size_hint: 1, 0.075
         orientation: 'horizontal'
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
                     icon: 'view-compact-outline'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color
+                    color: app.primary_color
+                    md_bg_color: app.bg_color  
                 MDLabel:
                     text: 'Overview'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color
+                    color: app.primary_color
+                    md_bg_color: app.bg_color  
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_accounts()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -296,11 +302,11 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    md_bg_color: app.primary_color 
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_categories()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -309,19 +315,19 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+                    md_bg_color: app.primary_color 
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    md_bg_color: app.primary_color 
 
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_standingorders()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -329,23 +335,25 @@ ScreenManager:
                     icon: 'file-document-multiple-outline'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.bg_color
-                    md_bg_color: app.primary_color
+                    text_color: app.bg_color
+                    md_bg_color: app.primary_color 
                    
                 MDLabel:
                     text: 'Orders'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.bg_color
-                    md_bg_color: app.primary_color
+                    text_color: app.bg_color
+                    md_bg_color: app.primary_color 
                    
             
     MDFloatingActionButton:
         icon: 'bank-plus'
+        theme_text_color: 'Custom'
+        icon_color: app.bg_color
+        text_color: app.bg_color
         id: floating_button
         right_pad: True
-        theme_text_color: 'Custom'
         bg_color_stack_button: app.primary_color
         bg_hint_color: app.primary_color
         md_bg_color: app.primary_color

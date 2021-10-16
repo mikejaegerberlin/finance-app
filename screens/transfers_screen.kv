@@ -20,20 +20,18 @@
             right_action_items: [["magnify", lambda x: root.go_to_main()]]
             elevation:5
             md_bg_color: app.primary_color
-            specific_text_color: app.text_color
+            specific_text_color: app.bg_color
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.01
         MDBoxLayout:
-            size_hint_y: 0.03
-            size_hint_x: 1
+            size_hint: 1, 0.03
             id: account_tabs
             orientation: 'horizontal'
                 
             MDFillRoundFlatButton:
                 id: twoweeks_button
                 text: '2W'
-                size_hint_y: 1
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -42,28 +40,25 @@
             MDFillRoundFlatButton:
                 id: onemonth_button
                 text: '1M'
-                size_hint_y: 1
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
+                text_color: app.bg_color
+                md_bg_color: app.text_color
                 on_release: root.button_clicked(onemonth_button)
 
             MDFillRoundFlatButton:
                 id: threemonths_button
                 text: '3M'
-                size_hint_y: 1
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
+                text_color: app.text_color
+                md_bg_color: app.bg_color
                 on_release: root.button_clicked(threemonths_button)
 
             MDFillRoundFlatButton:
                 id: sixmonths_button
                 text: '6M'
-                size_hint_y: 1
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -72,8 +67,7 @@
             MDFillRoundFlatButton:
                 id: custom_button
                 text: 'Custom'
-                size_hint_y: 1
-                size_hint_x: 0.2
+                size_hint: 0.2, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color

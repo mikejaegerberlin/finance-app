@@ -5,7 +5,6 @@ from kivy.metrics import dp
 from kivymd.uix.button import MDFlatButton
 from datetime import datetime
 from backend.demo_setup import DemoData as data
-from kivymd.uix.picker import MDDatePicker
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel, MDIcon
@@ -70,7 +69,7 @@ class GraphSelectionDialogCategoriesContent(MDBoxLayout):
             for check in ScreenSettings.settings['CategoriesScreen']['SelectedGraphs']:
                 if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][check]=='down':
                     count += 1
-            if count<4:
+            if count<3:
                 ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down'
             else:
                 listitem.ids.checkboxright.state = 'normal'

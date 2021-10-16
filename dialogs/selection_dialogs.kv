@@ -42,27 +42,27 @@
     year_field: year_field
     
     MDTextField:
-        size_hint_x: 0.7
+        size_hint_x: 0.6
         id: month_field
         hint_text: "Month"
         icon_right: "arrow-down-drop-circle-outline"
         on_focus: if self.focus: root.month_dropdown.open()
         line_color_normal: app.button_disable_onwhite_color
-        line_color_focus: app.primary_color
-        current_hint_text_color: app.primary_color
-        text_color: app.primary_color
+        line_color_focus: app.bg_color
+        current_hint_text_color: app.bg_color
+        text_color: app.bg_color
         keyboard_mode: 'managed'
 
     MDTextField:
-        size_hint_x: 0.3
+        size_hint_x: 0.4
         id: year_field
         hint_text: "Year"
         icon_right: "arrow-down-drop-circle-outline"
         on_focus: if self.focus: root.year_dropdown.open()
         line_color_normal: app.button_disable_onwhite_color
-        line_color_focus: app.primary_color
-        current_hint_text_color: app.primary_color
-        text_color: app.primary_color
+        line_color_focus: app.bg_color
+        current_hint_text_color: app.bg_color
+        text_color: app.bg_color
         keyboard_mode: 'managed'
         
     

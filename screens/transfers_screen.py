@@ -18,6 +18,7 @@ from backend.colors import Colors
 from backend.demo_setup import DemoData as data
 from backend.carditems import CardItemsBackend
 from kivy.uix.screenmanager import SlideTransition
+from kivy.base import EventLoop
 
 class TransfersScreen(Screen):
     def __init__(self, **kwargs):
@@ -45,6 +46,12 @@ class TransfersScreen(Screen):
                     ),
                 ],
         )
+        EventLoop.window.bind(on_keyboard=self.hook_keyboard)
+
+    def hook_keyboard(self, window, key, *largs):
+       if key == 27:
+           self.go_to_main()
+           return True 
         
 
     def go_to_main(self):
@@ -103,7 +110,7 @@ class TransfersScreen(Screen):
             data.save_accounts()
             self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
         except:
-            message = Snackbar(text='Amount must be number.')
+            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp")
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -142,7 +149,7 @@ class TransfersScreen(Screen):
                 message += 'Changed purpose from {} to {}. '.format(old_purpose, new_purpose)
             if new_amount!=old_amount:
                 message += 'Changed amount from {} to {}. '.format(old_amount, new_amount)    
-        message = Snackbar(text=message)
+        message = Snackbar(text=message, snackbar_x="10dp", snackbar_y="10dp")
         message.bg_color=Colors.black_color
         message.text_color=Colors.text_color
         message.open()
@@ -194,7 +201,7 @@ class TransfersScreen(Screen):
                     message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
                 else:
                     message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
-                message = Snackbar(text=message_text)
+                message = Snackbar(text=message_text, snackbar_x="10dp", snackbar_y="10dp")
                 message.bg_color=Colors.black_color
                 message.text_color=Colors.text_color
                 message.open()

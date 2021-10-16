@@ -13,6 +13,9 @@ class AccountPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)    
 
+        #self.today_str  = '2021-12-02'
+        #self.today_date = datetime.strptime(self.today_str, '%Y-%m-%d').date()
+
     def make_plot(self, filter_buttons, data):
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)

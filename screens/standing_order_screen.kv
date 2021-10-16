@@ -2,6 +2,7 @@
     name: 'Standing order'
     standing_orders_list: standing_orders_list
     standingorder_header: standingorder_header
+    on_kv_post: root.app = app
     
     MDFloatLayout:
         md_bg_color: app.bg_color
@@ -12,45 +13,42 @@
             title: 'Standing orders'
             md_bg_color: app.primary_color
             right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_standingorder.open()]]
-            specific_text_color: app.text_color
+            specific_text_color: app.bg_color
                     
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.01
 
         MDBoxLayout:
-            size_hint_y: 0.048
+            size_hint: 1, 0.048
             orientation: 'horizontal'
             MDBoxLayout:
-                size_hint_x: 0.01
+                size_hint: 0.01, 1
             MDBoxLayout:
                 id: standingorder_header
                 orientation: 'horizontal'
-                size_hint_y: 1
-                size_hint_x: 0.98
+                size_hint: 0.98, 1
             MDBoxLayout:
-                size_hint_x: 0.01
+                size_hint: 0.01, 1
 
         MDBoxLayout:
-            size_hint_y: 0.8
+            size_hint: 1, 0.8
             orientation: 'horizontal'
             MDBoxLayout:
-                size_hint_x: 0.01
+                size_hint: 0.01, 1
             ScrollView:   
-                size_hint_y: 1
-                size_hint_x: 0.98
+                size_hint: 0.98, 1
                 MDList:
                     id: standing_orders_list
             MDBoxLayout:
-                size_hint_x: 0.01
+                size_hint: 0.01, 1
 
     MDBoxLayout:
-        size_hint_y: 0.075
-        size_hint_x: 1
+        size_hint: 1, 0.075
         orientation: 'horizontal'
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_main()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -69,8 +67,8 @@
                     md_bg_color: app.primary_color
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_accounts()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -89,8 +87,8 @@
                     md_bg_color: app.primary_color
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_categories()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -110,8 +108,8 @@
 
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             
             MDBoxLayout:
                 orientation: 'vertical'
@@ -119,16 +117,16 @@
                     icon: 'file-document-multiple-outline'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color
+                    color: app.primary_color
+                    md_bg_color: app.bg_color
                    
                 MDLabel:
                     text: 'Orders'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color
+                    color: app.primary_color
+                    md_bg_color: app.bg_color
                
                            
         

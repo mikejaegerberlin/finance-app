@@ -39,6 +39,11 @@ from screens.standing_order_screen import StandingOrdersScreen
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from screens.transfers_screen import TransfersScreen
 from dialogs.selection_dialogs import MonthSelectionDialogContent
+from kivymd.uix.filemanager import MDFileManager
+from kivy.utils import platform
+from kivymd.toast import toast
+from backend.settings import ScreenSettings
+
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -51,12 +56,13 @@ class MainScreen(Screen):
         self.dialog_add_value = MDDialog(
                 type="custom",
                 content_cls=AddValueDialogContent(),
+                title='Add transfer',
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.execute_money_transfer(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_money_transfer(x)
                     ),
                 ],
             )
@@ -64,18 +70,98 @@ class MainScreen(Screen):
         self.dialog_select_month = MDDialog(
                 type="custom",
                 content_cls=MonthSelectionDialogContent(),
+                title="Detailed overiew period",
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_select_month.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_select_month.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Add': self.change_month_overview(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.change_month_overview(x)
                     ),
                 ],
             )
 
         self.selected_month = data.today_date.month
         self.selected_year = data.today_date.year
+
+        setting_strings = ['Load data', 'Save data']
+        self.settings_menu_items = [
+            {
+                "text": item,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=item: self.execute_settings_instance(x),
+            } for item in setting_strings
+        ]
+        self.dropdown_settings = MDDropdownMenu(
+            caller=self.ids.main_toolbar,
+            items=self.settings_menu_items,
+            position="auto",
+            width_mult=4,
+        )
+        self.manager_open = False
+        self.file_manager = MDFileManager(
+            exit_manager=self.exit_manager,
+            select_path=self.select_path
+        )
+        self.file_manager.md_bg_color = Colors.bg_color
+        self.file_manager.specific_text_color = Colors.text_color
+        self.file_manager.opposite_colors = Colors.primary_color
+
+              
+    def execute_settings_instance(self, instance):
+        self.settings_instance = instance
+        if instance=='Load data':
+            if platform == 'android':
+                from android.permissions import request_permissions, Permission
+                def callback(permission, results):
+                    if all([res for res in results]):
+                        self.file_manager_open()
+                        self.manager_open = True
+                    else:
+                        print ('Did not get all permissions')
+                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE], callback)
+    
+        if instance=='Save data':
+            if platform == 'android':
+                from android.permissions import request_permissions, Permission
+                def callback(permission, results):
+                    if all([res for res in results]):
+                        data.save_setup()
+                        self.manager_open = True
+                    else:
+                        print ('Did not get all permissions')
+                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE], callback)
+        self.dropdown_settings.dismiss()
+
+    def file_manager_open(self):
+        if platform == 'android':
+            from android.storage import primary_external_storage_path
+            primary_ext_storage = primary_external_storage_path()
+            self.file_manager.show(primary_ext_storage)  # for mobile phone
+        else:
+            self.file_manager.show('/')  # for computer
+
+    def select_path(self, path): 
+        self.exit_manager()
+        toast(path)
+        #self.app.get_running_app().change_profile_source(path)
+        print(path)
+        if self.settings_instance=='Load data':
+            data.load_setup(path)
+            ScreenSettings.update()
+            self.app.global_update()
+        if self.settings_instance=='Save data':
+            data.save_setup()
+
+    def exit_manager(self, *args):
+        self.manager_open = False
+        self.file_manager.close()
+    def events(self, instance, keyboard, keycode, text, modifiers):
+        if keyboard in (1001, 27):
+            if self.manager_open:
+                self.file_manager.back()
+        return True
 
     def change_month_overview(self, instance):
         self.dialog_select_month.dismiss()
@@ -93,8 +179,9 @@ class MainScreen(Screen):
         self.selected_month = month
         self.selected_year = year
         data.filter_categories_within_dates(start_date, end_date)  
-        self.update_plot()
+        self.update_plot(filterbutton_clicked=False)
         self.add_things_to_screen()  
+        
 
     def execute_money_transfer(self, instance):
         if self.dialog_add_value.content_cls.ids.purposefield.hint_text == "Purpose":
@@ -117,13 +204,13 @@ class MainScreen(Screen):
         messagestring += 'Account field to is empty.' if account_to=='' else ''   
         messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
         if messagestring!='':
-            message = Snackbar(text=messagestring)
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to))
+            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to), snackbar_x="10dp", snackbar_y="10dp")
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -158,13 +245,13 @@ class MainScreen(Screen):
         messagestring += 'Purpose field is empty.' if purpose=='' else ''
         messagestring += 'Category field is empty.' if category=='' else ''    
         if messagestring!='':
-            message = Snackbar(text=messagestring)
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose))
+            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose), snackbar_x="10dp", snackbar_y="10dp")
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -189,16 +276,17 @@ class MainScreen(Screen):
             else:
                 button.md_bg_color = Colors.bg_color
                 button.text_color  = Colors.text_color
-        self.update_plot()
+        self.update_plot(filterbutton_clicked=True)
          
-    def update_plot(self):
+    def update_plot(self, filterbutton_clicked):
         self.filter_buttons = [self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
-                               self.ids.tenyears_button, self.ids.all_button]
-        #canvas    = TotalPlot.make_plot(self.filter_buttons, data, set_xticks=False)
-        #canvas.size_hint_y = 0.75
-        #canvas.pos_hint = {'top': 0.98}
-        
-        canvas2 = TotalPlot.make_plot(self.filter_buttons, data, self.selected_month, self.selected_year, set_xticks=True)
+                               self.ids.tenyears_button, self.ids.all_button]        
+        canvas2, end_date = TotalPlot.make_plot(self.filter_buttons, data, self.selected_month, self.selected_year, filterbutton_clicked)
+        date_to_highlight = datetime.strptime('{}-{}-01'.format(self.selected_year, self.selected_month), '%Y-%m-%d').date()
+        if filterbutton_clicked and date_to_highlight<end_date:
+            self.selected_month = data.current_month
+            self.selected_year = data.current_year
+            self.add_things_to_screen()
         canvas2.size_hint_y = 0.98
         canvas2.pos_hint = {'top': 0.98}
 
@@ -217,7 +305,7 @@ class MainScreen(Screen):
        
         self.ids.legend_list.clear_widgets()
         for i, label in enumerate(data.categories_expenditures):
-            card = MDCard(size_hint_y=None, height='40dp', md_bg_color=Colors.bg_color)
+            card = MDCard(size_hint_y=None, height='40dp', md_bg_color=Colors.bg_color, elevation = 0)
             contentbox = MDBoxLayout(orientation='vertical', md_bg_color=Colors.bg_color)
 
             subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
@@ -262,36 +350,32 @@ class MainScreen(Screen):
 
             card.add_widget(contentbox)
             self.ids.legend_list.add_widget(card)
-
-       
-        #self.ids.piechartview.clear_widgets()
-        #self.ids.piechartview.add_widget(canvas3)
-
-        #label = MDLabel(text='Total status (monthly)', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 1})
-        #label.color = Colors.text_color
-        #self.ids.assetview.add_widget(label)
-
-        #label2 = MDLabel(text='Monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.08, halign='center', pos_hint={'top': 0.3})
-        #label2.color = Colors.text_color
-        #self.ids.assetview.add_widget(label2)
        
         label = MDLabel(text='Trend of monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
         label.color = Colors.text_color
-        self.ids.assetview.add_widget(label)
-
-        
+        self.ids.assetview.add_widget(label)     
 
     def add_things_to_screen(self):
-       
-        self.ids.month_button.text = self.months_text[self.selected_month-1]+' '+str(self.selected_year)
-        try:
-            profit = round(TotalPlot.profits_date[self.months[self.selected_month-1]+' '+str(self.selected_year)], 2)
-        except:
-            profit = 0
 
+        header = self.ids.overview_header
+        header.clear_widgets()
+        header.md_bg_color = Colors.primary_color
+        header.radius = [20,20,20,20]
+        header.add_widget(Spacer_Horizontal(0.05))
+        
+        header_label = MDLabel(text='DETAILED OVERVIEW '+self.months_text[self.selected_month-1]+' '+str(self.selected_year), font_style="Subtitle2")
+        header_label.color = Colors.bg_color
+        header_label.halign = 'center'
+        header.add_widget(header_label)
+
+        profit = round(data.categories_income_total + data.categories_expenditures_total, 2)
         self.ids.status_month_label.text = str(profit)+' €'
         self.ids.status_month_label.color = Colors.green_color if profit>=0 else Colors.error_color
 
         self.ids.status_expenditures_label.text = str(round(data.categories_expenditures_total, 2))+' €'
         self.ids.status_expenditures_label.color = Colors.green_color if data.categories_expenditures_total>=0 else Colors.error_color
-   
+
+        self.ids.status_income_label.text = str(round(data.categories_income_total, 2))+' €'
+        self.ids.status_income_label.color = Colors.green_color if data.categories_income_total>=0 else Colors.error_color
+
+           

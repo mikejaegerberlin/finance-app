@@ -16,24 +16,24 @@ class ManageAccountsDialogContent(MDBoxLayout):
         self.amountfield = MDTextField()
         self.amountfield.hint_text               = "Start amount (€)"
         self.amountfield.line_color_normal       = Colors.button_disable_onwhite_color
-        self.amountfield.line_color_focus        = Colors.primary_color
-        self.amountfield.current_hint_text_color = Colors.primary_color
-        self.amountfield.text_color              = Colors.primary_color
+        self.amountfield.line_color_focus        = Colors.bg_color
+        self.amountfield.current_hint_text_color = Colors.bg_color
+        self.amountfield.text_color              = Colors.bg_color
         self.datebox = MDBoxLayout(orientation='horizontal')
         self.datefield   = MDTextField()
         self.datefield.hint_text               = "Date"
         self.datefield.color_mode              = "custom"
         self.datefield.line_color_normal       = Colors.button_disable_onwhite_color
-        self.datefield.line_color_focus        = Colors.primary_color
-        self.datefield.current_hint_text_color = Colors.primary_color
-        self.datefield.text_color              = Colors.primary_color
+        self.datefield.line_color_focus        = Colors.bg_color
+        self.datefield.current_hint_text_color = Colors.bg_color
+        self.datefield.text_color              = Colors.bg_color
         self.datefield.disabled                = True
         self.datefield.text                    = data.today_str
         self.datebox.add_widget(self.datefield)
         button = MDIconButton()
         button.icon="calendar"
         button.theme_text_color="Custom"
-        button.text_color=Colors.primary_color
+        button.text_color=Colors.bg_color
         button.on_release = lambda x='i': self.open_dialog_date(x)
         self.datebox.add_widget(button)
 

@@ -127,12 +127,14 @@ class AddValueDialogContent(MDBoxLayout):
         
     def income_button_clicked(self):
         self.ids.accountfield.hint_text = "Account"
-        self.ids.purposefield.text = ""
         self.ids.purposefield.hint_text = "Purpose"
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
-        self.ids.categoryfield.text = ''
         self.ids.categoryfield.disabled = False
+        #if switched from expenditure to income button
+        if not self.ids.dialog_expenditure_button_icon.color[0]==Colors.error_color[0]:
+            self.ids.categoryfield.text = ''
+            self.ids.purposefield.text = ""
 
         if self.ids.dialog_income_button_icon.color[1] == 0:
             self.ids.dialog_income_button_icon.color = Colors.green_color
@@ -149,12 +151,14 @@ class AddValueDialogContent(MDBoxLayout):
                 pass
     def expenditure_button_clicked(self):
         self.ids.accountfield.hint_text = "Account"
-        self.ids.purposefield.text = ""
         self.ids.purposefield.hint_text = "Purpose"
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
-        self.ids.categoryfield.text = ''
         self.ids.categoryfield.disabled = False
+        #if switched from expenditure to income button
+        if not self.ids.dialog_income_button_icon.color[1]==Colors.green_color[1]:
+            self.ids.categoryfield.text = ''
+            self.ids.purposefield.text = ""
 
         if self.ids.dialog_expenditure_button_icon.color[0] == 0:
             self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color

@@ -3,7 +3,6 @@ from backend.colors import Colors
 from kivymd.uix.menu import MDDropdownMenu
 from backend.demo_setup import DemoData as data
 from kivy.metrics import dp
-from kivymd.uix.picker import MDDatePicker
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel

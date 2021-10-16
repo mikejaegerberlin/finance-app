@@ -176,76 +176,37 @@ class CategoryPlot():
         except:
             y_axis_max = 10
             y_axis_min = -10
-        offset = [[],[],[],[],[]]
-        for k in range(len(category_x_axis[key])):
-            for i in range(5):
-                offset[i].append(0)
+       
         graph_no = 0
+
+        total_graphs = 0
         for h, key in enumerate(category_x_axis):
             if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
-                #self.ax.plot(category_x_axis[key], category_y_axis[key], colors[h], linestyle='-', linewidth=Sizes.linewidth, marker='o', markersize=Sizes.markersize)
+                total_graphs += 1
+
+        for h, key in enumerate(category_x_axis):
+            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
                 for k, value in enumerate(category_y_axis[key]):
-                    if graph_no==0:
-                        self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=offset[graph_no][k])
-                        offset[graph_no+1][k] += value
+                    if category_x_axis[key][k]>=end_date:
+                        if total_graphs == 1:
+                            self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
 
-                    elif graph_no==1:
-                        if (offset[graph_no][k]<0 and value<0) or (offset[graph_no][k]>0 and value>0):
-                            self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=offset[graph_no][k])
-                            offset[graph_no+1][k] += offset[graph_no][k] + value
-                        if (offset[graph_no][k]<0 and value>0) or (offset[graph_no][k]>0 and value<0):
-                            self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
-                            offset[graph_no+1][k] += value
+                        if total_graphs == 2:
+                            if graph_no==0:
+                                self.ax.bar(category_x_axis[key][k] - relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
+                            elif graph_no==1:
+                                self.ax.bar(category_x_axis[key][k] + relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
 
-                    elif graph_no==2:
-                        if value>0:
-                            max_offset = max([offset[1][k], offset[2][k]])
-                            if max_offset<0:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
-                                offset[graph_no+1][k] += value
-                            else:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=max_offset)
-                                offset[graph_no+1][k] += max_offset + value
-                        if value<0:
-                            min_offset = min([offset[1][k], offset[2][k]])
-                            if min_offset>0:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
-                                offset[graph_no+1][k] += value
-                            else:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=min_offset)
-                                offset[graph_no+1][k] += min_offset + value
-
-                    elif graph_no==3:
-                        if value>0:
-                            max_offset = max([offset[1][k], offset[2][k], offset[3][k]])
-                            if max_offset<0:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
-                                offset[graph_no+1][k] += value
-                            else:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=max_offset)
-                                offset[graph_no+1][k] += max_offset + value
-                        if value<0:
-                            min_offset = min([offset[1][k], offset[2][k], offset[3][k]])
-                            if min_offset>0:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=0)
-                                offset[graph_no+1][k] += value
-                            else:
-                                self.ax.bar(category_x_axis[key][k], value, width=30, color=colors[h], bottom=min_offset)
-                                offset[graph_no+1][k] += min_offset + value
-                         
+                        if total_graphs == 3:
+                            if graph_no==0:
+                                self.ax.bar(category_x_axis[key][k] - relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
+                            elif graph_no==1:
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=8, color=colors[h])
+                            elif graph_no==2:
+                                self.ax.bar(category_x_axis[key][k] + relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
                 graph_no += 1
-
-        #get y_min y_max
-        for q, date in enumerate(category_x_axis[key]):
-            if date>=end_date:
-                break
-        offsets_min, offsets_max = [], []
-        for i in range(5):
-            offsets_min.append(min(offset[i][q:]))
-            offsets_max.append(max(offset[i][q:]))
-        y_axis_min = min(offsets_min)-100
-        y_axis_max = max(offsets_max)+100
-
+               
+      
         self.for_legend = category_y_axis
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)
@@ -256,7 +217,7 @@ class CategoryPlot():
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
         try:
-            self.ax.axis([end_date, dates_monthly[-1],y_axis_min,y_axis_max])
+            self.ax.axis([end_date, start_date, y_axis_min,y_axis_max])
         except:
             pass
         

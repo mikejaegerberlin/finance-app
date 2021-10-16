@@ -1,50 +1,43 @@
 from kivy.lang import Builder
-from kivy.properties import StringProperty
 
 from kivymd.app import MDApp
-from kivymd.uix.list import IRightBodyTouch, OneLineAvatarIconListItem
-from kivymd.uix.selectioncontrol import MDCheckbox
-from kivymd.icon_definitions import md_icons
-
 
 KV = '''
-<ListItemWithCheckbox>:
+MDScreen:
 
-    IconLeftWidget:
-        icon: root.icon
+    MDFillRoundFlatButton:
+        text: 'HI'
+        size_hint_x: 0.5
+        pos_hint: {"center_x": .5, "center_y": .5}
 
-    RightCheckbox:
+    MDBoxLayout:
+        orientation: 'horizontal'
+        size_hint: 1, 0.03
+        MDBoxLayout:
+            size_hint: 0.1, 1
+        
+        MDLabel:
+            size_hint_x: 0.35
+            text: 'Expenditures:'
+            font_style: 'Subtitle2'
+            theme_text_color: 'Custom'
+            halign: 'left'
 
+        MDLabel:
+            id: status_expenditures_label
+            font_style: 'Subtitle2'
+            halign: 'center'
+            size_hint: 0.45, 1
+            
+        MDBoxLayout:
+            size_hint: 0.1, 1
 
-BoxLayout:
-
-    ScrollView:
-
-        MDList:
-            id: scroll
 '''
 
 
-class ListItemWithCheckbox(OneLineAvatarIconListItem):
-    '''Custom list item.'''
-
-    icon = StringProperty("android")
-
-
-class RightCheckbox(IRightBodyTouch, MDCheckbox):
-    '''Custom right container.'''
-
-
-class MainApp(MDApp):
+class Example(MDApp):
     def build(self):
         return Builder.load_string(KV)
 
-    def on_start(self):
-        icons = list(md_icons.keys())
-        for i in range(30):
-            self.root.ids.scroll.add_widget(
-                ListItemWithCheckbox(text=f"Item {i}", icon=icons[i])
-            )
 
-
-MainApp().run()
+Example().run()

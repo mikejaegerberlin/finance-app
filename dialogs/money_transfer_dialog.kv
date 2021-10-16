@@ -13,9 +13,9 @@
         hint_text: "Amount (€)"
         color_mode: 'custom'
         line_color_normal: app.button_disable_onwhite_color
-        line_color_focus: app.primary_color
-        current_hint_text_color: app.primary_color
-        text_color: app.primary_color
+        line_color_focus: app.bg_color
+        current_hint_text_color: app.bg_color
+        text_color: app.bg_color
         on_focus: if self.focus: accountfield_from.focus = False; accountfield_to.focus = False
              
     MDTextField:
@@ -24,9 +24,9 @@
         icon_right: "arrow-down-drop-circle-outline"
         on_focus: if self.focus: app.open_acc_dropdown(accountfield_from)
         line_color_normal: app.button_disable_onwhite_color
-        line_color_focus: app.primary_color
-        current_hint_text_color: app.primary_color
-        text_color: app.primary_color
+        line_color_focus: app.bg_color
+        current_hint_text_color: app.bg_color
+        text_color: app.bg_color
         keyboard_mode: 'managed'
 
     MDTextField:
@@ -35,9 +35,9 @@
         icon_right: "arrow-down-drop-circle-outline"
         on_focus: if self.focus: app.open_acc_dropdown(accountfield_to)
         line_color_normal: app.button_disable_onwhite_color
-        line_color_focus: app.primary_color
-        current_hint_text_color: app.primary_color
-        text_color: app.primary_color
+        line_color_focus: app.bg_color
+        current_hint_text_color: app.bg_color
+        text_color: app.bg_color
         keyboard_mode: 'managed'
 
     MDBoxLayout:
@@ -47,14 +47,14 @@
             hint_text: "Date"
             color_mode: 'custom'
             line_color_normal: app.button_disable_onwhite_color
-            line_color_focus: app.primary_color
-            current_hint_text_color: app.primary_color
-            text_color: app.primary_color
+            line_color_focus: app.bg_color
+            current_hint_text_color: app.bg_color
+            text_color: app.bg_color
             disabled: True
         MDIconButton:
             icon: "calendar"
             theme_text_color: "Custom"
-            text_color: app.primary_color
+            text_color: app.bg_color
             on_release: app.open_datepicker(datefield)
             
        

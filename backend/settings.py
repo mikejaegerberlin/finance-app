@@ -1,5 +1,6 @@
 import json
 from backend.demo_setup import DemoData as data
+from kivy.utils import platform
 
 class ScreenSettings():
     def __init__(self):
@@ -17,14 +18,29 @@ class ScreenSettings():
         self.settings['CategoriesScreen'] = {}
         self.settings['CategoriesScreen']['SelectedGraphs'] = {}
         for q, cat in enumerate(data.categories):
-            self.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down' if q<4 else 'normal'
+            self.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down' if q<3 else 'normal'
 
+    def update(self):
+        self.settings = {}
+        self.settings['AccountScreen'] = {}
+        self.settings['AccountScreen']['SelectedGraphs'] = {}
+        for acc in data.accounts:
+            self.settings['AccountScreen']['SelectedGraphs'][acc] = 'down'
+
+        self.settings['CategoriesScreen'] = {}
+        self.settings['CategoriesScreen']['SelectedGraphs'] = {}
+        for q, cat in enumerate(data.categories):
+            self.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down' if q<3 else 'normal'
+
+
+       
     def load_settings(self):
 
         with open('settings.json', 'r') as lp:
             self.settings = json.load(lp)
 
     def save(self):
+
         with open('settings.json', 'w') as qt:
             json.dump(self.settings, qt)
 
@@ -32,7 +48,10 @@ class Sizes():
     def __init__(self):  
 
         settings = {}
-        settings['Labelsize'] = 12
+        if platform == 'android':
+            settings['Labelsize'] = 34
+        else:
+            settings['Labelsize'] = 12
         settings['Titlesize'] = 20
         settings['Linewidth'] = 5
         settings['Markersize'] = 3

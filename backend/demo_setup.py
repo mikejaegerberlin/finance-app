@@ -2,6 +2,10 @@ import random
 from datetime import datetime
 from backend.account_calculations import Calculations
 import json
+from kivy.utils import platform
+import base64
+
+
 
 class DemoData(Calculations):
     def __init__(self): 
@@ -38,23 +42,136 @@ class DemoData(Calculations):
         self.save_standingorders()
         #self.load_setup()       
 
-    def load_setup(self):
-        with open('accounts.json', 'r') as infile:
-            self.accounts = json.load(infile)
+    def load_setup(self, path):
 
-        with open('total.json', 'r') as infile:
-            self.total = json.load(infile)
+        file = open(path, "rb")
+        bytes = file.read()
+        msg_bytes = base64.b64decode(bytes)
+        ascii_msg = msg_bytes.decode('ascii')
+        replace_numbers = [12,11,10,1,2,3,4,5,6,7,8,9]
+        ascii_msg = ascii_msg.replace("'", "\"").replace('oe','ö').replace('ue','ü').replace('ae','ä')
 
-        with open('standingorders.json', 'r') as infile:
-            self.standingorders = json.load(infile)
+        for number in replace_numbers:
+            ascii_msg = ascii_msg.replace(str(number)+':','"'+str(number)+'":')
+        try:
+            my_data = json.loads(ascii_msg)
+        except Exception as err:
+            error_string = str(err)
+            spot = int(error_string.split('(')[-1].replace('char ','').replace(')',''))
+            ascii_msg = ascii_msg[0:spot]
+            my_data = json.loads(ascii_msg)
+            
+        self.accounts = my_data['accounts']
+        #self.total    = my_data['total']
+        self.standingorders = my_data['standingorders']
+        for order in self.standingorders['Orders']:
+            if self.standingorders['Orders'][order]['MonthListed'] == 'Trü':
+                self.standingorders['Orders'][order]['MonthListed'] = True
+            else:
+                self.standingorders['Orders'][order]['MonthListed'] = False
+
+    def save_setup(self):
+
+        my_data = {}
+        my_data['accounts']       = self.accounts
+        #my_data['total']          = self.total
+        my_data['standingorders'] = self.standingorders
+        if platform == 'android':
+            for order in my_data['standingorders']['Orders']:
+                my_data['standingorders']['Orders'][order]['MonthListed'] = str(my_data['standingorders']['Orders'][order]['MonthListed'])
+            message = str(my_data)
+            message = message.replace('ö','oe').replace('ü','ue').replace('ä','ae')
+            ascii_message = message.encode('ascii')
+            binary_data = base64.b64encode(ascii_message)
+            
+            #binary_data = binascii.a2b_base64(data_string)
+            self.save_file_android(binary_data)
+        else:
+            with open('\my_datttaaa.vifi', 'w') as outfile:
+                json.dump(my_data, outfile)
+
+    def save_file_android(self, binary_data):
+        from kivy.logger import Logger
+        from kivy.clock import Clock
+        from jnius import autoclass
+        from jnius import cast
+        from android import activity
+        from android.permissions import Permission, request_permissions, check_permission
+        
+        Activity = autoclass('android.app.Activity')
+        PythonActivity = autoclass("org.kivy.android.PythonActivity")
+        Intent = autoclass('android.content.Intent')
+        Uri = autoclass('android.net.Uri')
+        File = autoclass('java.io.File')
+        FileOutputStream = autoclass('java.io.FileOutputStream')
+        Env = autoclass('android.os.Environment')
+
+        MediaStore_Images_Media_DATA = "_data"
+
+        # Custom request codes
+        RESULT_SAVE_DOC = 1
+
+        def android_dialog_save_doc(save_callback):
+            currentActivity = cast('android.app.Activity', PythonActivity.mActivity)
+            
+            def on_activity_save(request_code, result_code, intent):
+                if request_code != RESULT_SAVE_DOC:
+                    Logger.warning('android_dialog_save_doc: ignoring activity result that was not RESULT_SAVE_DOC')
+                    return
+                
+                if result_code == Activity.RESULT_CANCELED:
+                    Clock.schedule_once(lambda dt: save_callback(None), 0)
+                    return
+                
+                if result_code != Activity.RESULT_OK:
+                    # This may just go into the void...
+                    raise NotImplementedError('Unknown result_code "{}"'.format(result_code))
+                
+                selectedUri = intent.getData()                  # Uri
+                filePathColumn = [MediaStore_Images_Media_DATA] # String
+                
+                # Cursor
+                cursor = currentActivity.getContentResolver().query(selectedUri, filePathColumn, None, None, None)
+                cursor.moveToFirst()
+                
+                # If you need to get the document path, but I used selectedUri.getPath()
+                # columnIndex = cursor.getColumnIndex(filePathColumn[0])  # int
+                # docPath = cursor.getString(columnIndex)                 # String
+                cursor.close()
+                Logger.info('android_ui: android_dialog_save_doc() selected %s', selectedUri.getPath())
+                
+                Clock.schedule_once(lambda dt: save_callback(selectedUri), 0)
+            
+            activity.bind(on_activity_result = on_activity_save)
+            
+            # Here's another Intent in contrast to get the file
+            intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            intent.setType('*/*')
+            
+            currentActivity.startActivityForResult(intent, RESULT_SAVE_DOC)
+                    
+        def android_do_saving(uri):
+            currentActivity = cast('android.app.Activity', PythonActivity.mActivity)
+                         
+            pfd = currentActivity.getContentResolver().openFileDescriptor(uri, "w")
+            fos = FileOutputStream(pfd.getFileDescriptor())
+            fos_ch = fos.getChannel()
+            fos.write(binary_data)
+            #fos_ch.truncate(len(binary_data))
+            fos.close()
+            openedUri = uri
+                    
+        android_dialog_save_doc(android_do_saving)
     
+
     def create_new_setup(self):
         
-        accounts_list = ['DKB', 'ING', 'Cash']
+        accounts_list = ['DKB', 'ING']
         Purposes      = ['Wohnung', 'Proberaum', 'Schuhe', 'Schrank', 'Vedis', 'Eis', 'Cocktails', 'B-DD', 
                         'Looperboard', 'Gitarre', 'Bier']
         
-        years         = [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+        years         = [2015, 2016, 2017, 2018, 2019, 2020, 2021]
         #years         = [2019, 2020, 2021]
         #initialize dictionaries
         for acc in accounts_list:
@@ -117,23 +234,24 @@ class DemoData(Calculations):
                 self.accounts[acc]['Profit'][year]['Total']      = year_income + year_expenditure
 
         
-        keys = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount', 'Category', 'MonthListed']
+        keys = ['Account', 'From', 'M/A', 'Day', 'Purpose', 'Amount', 'Category', 'MonthListed']
+        mo_an = ['M', 'A']
         self.standingorders['Orders'] = {}
-        for i in range(10):
+        for i in range(4):
             i = str(i)
-            self.standingorders['Orders'][i] = {}
-            self.standingorders['Orders'][i][keys[0]] = accounts_list[random.randint(0,2)]
-            self.standingorders['Orders'][i][keys[1]] = self.months[random.randint(0,7)] + '\n' + '2021'
-            self.standingorders['Orders'][i][keys[2]] = self.months[random.randint(0,11)] + '\n' + str(random.randint(2022,2025))
+            self.standingorders['Orders'][str(i)] = {}
+            self.standingorders['Orders'][str(i)][keys[0]] = accounts_list[random.randint(0,1)]
+            self.standingorders['Orders'][str(i)][keys[1]] = self.months[random.randint(0,7)] + '\n' + '2021'
+            self.standingorders['Orders'][str(i)][keys[2]] = mo_an[random.randint(0,1)]
             day       = random.randint(1,5)
             amount    = round(float(random.randint(-200,200)) + round(random.random(),2),2)
             purpose   = Purposes[random.randint(0,10)] 
             category  = self.categories[random.randint(0,8)]
-            self.standingorders['Orders'][i][keys[3]] = str(day)+'.'
-            self.standingorders['Orders'][i][keys[4]] = purpose
-            self.standingorders['Orders'][i][keys[5]] = amount
-            self.standingorders['Orders'][i][keys[6]] = category
-            self.standingorders['Orders'][i][keys[7]] = False
+            self.standingorders['Orders'][str(i)][keys[3]] = str(day)+'.'
+            self.standingorders['Orders'][str(i)][keys[4]] = purpose
+            self.standingorders['Orders'][str(i)][keys[5]] = amount
+            self.standingorders['Orders'][str(i)][keys[6]] = category
+            self.standingorders['Orders'][str(i)][keys[7]] = False
         self.standingorders['Reset date']   = self.today_str
         
         for acc in self.accounts:
@@ -141,14 +259,17 @@ class DemoData(Calculations):
             self.fill_status_of_account(acc)
 
     def save_accounts(self):
-        with open('accounts.json', 'w') as outfile:
-            json.dump(self.accounts, outfile)
-
-        with open('total.json', 'w') as outfile:
-            json.dump(self.total, outfile)
+        my_data = {}
+        my_data['accounts']       = self.accounts
+        my_data['total']          = self.total
+        my_data['standingorders'] = self.standingorders
+  
+        with open('my_data.vifi', 'w') as outfile:
+            json.dump(my_data, outfile)
 
     def save_standingorders(self):
-        with open('standingorders.json', 'w') as outfile:
-            json.dump(self.standingorders, outfile)
+        self.save_accounts()
+        #with open('standingorders.json', 'w') as outfile:
+        #    json.dump(self.standingorders, outfile)
 
 DemoData = DemoData()

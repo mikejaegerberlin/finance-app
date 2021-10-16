@@ -22,6 +22,7 @@ from dialogs.add_standingorder_dialog import AddStandingOrderDialogContent
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.bottomnavigation import MDBottomNavigationItem
+from kivy.base import EventLoop
 
 class StandingOrdersScreen(Screen):
     def __init__(self, **kwargs):
@@ -41,13 +42,19 @@ class StandingOrdersScreen(Screen):
                 content_cls=content,
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_add_standingorder.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_standingorder.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x: self.add_standing_order(x, content)
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x: self.add_standing_order(x, content)
                     ),
                 ],
         )
+        EventLoop.window.bind(on_keyboard=self.hook_keyboard)
+
+    def hook_keyboard(self, window, key, *largs):
+       if key == 27:
+           self.app.go_to_main()
+           return True 
 
     def add_standing_order(self, instance, content):
         order = content.add_standing_order()
@@ -57,6 +64,7 @@ class StandingOrdersScreen(Screen):
         data.fill_total_status()     
         data.save_accounts()
         self.update_standingorder_list()
+        self.app.global_update()
         
     def create_screen(self):
         self.md_bg_color = Colors.bg_color
@@ -64,11 +72,11 @@ class StandingOrdersScreen(Screen):
         header.md_bg_color = Colors.primary_color
         header.radius = [20,20,20,20]
 
-        self.padding_x = [0.2, 0.11, 0.11, 0.08, 0.25, 0.25]
-        labels = ['Account', 'From', 'To', 'Day', 'Purpose', 'Amount']
+        self.padding_x = [0.2, 0.11, 0.09, 0.08, 0.26, 0.26]
+        labels = ['Account', 'Since', 'M/A', 'Day', 'Purpose', 'Amount']
         for i, label in enumerate(labels):
             header_label = MDLabel(text=label, font_style="Subtitle2")
-            header_label.color = Colors.text_color
+            header_label.color = Colors.bg_color
             header_label.halign = 'center'
             header_label.size_hint_x = self.padding_x[i]
             header.add_widget(header_label)
@@ -114,10 +122,11 @@ class StandingOrdersScreen(Screen):
                 sorted_orders[str(k)] = {}
                 sorted_orders[str(k)]['Account'] = order['Account']
                 sorted_orders[str(k)]['From']    = order['From']
-                sorted_orders[str(k)]['To']      = order['To']
+                sorted_orders[str(k)]['M/A']     = order['M/A']
                 sorted_orders[str(k)]['Day']     = order['Day']
                 sorted_orders[str(k)]['Purpose'] = order['Purpose']
                 sorted_orders[str(k)]['Amount']  = order['Amount']
+                sorted_orders[str(k)]['Category']  = order['Category']
                 sorted_orders[str(k)]['MonthListed']  = order['MonthListed']
                 k += 1
         return sorted_orders
@@ -126,12 +135,23 @@ class StandingOrdersScreen(Screen):
         card       = MDCard(size_hint_y=None, height='45dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
         contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])  
         for i, key in enumerate(entry):
-            if i<len(list(entry.keys()))-2:
+            if i<len(list(entry.keys()))-3:
                 label   = MDLabel(text=str(entry[key]), font_style='Subtitle2')
                 label.color = Colors.text_color
                 label.halign = 'center'
-                label.size_hint_x = self.padding_x[i]
-                contentbox.add_widget(label)
+                if key=='Purpose':
+                    label2   = MDLabel(text=str(entry['Category']), font_style='Caption')
+                    label2.color = Colors.text_color
+                    label2.halign = 'center'
+                    subbox = MDBoxLayout(orientation='vertical', size_hint_x = self.padding_x[i])
+                    if entry['Category']=='Transfer':
+                        label.text = 'From ' + entry['Account'] + ' to ' + entry[key]
+                    subbox.add_widget(label)
+                    subbox.add_widget(label2)
+                    contentbox.add_widget(subbox)
+                else:
+                    label.size_hint_x = self.padding_x[i]
+                    contentbox.add_widget(label)
 
         label   = MDLabel(text=str(entry['Amount'])+' €', font_style='Subtitle2')
         label.color = Colors.error_color if entry['Amount']<0 else Colors.green_color
@@ -166,6 +186,7 @@ class StandingOrdersScreen(Screen):
         del data.standingorders['Orders'][str(number)]
         self.standingorder_dropdown.dismiss()
         self.update_standingorder_list()
+        data.save_accounts()
  
 
         

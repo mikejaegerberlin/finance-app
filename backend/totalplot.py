@@ -12,7 +12,7 @@ class TotalPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)    
 
-    def make_plot(self, filter_buttons, data, month_to_highlight, year_to_highlight, set_xticks):
+    def make_plot(self, filter_buttons, data, month_to_highlight, year_to_highlight, filterbutton_clicked):
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)
         self.ax      = self.fig.add_subplot(111)
@@ -35,9 +35,21 @@ class TotalPlot():
             end_date = start_date - relativedelta(years=1000)
         else:
             end_date = start_date - self.filters[self.filter_index]
-        
+
+        date_to_highlight = datetime.strptime('{}-{}-01'.format(year_to_highlight, month_to_highlight), '%Y-%m-%d').date()
+        if filterbutton_clicked==False:
+            while date_to_highlight<end_date:
+                self.filter_index += 1
+                end_date = start_date - relativedelta(years=1000) if self.filter_index==len(filter_buttons)-1 else start_date - self.filters[self.filter_index] 
+            for button in filter_buttons:
+                button.md_bg_color = Colors.bg_color
+                button.text_color = Colors.text_color
+            filter_buttons[self.filter_index].md_bg_color = Colors.text_color
+            filter_buttons[self.filter_index].text_color = Colors.bg_color
+        elif date_to_highlight<end_date: 
+            date_to_highlight = datetime.strptime('{}-{}-01'.format(data.current_year, data.current_month), '%Y-%m-%d').date()
+    
         adjust_plot = True
-       
         amounts_daily = []
         dates_daily  = []
         possible_dates = list(data.total['Status'].keys())
@@ -117,10 +129,24 @@ class TotalPlot():
         self.profits = []
         self.profits_date = {}
         for i in range(1, len(amounts_monthly)):
-            self.profits.append(amounts_monthly[i]-amounts_monthly[i-1])
-            month = int((dates_monthly[i]).month)
-            year  = int((dates_monthly[i]).year)
-            self.profits_date[self.months[month-1]+' '+str(year)] = self.profits[-1]
+            income, expenditure = data.filter_categories_within_dates_for_totalplot(dates_monthly[i-1]+relativedelta(days=1), dates_monthly[i])
+            self.profits.append(income+expenditure)
+            #self.profits.append(amounts_monthly[i]-amounts_monthly[i-1])
+            #month = int((dates_monthly[i]).month)
+            #year  = int((dates_monthly[i]).year)
+            #self.profits_date[self.months[month-1]+' '+str(year)] = self.profits[-1]
+
+            ###double check sinc found weird bug
+            #no_transfer = True
+            #for acc in data.accounts:
+            #    for date in data.accounts[acc]['Transfers']:
+            #        date_date = datetime.strptime(date, '%Y-%m-%d').date()
+            #        if date_date.month == month and date_date.year == year:
+            #            no_transfer = False
+            #if no_transfer:
+            #    self.profits[-1] = 0
+            #    self.profits_date[self.months[month-1]+' '+str(year)] = self.profits[-1]
+
 
         for q, date in enumerate(dates_monthly):
             if end_date<date:
@@ -135,45 +161,54 @@ class TotalPlot():
         self.ax.spines['right'].set_color(Colors.text_color_hex)
         self.ax.spines['top'].set_color(Colors.text_color_hex)
         self.ax.spines['bottom'].set_color(Colors.text_color_hex)
-        if set_xticks:
-            try:
-                y_axis_max = int(max(self.profits[q:])+10)
-                y_axis_min = int(min(self.profits[q:])-10)
-            except:
-                y_axis_max = 10
-                y_axis_min = -10
-            xticks = xticks
-            xticklabels = xticklabels
-            self.ax.set_xticks(xticks)
-            self.ax.set_xticklabels(xticklabels)
-            for j, profit in enumerate(self.profits):
-                if dates_monthly[j]>=end_date:
-                    if profit>=0:
-                        self.ax.bar(dates_monthly[j], profit, color='forestgreen', width=30)
-                    else:
-                        self.ax.bar(dates_monthly[j], profit, color='firebrick', width=30)
-        else:
-            y_axis_max = int(max(amounts_monthly[q:])+100)
-            y_axis_min = int(min(amounts_monthly[q:])-100)
-            self.ax.set_xticks(xticks)
-            self.ax.set_xticklabels([])
-            self.ax.plot(dates_monthly, amounts_monthly, colors[1], linewidth=Sizes.linewidth, marker='o', markersize=Sizes.markersize)
+        try:
+            y_axis_max = int(max(self.profits[q:])+10)
+            y_axis_min = int(min(self.profits[q:])-10)
+        except:
+            y_axis_max = 10
+            y_axis_min = -10
+        
+        found = False
+        for z, date in enumerate(xticks):
+            if date==date_to_highlight:
+                highlight_spot = z
+                found = True
+        if found==False:
+            for z, date in enumerate(xticks):
+                if date>date_to_highlight and xticks[z+1]<date_to_highlight:
+                    xticks.pop(z)
+                    xticks.pop(z)
+                    xticklabels.pop(z)
+                    xticklabels.pop(z)
+                    month_string = data.months[date_to_highlight.month-1]+"\n'"+str(date_to_highlight.year)[2:]
+                    xticks.insert(z, date_to_highlight)
+                    xticklabels.insert(z, month_string)
+                    highlight_spot = z
+            
+        self.ax.set_xticks(xticks)
+        self.ax.set_xticklabels(xticklabels)
+        for j, profit in enumerate(self.profits):
+            if dates_monthly[j]>=end_date:
+                if profit>=0:
+                    self.ax.bar(dates_monthly[j], profit, color=Colors.green_color, width=30)
+                else:
+                    self.ax.bar(dates_monthly[j], profit, color=Colors.error_color, width=30)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
-        #self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.fig.patch.set_alpha(0)
         
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
+        self.ax.get_xticklabels()[highlight_spot].set_color(Colors.primary_color)
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
         self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
-        date_to_highlight = datetime.strptime('{}-{}-01'.format(year_to_highlight, month_to_highlight), '%Y-%m-%d').date()
-        self.ax.plot(date_to_highlight, y_axis_min, marker='x', markersize=10, color=Colors.text_color)
-        #self.ax.legend(loc='best', ncol=4, fontsize='medium', facecolor=Colors.bg_color_light_hex, edgecolor=Colors.bg_color_hex, bbox_to_anchor=(0.8, -0.06))
-        #print (dir(self.ax.legend))
+        self.ax.plot(date_to_highlight, y_axis_min, marker='x', markersize=20, color=Colors.primary_color)
+        
+        
+        
         canvas = self.fig.canvas  
         
-        return canvas        
+        return canvas, end_date     
         
     def get_xticks_and_labels(self, start_date, end_date):
         steps = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), relativedelta(years=1), relativedelta(years=1)+relativedelta(years=self.exceed_years)]

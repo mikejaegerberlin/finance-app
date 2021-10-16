@@ -6,28 +6,27 @@
     fiveyears_button: fiveyears_button
     tenyears_button: tenyears_button
     all_button: all_button
-    legendview: legendview
     category_header: category_header
     category_list: category_list
     on_kv_post: root.app = app
+    entire_screen: entire_screen
     
     MDFloatLayout:
         md_bg_color: app.bg_color
 
     StackLayout:
-
+        id: entire_screen
         MDToolbar:
             title: 'Categories'
             md_bg_color: app.primary_color
             right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_category.open()]]
-            specific_text_color: app.text_color
+            specific_text_color: app.bg_color
                     
         MDBoxLayout:
-            size_hint_y: 0.01
+            size_hint: 1, 0.01
 
         MDBoxLayout:
-            size_hint_y: 0.03
-            size_hint_x: 1
+            size_hint: 1, 0.03
             id: account_tabs
             orientation: 'horizontal'
             
@@ -36,8 +35,7 @@
             MDFillRoundFlatButton:
                 id: oneyear_button
                 text: '1Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.bg_color
                 md_bg_color: app.text_color
@@ -46,8 +44,7 @@
             MDFillRoundFlatButton:
                 id: threeyears_button
                 text: '3Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -56,8 +53,7 @@
             MDFillRoundFlatButton:
                 id: fiveyears_button
                 text: '5Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -66,8 +62,7 @@
             MDFillRoundFlatButton:
                 id: tenyears_button
                 text: '10Y'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
@@ -76,67 +71,57 @@
             MDFillRoundFlatButton:
                 id: all_button
                 text: 'All'
-                size_hint_y: 1
-                size_hint_x: 0.125
+                size_hint: 0.125, 1
                 font_style: 'Button'
                 text_color: app.text_color
                 md_bg_color: app.bg_color
                 on_release: root.button_clicked(all_button)
 
         MDCard:
+            elevation: 0
             md_bg_color: app.bg_color
-            size_hint_y: 0.35
+            size_hint: 1, 0.35
             on_release: root.dialog_graph_selection.open()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
                 id: categoryview
         MDBoxLayout:
-            size_hint_y: 0.028
+            size_hint: 1, 0.03
 
-        MDCard:
-            md_bg_color: app.bg_color
-            size_hint_y: 0.06
-
-            MDFloatLayout:
-                size: root.width, root.height
-                md_bg_color: app.bg_color
-                id: legendview
+        
         MDBoxLayout:
-            size_hint_y: 0.048
+            size_hint: 1, 0.048
             orientation: 'horizontal'
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
             MDBoxLayout:
                 id: category_header
                 orientation: 'horizontal'
-                size_hint_y: 1
-                size_hint_x: 0.8
+                size_hint: 0.8, 1
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
 
         MDBoxLayout:
-            size_hint_y: 0.4
+            size_hint: 1, 0.4
             orientation: 'horizontal'
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
             ScrollView:   
-                size_hint_y: 1
-                size_hint_x: 0.8
+                size_hint: 0.8, 1
                 MDList:
                     id: category_list
             MDBoxLayout:
-                size_hint_x: 0.1
+                size_hint: 0.1, 1
 
 
     MDBoxLayout:
-        size_hint_y: 0.075
-        size_hint_x: 1
+        size_hint: 1, 0.075
         orientation: 'horizontal'
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_main()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -155,8 +140,8 @@
                     md_bg_color: app.primary_color
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_accounts()
             MDBoxLayout:
                 orientation: 'vertical'
@@ -175,8 +160,8 @@
                     md_bg_color: app.primary_color
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             
             MDBoxLayout:
                 orientation: 'vertical'
@@ -184,20 +169,20 @@
                     icon: 'chart-pie'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color   
+                    color: app.primary_color
+                    md_bg_color: app.bg_color
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
-                    color: app.text_color
-                    md_bg_color: app.primary_color
+                    color: app.primary_color
+                    md_bg_color: app.bg_color
 
 
         MDCard:
-            size_hint_y: 1
-            size_hint_x: 0.25
+            elevation: 0
+            size_hint: 0.25, 1
             on_release: app.go_to_standingorders()
             MDBoxLayout:
                 orientation: 'vertical'
