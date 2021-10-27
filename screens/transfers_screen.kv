@@ -25,54 +25,101 @@
             size_hint: 1, 0.01
         MDBoxLayout:
             size_hint: 1, 0.03
-            id: account_tabs
-            orientation: 'horizontal'
+            #id: account_tabs
+            #orientation: 'horizontal'
                 
-            MDFillRoundFlatButton:
-                id: twoweeks_button
-                text: '2W'
-                size_hint: 0.2, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(twoweeks_button)
+            #MDFillRoundFlatButton:
+            #    id: twoweeks_button
+            #    text: '2W'
+            #    size_hint: 0.2, 1
+            #    font_style: 'Button'
+            #    text_color: app.text_color
+            #    md_bg_color: app.bg_color
+            #    on_release: root.button_clicked(twoweeks_button)
 
-            MDFillRoundFlatButton:
-                id: onemonth_button
-                text: '1M'
-                size_hint: 0.2, 1
-                font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
-                on_release: root.button_clicked(onemonth_button)
+            #MDFillRoundFlatButton:
+            #    id: onemonth_button
+            #    text: '1M'
+            #    size_hint: 0.2, 1
+            #    font_style: 'Button'
+            #    text_color: app.bg_color
+            #    md_bg_color: app.text_color
+            #    on_release: root.button_clicked(onemonth_button)
 
-            MDFillRoundFlatButton:
-                id: threemonths_button
-                text: '3M'
-                size_hint: 0.2, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(threemonths_button)
+            #MDFillRoundFlatButton:
+            #    id: threemonths_button
+            #    text: '3M'
+            #    size_hint: 0.2, 1
+            #    font_style: 'Button'
+            #    text_color: app.text_color
+            #    md_bg_color: app.bg_color
+            #    on_release: root.button_clicked(threemonths_button)
 
-            MDFillRoundFlatButton:
-                id: sixmonths_button
-                text: '6M'
-                size_hint: 0.2, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(sixmonths_button)
+            #MDFillRoundFlatButton:
+            #    id: sixmonths_button
+            #    text: '6M'
+            #    size_hint: 0.2, 1
+            #    font_style: 'Button'
+            #    text_color: app.text_color
+            #    md_bg_color: app.bg_color
+            #    on_release: root.button_clicked(sixmonths_button)
 
-            MDFillRoundFlatButton:
-                id: custom_button
-                text: 'Custom'
-                size_hint: 0.2, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(custom_button)
+            #MDFillRoundFlatButton:
+            #    id: custom_button
+            #    text: 'Custom'
+            #    size_hint: 0.2, 1
+            #    font_style: 'Button'
+            #    text_color: app.text_color
+            #    md_bg_color: app.bg_color
+            #    on_release: root.button_clicked(custom_button)
         ScrollView:
             MDList:
                 id: transfers_list
+
+    MDFloatLayout:
+        MDFillRoundFlatButton:
+            id: twoweeks_button
+            text: '2W'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(twoweeks_button)
+            pos_hint: {'top': 0.92, 'right': 0.2}  
+        MDFillRoundFlatButton:
+            id: onemonth_button
+            text: '1M'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.bg_color
+            md_bg_color: app.text_color
+            on_release: root.button_clicked(onemonth_button)
+            pos_hint: {'top': 0.92, 'right': 0.4}  
+        MDFillRoundFlatButton:
+            id: threemonths_button
+            text: '3M'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(threemonths_button)
+            pos_hint: {'top': 0.92, 'right': 0.6}  
+        MDFillRoundFlatButton:
+            id: sixmonths_button
+            text: '6M'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(sixmonths_button)
+            pos_hint: {'top': 0.92, 'right': 0.8} 
+        MDFillRoundFlatButton:
+            id: custom_button
+            text: 'Custom'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(custom_button)
+            pos_hint: {'top': 0.92, 'right': 1}  
 

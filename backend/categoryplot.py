@@ -143,10 +143,12 @@ class CategoryPlot():
             category_x_axis[key] = dates_monthly
             category_y_axis[key] = amounts_monthly
             
-
-        for q, date in enumerate(dates_monthly):
-            if end_date<date:
-                break
+        try:
+            for q, date in enumerate(dates_monthly):
+                if end_date<date:
+                    break
+        except:
+            pass
 
         colors = Colors.piechart_colors_hex
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
@@ -181,31 +183,37 @@ class CategoryPlot():
 
         total_graphs = 0
         for h, key in enumerate(category_x_axis):
-            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
-                total_graphs += 1
+            try:
+                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
+                    total_graphs += 1
+            except:
+                pass
 
         for h, key in enumerate(category_x_axis):
-            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
-                for k, value in enumerate(category_y_axis[key]):
-                    if category_x_axis[key][k]>=end_date:
-                        if total_graphs == 1:
-                            self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
+            try:
+                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
+                    for k, value in enumerate(category_y_axis[key]):
+                        if category_x_axis[key][k]>=end_date:
+                            if total_graphs == 1:
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
 
-                        if total_graphs == 2:
-                            if graph_no==0:
-                                self.ax.bar(category_x_axis[key][k] - relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
-                            elif graph_no==1:
-                                self.ax.bar(category_x_axis[key][k] + relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
+                            if total_graphs == 2:
+                                if graph_no==0:
+                                    self.ax.bar(category_x_axis[key][k] - relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
+                                elif graph_no==1:
+                                    self.ax.bar(category_x_axis[key][k] + relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
 
-                        if total_graphs == 3:
-                            if graph_no==0:
-                                self.ax.bar(category_x_axis[key][k] - relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
-                            elif graph_no==1:
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=8, color=colors[h])
-                            elif graph_no==2:
-                                self.ax.bar(category_x_axis[key][k] + relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
-                graph_no += 1
-               
+                            if total_graphs == 3:
+                                if graph_no==0:
+                                    self.ax.bar(category_x_axis[key][k] - relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
+                                elif graph_no==1:
+                                    self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=8, color=colors[h])
+                                elif graph_no==2:
+                                    self.ax.bar(category_x_axis[key][k] + relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
+                    graph_no += 1
+            except:
+                pass
+                
       
         self.for_legend = category_y_axis
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)

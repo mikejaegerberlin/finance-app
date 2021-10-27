@@ -7,6 +7,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDFlatButton
+from kivymd.uix.snackbar import Snackbar
 
 class AddCategoryDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
@@ -56,16 +57,22 @@ class AddCategoryDialogContent(MDBoxLayout):
             self.category_dropdown.open() 
         
     def remove_category_button_clicked(self):
-        self.ids.namefield.hint_text = "Which category"
-        self.ids.namefield.icon_right = "arrow-down-drop-circle-outline"
-        self.ids.namefield.keyboard_mode = 'managed'    
-        self.namefield.focus = False
-      
-        if self.ids.remove_category_button_icon.color[0] == 0:
-            self.ids.add_category_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.add_category_button_text.color = Colors.button_disable_onwhite_color
-            self.ids.remove_category_button_icon.color = Colors.error_color
-            self.ids.remove_category_button_text.color = Colors.error_color
+        if len(data.categories)<1:
+            message = Snackbar(text='No categories yet.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.ids.namefield.hint_text = "Which category"
+            self.ids.namefield.icon_right = "arrow-down-drop-circle-outline"
+            self.ids.namefield.keyboard_mode = 'managed'    
+            self.namefield.focus = False
+        
+            if self.ids.remove_category_button_icon.color[0] == 0:
+                self.ids.add_category_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.add_category_button_text.color = Colors.button_disable_onwhite_color
+                self.ids.remove_category_button_icon.color = Colors.error_color
+                self.ids.remove_category_button_text.color = Colors.error_color
             
     def open_category_dropdown(self, namefield):
         namefield.hide_keyboard()

@@ -9,6 +9,7 @@ from kivymd.uix.picker import MDDatePicker
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
+from kivymd.uix.snackbar import Snackbar
 
 class ManageAccountsDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
@@ -107,32 +108,38 @@ class ManageAccountsDialogContent(MDBoxLayout):
         self.amountfield.focus = False
 
     def remove_account_button_clicked(self):
-       
-        self.remove_widget(self.datebox)
-        self.remove_widget(self.amountfield)
-        self.sudo_label1 = MDLabel()
-        self.sudo_label2 = MDLabel()
-        self.add_widget(self.sudo_label1)
-        self.add_widget(self.sudo_label2)
 
-        self.ids.accountfield.hint_text = 'Which account'
-        self.ids.accountfield.text = ''
-        self.ids.accountfield.icon_right = "arrow-down-drop-circle-outline"
-        self.ids.accountfield.keyboard_mode = 'managed'    
-        self.amountfield.focus = False
-        self.ids.accountfield.focus = False   
+        if len(data.accounts)<1:
+            message = Snackbar(text='No accounts yet.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.remove_widget(self.datebox)
+            self.remove_widget(self.amountfield)
+            self.sudo_label1 = MDLabel()
+            self.sudo_label2 = MDLabel()
+            self.add_widget(self.sudo_label1)
+            self.add_widget(self.sudo_label2)
 
-        if self.ids.remove_account_button_icon.color[0] == 0:
-            self.ids.add_account_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.add_account_button_text.color = Colors.button_disable_onwhite_color
-            self.ids.remove_account_button_icon.color = Colors.error_color
-            self.ids.remove_account_button_text.color = Colors.error_color
-            try:
-                amount = float(self.ids.amountfield.text)
-                if amount>0:
-                    self.ids.amountfield.text = str(-amount)
-            except:
-                pass      
+            self.ids.accountfield.hint_text = 'Which account'
+            self.ids.accountfield.text = ''
+            self.ids.accountfield.icon_right = "arrow-down-drop-circle-outline"
+            self.ids.accountfield.keyboard_mode = 'managed'    
+            self.amountfield.focus = False
+            self.ids.accountfield.focus = False   
+
+            if self.ids.remove_account_button_icon.color[0] == 0:
+                self.ids.add_account_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.add_account_button_text.color = Colors.button_disable_onwhite_color
+                self.ids.remove_account_button_icon.color = Colors.error_color
+                self.ids.remove_account_button_text.color = Colors.error_color
+                try:
+                    amount = float(self.ids.amountfield.text)
+                    if amount>0:
+                        self.ids.amountfield.text = str(-amount)
+                except:
+                    pass      
 
     def dialog_date_ok(self, instance, value, date_range):
         date = value.strftime('%Y-%m-%d')

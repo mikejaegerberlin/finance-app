@@ -1,47 +1,25 @@
+import time
 from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.core.window import Window
-from kivy.uix.boxlayout import BoxLayout
-from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
-from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.button import MDFlatButton
-from kivymd.uix.label import MDLabel, MDIcon
-from kivymd.uix.snackbar import Snackbar
-from kivy.metrics import dp
-from kivymd import images_path
-from kivymd.icon_definitions import md_icons
-from kivymd.uix.dialog import MDDialog
-from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-from kivymd.uix.card import MDCard
-from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.graphics import *
 from datetime import datetime
-from dateutil.relativedelta import relativedelta 
-from dialogs.custom_datepicker import DatePickerContent
-from dialogs.add_value_dialog import AddValueDialogContent
-from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
-from dialogs.dialogs_empty_pythonside import SettingsDialogContent
-from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
-from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
-from kivymd.uix.picker import MDDatePicker
 from backend.colors import Colors
-from backend.accountplot import AccountPlot
 from backend.demo_setup import DemoData as data
 from backend.settings import Sizes
-from backend.carditems import CardItemsBackend
 from screens.standing_order_screen import StandingOrdersScreen
 from screens.categories_screen import CategoriesScreen
 from screens.transfers_screen import TransfersScreen
 from screens.accounts_screen import AccountsScreen
 from screens.overview_screen import MainScreen
-from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.uix.screenmanager import FadeTransition
 from backend.settings import ScreenSettings
 from kivy.utils import platform
 import threading
+
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -51,9 +29,12 @@ class MainScreen(Screen):
 class DemoApp(MDApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.demo_mode = False
+        self.Window = Window
         if platform != 'android':
-            Window.size = (400,700)
+            self.Window.size = (400,700)
         
+     
         self.slider_labelsize_current = Sizes.labelsize
         self.slider_titlesize_current = Sizes.titlesize
         self.slider_linewidth_current = Sizes.linewidth
@@ -75,7 +56,7 @@ class DemoApp(MDApp):
         sm.add_widget(StandingOrdersScreen(name='Standing order'))
         sm.add_widget(AccountsScreen(name='Accounts'))
         sm.add_widget(CategoriesScreen(name='Categories'))
-        
+
         #data.today_str  = '2021-12-02'
         #data.today_date = datetime.strptime(data.today_str, '%Y-%m-%d').date()
         #data.reset_standingorders_monthlisted()
@@ -89,29 +70,34 @@ class DemoApp(MDApp):
         if data.today_date.month!=reset_date.month or data.today_date.year!=reset_date.year:
             data.reset_standingorders_monthlisted()
             data.standingorders['Reset date'] = data.today_str
-            data.save_standingorders()
+            data.save_standingorders(self.demo_mode)
         
         data.fill_total_status()          
-        data.save_accounts()
-        data.save_standingorders()
-        data.filter_categories_within_dates(data.first_of_month_date, data.today_date)    
-
+        data.save_accounts(self.demo_mode)
+        data.save_standingorders(self.demo_mode)
+        data.filter_categories_within_dates(data.first_of_month_date, data.today_date)   
+     
+        self.screen = Builder.load_file("main.kv")
+        ### Get relevant ids form kv file###
+        #screen1 = threading.Thread(target=self.on_kv_post_MainScreen())
+        #screen2 = threading.Thread(target=self.on_kv_post_AccountsScreen())
+        #screen3 = threading.Thread(target=self.on_kv_post_StandingOrdersScreen())
+        #screen4 = threading.Thread(target=self.on_kv_post_CategoriesScreen())
+        
+        #screen1.start()
+        #screen2.start()
+        #screen3.start()
+        #screen4.start()
+        self.on_kv_post_MainScreen()
+        self.on_kv_post_AccountsScreen()
+        self.on_kv_post_StandingOrdersScreen()
+        self.on_kv_post_CategoriesScreen() 
+        
+    def build(self):
         self.screen = Builder.load_file("main.kv")
         
-        ### Get relevant ids form kv file###
-        screen1 = threading.Thread(target=self.on_kv_post_MainScreen())
-        screen2 = threading.Thread(target=self.on_kv_post_AccountsScreen())
-        screen3 = threading.Thread(target=self.on_kv_post_StandingOrdersScreen())
-        screen4 = threading.Thread(target=self.on_kv_post_CategoriesScreen())
-        screen1.start()
-        screen2.start()
-        screen3.start()
-        screen4.start()
-        #self.on_kv_post_MainScreen()
-        #self.on_kv_post_AccountsScreen()
-        #self.on_kv_post_StandingOrdersScreen()
-        #self.on_kv_post_CategoriesScreen()
-
+        
+        
     def get_start_and_end_date(self, year, month):
         start_date = datetime.strptime('{}-{}-01'.format(year, month), '%Y-%m-%d').date()
         days = ['31', '30', '29', '28']
@@ -128,8 +114,8 @@ class DemoApp(MDApp):
         for acc in data.accounts:
             data.fill_status_of_account(acc)
         data.fill_total_status() 
-        data.save_accounts()
-        ScreenSettings.save()
+        data.save_accounts(self.demo_mode)
+        ScreenSettings.save(self.demo_mode)
 
     def update_main_screen(self):
         self.update_backend()

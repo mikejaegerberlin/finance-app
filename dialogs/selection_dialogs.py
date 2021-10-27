@@ -80,15 +80,39 @@ class MonthSelectionDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
         super(MonthSelectionDialogContent, self).__init__(**kwargs)  
 
+    def update_years(self):
+        year = str(data.today_date.year)   
+        self.years = data.get_all_years_of_transfers() 
+        if len(self.years.keys())==0:
+            self.years[str(year)] = ['']
+        self.month_menu_items = [
+            {
+                "text": month,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=month: self.set_month_item(x),
+            } for month in self.years[str(year)]
+        ]
+        self.year_menu_items = [
+            {
+                "text": year,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=year: self.set_year_item(x),
+            } for year in list(self.years.keys())
+        ]
+        self.year_dropdown.items = self.year_menu_items
+        self.month_dropdown.items = self.month_menu_items
+        self.ids.month_field.text = self.years[str(year)][0]
+
     def on_kv_post(self, instance):
-        months = data.get_all_months_of_transfers()    
-        self.ids.month_field.text = months[0].split(' ')[0]
-        self.ids.year_field.text = months[0].split(' ')[1]
-        years = [months[0].split(' ')[1]]
-        for i in range(1,len(months)):
-            year = months[i].split(' ')[1]
-            if year!=years[-1]:
-                years.append(year)
+        self.years = data.get_all_years_of_transfers() 
+        month = data.months_text[data.today_date.month-1]
+        year = str(data.today_date.year)   
+        self.ids.month_field.text = month
+        self.ids.year_field.text = year
+        if len(self.years.keys())==0:
+            self.years[str(year)] = ['']
 
         self.month_menu_items = [
             {
@@ -96,7 +120,7 @@ class MonthSelectionDialogContent(MDBoxLayout):
                 "viewclass": "OneLineListItem",
                 "height": dp(40),
                 "on_release": lambda x=month: self.set_month_item(x),
-            } for month in data.months_text
+            } for month in self.years[str(year)]
         ]
         self.month_dropdown = MDDropdownMenu(
             caller=self.ids.month_field,
@@ -111,7 +135,7 @@ class MonthSelectionDialogContent(MDBoxLayout):
                 "viewclass": "OneLineListItem",
                 "height": dp(40),
                 "on_release": lambda x=year: self.set_year_item(x),
-            } for year in years
+            } for year in list(self.years.keys())
         ]
         self.year_dropdown = MDDropdownMenu(
             caller=self.ids.year_field,
@@ -124,6 +148,16 @@ class MonthSelectionDialogContent(MDBoxLayout):
         self.ids.year_field.text = year
         self.ids.year_field.focus = False
         self.ids.month_field.focus = False
+        self.month_menu_items = [
+            {
+                "text": month,
+                "viewclass": "OneLineListItem",
+                "height": dp(40),
+                "on_release": lambda x=month: self.set_month_item(x),
+            } for month in self.years[str(year)]
+        ]
+        self.month_dropdown.items = self.month_menu_items
+        self.ids.month_field.text = self.years[str(year)][0]
         self.year_dropdown.dismiss() 
 
     def set_month_item(self, month):

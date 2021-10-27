@@ -27,55 +27,6 @@
 
         MDBoxLayout:
             size_hint: 1, 0.03
-            id: account_tabs
-            orientation: 'horizontal'
-            
-           
-
-            MDFillRoundFlatButton:
-                id: oneyear_button
-                text: '1Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
-                on_release: root.button_clicked(oneyear_button)
-
-            MDFillRoundFlatButton:
-                id: threeyears_button
-                text: '3Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(threeyears_button)
-
-            MDFillRoundFlatButton:
-                id: fiveyears_button
-                text: '5Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(fiveyears_button)
-
-            MDFillRoundFlatButton:
-                id: tenyears_button
-                text: '10Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(tenyears_button)
-
-            MDFillRoundFlatButton:
-                id: all_button
-                text: 'All'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(all_button)
 
         MDCard:
             elevation: 0
@@ -113,6 +64,61 @@
                     id: category_list
             MDBoxLayout:
                 size_hint: 0.1, 1
+
+    MDFloatLayout:
+        MDIconButton:
+            icon: 'gesture-tap'
+            theme_text_color: 'Custom'
+            text_color: app.text_color
+            pos_hint:  {'top': 0.855, 'right': 0.95}  
+
+    MDFloatLayout:
+        MDFillRoundFlatButton:
+            id: oneyear_button
+            text: '1Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.bg_color
+            md_bg_color: app.text_color
+            on_release: root.button_clicked(oneyear_button)
+            pos_hint: {'top': 0.92, 'right': 0.2}  
+        MDFillRoundFlatButton:
+            id: threeyears_button
+            text: '3Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(threeyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.4}  
+        MDFillRoundFlatButton:
+            id: fiveyears_button
+            text: '5Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(fiveyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.6}  
+        MDFillRoundFlatButton:
+            id: tenyears_button
+            text: '10Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(tenyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.8} 
+        MDFillRoundFlatButton:
+            id: all_button
+            text: 'All'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(all_button)
+            pos_hint: {'top': 0.92, 'right': 1}  
+  
 
 
     MDBoxLayout:

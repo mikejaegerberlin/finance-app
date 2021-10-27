@@ -4,7 +4,22 @@ from kivymd.uix.menu import MDDropdownMenu
 from backend.demo_setup import DemoData as data
 from kivy.metrics import dp
 from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.snackbar import Snackbar
+from kivymd.uix.button import MDFlatButton
+from dialogs.add_category_dialog import AddCategoryDialogContent
+from kivymd.uix.dialog import MDDialog
+from datetime import datetime
+from kivy.factory import Factory
+from kivymd.uix.bottomsheet import MDCustomBottomSheet
+from kivymd.uix.chip import MDChip
+from kivymd.uix.label import MDLabel
+from kivymd.uix.stacklayout import StackLayout
+from kivy.uix.scrollview import ScrollView
+from kivymd.uix.gridlayout import MDGridLayout
 
+class ContentCustomSheet(StackLayout):
+    def __init__(self, **kwargs):
+        super(ContentCustomSheet, self).__init__(**kwargs)
 
 class AddValueDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
@@ -21,14 +36,16 @@ class AddValueDialogContent(MDBoxLayout):
         ]
 
         self.acc_dropdown.items = self.acc_menu_items
-
+        cat_items = ['Add new category']
+        for cat in data.categories:
+            cat_items.append(cat)
         self.cat_menu_items = [
             {
                 "text": cat,
                 "viewclass": "OneLineListItem",
                 "height": dp(40),
                 "on_release": lambda x=cat: self.set_cat_item(x),
-            } for cat in data.categories
+            } for cat in cat_items
         ]
 
         self.cat_dropdown.items = self.cat_menu_items
@@ -44,13 +61,16 @@ class AddValueDialogContent(MDBoxLayout):
             } for acc in data.accounts
         ]
 
+        cat_items = ['Add new category']
+        for cat in data.categories:
+            cat_items.append(cat)
         self.cat_menu_items = [
             {
                 "text": cat,
                 "viewclass": "OneLineListItem",
                 "height": dp(40),
                 "on_release": lambda x=cat: self.set_cat_item(x),
-            } for cat in data.categories
+            } for cat in cat_items
         ]
         self.acc_dropdown = MDDropdownMenu(
             caller=self.ids.accountfield,
@@ -71,11 +91,31 @@ class AddValueDialogContent(MDBoxLayout):
                                         size_hint_y=None, text_weekday_color=Colors.bg_color)
         self.dialog_date.bind(on_save=self.dialog_date_ok, on_cancel=self.dialog_date_cancel)
         self.ids.datefield.text = self.dialog_date.today.strftime('%Y-%m-%d')
-        
 
+        self.dialog_add_category = MDDialog(
+                type="custom",
+                content_cls=AddCategoryDialogContent(),
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_category.dismiss()
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_add_remove_category(x)
+                    ),
+                ],
+            )    
+        
     def dialog_date_ok(self, instance, value, date_range):
-        date = value.strftime('%Y-%m-%d')
-        self.ids.datefield.text = date
+        date_str = value.strftime('%Y-%m-%d')
+        date_date = datetime.strptime(date_str, '%Y-%m-%d').date() 
+        if date_date>data.today_date:
+            message = Snackbar(text='Date cannot be higher than today.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+            self.ids.datefield.text = data.today_str
+        else:
+            self.ids.datefield.text = date_str
         self.ids.purposefield.focus = False
         self.ids.amountfield.focus = False
         self.ids.accountfield.focus = False
@@ -96,9 +136,62 @@ class AddValueDialogContent(MDBoxLayout):
     def open_cat_dropdown(self, categoryfield):
         categoryfield.hide_keyboard()
         self.cat_dropdown.caller = categoryfield
-        self.cat_dropdown.open()
+        #self.cat_dropdown.open()
         self.ids.purposefield.focus     = False
         self.ids.amountfield.focus      = False
+
+        self.content_custom_sheet = ContentCustomSheet()
+        self.custom_sheet = MDCustomBottomSheet(screen=self.content_custom_sheet)
+        self.custom_sheet.radius = 15
+        self.custom_sheet.radius_from = 'top'
+        self.custom_sheet.overlay_color = [0,0,0,0]
+        self.custom_sheet.animation = True
+        self.custom_sheet.size_hint_x = 0.9
+        
+        first_box = MDBoxLayout(size_hint_y=0.05)
+        self.content_custom_sheet.add_widget(first_box)
+
+        first_box = MDBoxLayout(orientation='horizontal', size_hint_y=0.1)
+        first_box.add_widget(MDBoxLayout(size_hint_x=0.03))
+        label1 = MDLabel(text='Available categories', font_style='Subtitle2', size_hint_x=0.75)
+        label1.color = Colors.bg_color
+        first_box.add_widget(label1)
+        first_box.add_widget(MDBoxLayout(size_hint_x=0.03))
+        self.content_custom_sheet.add_widget(first_box)
+
+        first_box = MDBoxLayout(size_hint_y=0.04)
+        self.content_custom_sheet.add_widget(first_box)
+
+
+        first_box = MDBoxLayout(orientation='horizontal', size_hint_y=0.35)
+        first_box.add_widget(MDBoxLayout(size_hint_x=0.03))
+        scrollview = ScrollView()
+        gridlayout = MDGridLayout(size_hint_x=None, rows=1, spacing='2dp')
+        
+        char = 0
+        for cat in (data.categories):
+            CHIP = MDChip(text=cat, icon='', color=Colors.bg_color, text_color=Colors.text_color, on_release=lambda x: self.set_cat_item(x))
+            gridlayout.add_widget(CHIP)
+            char += len(cat)
+        gridlayout.width = 10*char + 20*len(data.categories)
+       
+        scrollview.add_widget(gridlayout)
+        first_box.add_widget(scrollview)
+        self.content_custom_sheet.add_widget(first_box)
+
+        first_box = MDBoxLayout(orientation='horizontal', size_hint_y=0.3)
+        labelbox = MDBoxLayout(size_hint_x=0.03)
+        label1 = MDLabel(text='or', font_style='Subtitle2')
+        label1.color = Colors.bg_color
+        label1.halign = 'center'
+        labelbox.add_widget(label1)
+        first_box.add_widget(labelbox)
+        CHIP = MDChip(text='Add new category', icon='', color=Colors.bg_color, text_color=Colors.text_color, on_release=lambda x: self.set_cat_item(x))
+        first_box.add_widget(CHIP)
+        first_box.add_widget(MDBoxLayout(size_hint_x=0.03))
+        self.content_custom_sheet.add_widget(first_box)
+        self.custom_sheet.open()
+        
 
     def set_acc_item(self, text_item):
         self.acc_dropdown.caller.text = text_item
@@ -108,11 +201,33 @@ class AddValueDialogContent(MDBoxLayout):
         if self.ids.categoryfield.text != 'Transfer':
             self.focus_function()
 
-    def set_cat_item(self, text_item):
-        self.cat_dropdown.caller.text = text_item
-        self.cat_dropdown.dismiss()
-        self.cat_dropdown.caller.focus = False
+    def set_cat_item(self, CHIP):
+        if CHIP.text=='Add new category':
+            self.dialog_add_category.open()
+        else:
+            self.categoryfield.text = CHIP.text
+        self.custom_sheet.dismiss()
+        self.categoryfield.focus = False
         self.focus_function()
+
+    def execute_add_remove_category(self, instance):
+        category = self.dialog_add_category.content_cls.namefield.text
+        #add category
+        if self.dialog_add_category.content_cls.namefield.hint_text == "Category name":
+            data.categories.append(category)
+            from backend.settings import ScreenSettings
+            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='normal'
+            ScreenSettings.save(self.app.demo_mode)
+            self.dialog_add_category.content_cls.namefield.text = ''
+            self.cat_dropdown.caller.text = category
+        #remove category
+        else:
+            for i, cat in enumerate(data.categories):
+                if cat==category:
+                    data.categories.pop(i)
+                    break
+        self.dialog_add_category.dismiss()
+        self.app.global_update()    
 
     def purposefield_function(self):
         if self.ids.purposefield.hint_text == "Purpose":
@@ -175,28 +290,34 @@ class AddValueDialogContent(MDBoxLayout):
                 pass      
 
     def transfer_button_clicked(self):
-        self.ids.amountfield.text = ''
-        self.ids.accountfield.hint_text = "Account (from)"
-        self.ids.purposefield.text = ""
-        self.ids.purposefield.hint_text = "Account (to)"
-        self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
-        self.ids.purposefield.keyboard_mode = 'managed'
-        self.ids.categoryfield.text = 'Transfer'
-        self.ids.categoryfield.disabled = True
+        if len(data.accounts)<2:
+            message = Snackbar(text='At least two accounts needed for internal transfer.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.ids.amountfield.text = ''
+            self.ids.accountfield.hint_text = "Account (from)"
+            self.ids.purposefield.text = ""
+            self.ids.purposefield.hint_text = "Account (to)"
+            self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
+            self.ids.purposefield.keyboard_mode = 'managed'
+            self.ids.categoryfield.text = 'Transfer'
+            self.ids.categoryfield.disabled = True
 
-        if self.ids.dialog_transfer_button_icon.color[0] == 0:
-            self.ids.dialog_transfer_button_icon.color = Colors.primary_color
-            self.ids.dialog_transfer_button_text.color = Colors.primary_color
-            self.ids.dialog_expenditure_button_text.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_expenditure_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_income_button_text.color = Colors.button_disable_onwhite_color
-            try:
-                amount = float(self.ids.amountfield.text)
-                if amount>0:
-                    self.ids.amountfield.text = str(-amount)
-            except:
-                pass     
+            if self.ids.dialog_transfer_button_icon.color[0] == 0:
+                self.ids.dialog_transfer_button_icon.color = Colors.primary_color
+                self.ids.dialog_transfer_button_text.color = Colors.primary_color
+                self.ids.dialog_expenditure_button_text.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_expenditure_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_income_button_text.color = Colors.button_disable_onwhite_color
+                try:
+                    amount = float(self.ids.amountfield.text)
+                    if amount>0:
+                        self.ids.amountfield.text = str(-amount)
+                except:
+                    pass     
 
     def focus_function(self):
         self.ids.accountfield.focus = False

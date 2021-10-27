@@ -1,11 +1,6 @@
-from logging import root
-from kivymd import app
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.core.window import Window
-from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivy.uix.screenmanager import Screen
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.label import MDLabel, MDIcon
@@ -18,32 +13,21 @@ from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivymd.uix.card import MDCard
-from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.graphics import *
 from datetime import datetime
-from dateutil.relativedelta import relativedelta 
-from dialogs.custom_datepicker import DatePickerContent
 from dialogs.add_value_dialog import AddValueDialogContent
-from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
-from dialogs.dialogs_empty_pythonside import SettingsDialogContent
-from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
-from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
-from kivymd.uix.picker import MDDatePicker
+from dialogs.dialogs_empty_pythonside import Spacer_Horizontal
 from backend.colors import Colors
 from backend.totalplot import TotalPlot
 from backend.piechart import PieChart
 from backend.demo_setup import DemoData as data
-from backend.settings import Sizes
-from backend.carditems import CardItemsBackend
-from screens.standing_order_screen import StandingOrdersScreen
-from kivymd.uix.bottomnavigation import MDBottomNavigationItem
-from screens.transfers_screen import TransfersScreen
 from dialogs.selection_dialogs import MonthSelectionDialogContent
 from kivymd.uix.filemanager import MDFileManager
 from kivy.utils import platform
 from kivymd.toast import toast
 from backend.settings import ScreenSettings
-
+from kivy.uix.label import Label
+from dialogs.manage_accounts_dialog import ManageAccountsDialogContent
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -59,7 +43,7 @@ class MainScreen(Screen):
                 title='Add transfer',
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_add_value(x)
                     ),
                     MDFlatButton(
                         text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_money_transfer(x)
@@ -81,10 +65,25 @@ class MainScreen(Screen):
                 ],
             )
 
+        self.dialog_manage_accounts = MDDialog(
+                type="custom",
+                content_cls=ManageAccountsDialogContent(),
+                title="Add/Delete account",
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_manage_accounts(x)
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_accounts_management(x)
+                    ),
+                ],
+            )
+
+        
         self.selected_month = data.today_date.month
         self.selected_year = data.today_date.year
 
-        setting_strings = ['Load data', 'Save data']
+        setting_strings = ['Load data', 'Save data', 'Add account']
         self.settings_menu_items = [
             {
                 "text": item,
@@ -108,6 +107,57 @@ class MainScreen(Screen):
         self.file_manager.specific_text_color = Colors.text_color
         self.file_manager.opposite_colors = Colors.primary_color
 
+    def dismiss_dialog_add_value(self, instance):
+        self.dialog_add_value.dismiss()
+        self.dialog_add_value.content_cls.accountfield.text = ''
+        self.dialog_add_value.content_cls.amountfield.text = ''
+        self.dialog_add_value.content_cls.purposefield.text = ''
+        self.dialog_add_value.content_cls.categoryfield.text = ''
+        self.dialog_add_value.content_cls.datefield.text = data.today_str 
+
+
+    def dismiss_dialog_manage_accounts(self, instance):
+        self.dialog_manage_accounts.dismiss()
+        self.dialog_manage_accounts.content_cls.accountfield.text = ''
+        self.dialog_manage_accounts.content_cls.amountfield.text = ''
+        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str 
+        
+
+
+    def open_dialog_select_month(self):
+        years = data.get_all_years_of_transfers()
+        self.dialog_select_month.content_cls.update_years()
+        snackbar = False
+        if len(years.keys())>1:
+            self.dialog_select_month.open()
+        elif len(years.keys())==1:
+            months = 0
+            for key in years:
+                months = len(years[key])
+            if months>1:
+                self.dialog_select_month.open()
+            else:
+                snackbar = True
+        
+        if snackbar or len(years.keys())==0:
+            if len(data.accounts)>0:
+                messagestring = 'At least data in two months is required.'
+            else:
+                messagestring = 'No accounts.'
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+
+    def open_dialog_add_value(self):
+        if len(data.accounts)>0:
+            self.dialog_add_value.open()
+        else:
+            messagestring = 'Cannot add a transfer yet. Add an account first.'
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
               
     def execute_settings_instance(self, instance):
         self.settings_instance = instance
@@ -132,6 +182,9 @@ class MainScreen(Screen):
                     else:
                         print ('Did not get all permissions')
                 request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE], callback)
+
+        if instance=='Add account':
+            self.dialog_manage_accounts.open()    
         self.dropdown_settings.dismiss()
 
     def file_manager_open(self):
@@ -204,13 +257,13 @@ class MainScreen(Screen):
         messagestring += 'Account field to is empty.' if account_to=='' else ''   
         messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
         if messagestring!='':
-            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to), snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -245,13 +298,13 @@ class MainScreen(Screen):
         messagestring += 'Purpose field is empty.' if purpose=='' else ''
         messagestring += 'Category field is empty.' if category=='' else ''    
         if messagestring!='':
-            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose), snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -277,6 +330,19 @@ class MainScreen(Screen):
                 button.md_bg_color = Colors.bg_color
                 button.text_color  = Colors.text_color
         self.update_plot(filterbutton_clicked=True)
+
+    def ref_clicked(self, ref):
+        if ref=='demo':
+            self.app.demo_mode = True
+            data.create_new_setup()
+            self.app.global_update()
+        elif ref=='account':
+            self.dialog_manage_accounts.open(force=True)
+           
+    def exit_demo(self, instance):
+        self.app.demo_mode = False
+        data.load_internal_setup()
+        self.app.global_update()
          
     def update_plot(self, filterbutton_clicked):
         self.filter_buttons = [self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
@@ -287,73 +353,125 @@ class MainScreen(Screen):
             self.selected_month = data.current_month
             self.selected_year = data.current_year
             self.add_things_to_screen()
-        canvas2.size_hint_y = 0.98
-        canvas2.pos_hint = {'top': 0.98}
-
-        
+        #canvas2.size_hint_y = 0.99
+        canvas2.pos_hint = {'top': 0.99}
         self.ids.assetview.clear_widgets()
-        #self.ids.assetview.add_widget(canvas)
         self.ids.assetview.add_widget(canvas2)
 
         self.ids.piechartview.clear_widgets()
-        piecanvas = PieChart.make_plot(data.categories_expenditures)
-        piecanvas.size_hint_y = 0.95
-        piecanvas.size_hint_x = 0.7
-        piecanvas.pos_hint = {'top': 1, 'right': 1}
-        self.ids.piechartview.size = 100, 100
-        self.ids.piechartview.add_widget(piecanvas)
-       
         self.ids.legend_list.clear_widgets()
-        for i, label in enumerate(data.categories_expenditures):
-            card = MDCard(size_hint_y=None, height='40dp', md_bg_color=Colors.bg_color, elevation = 0)
-            contentbox = MDBoxLayout(orientation='vertical', md_bg_color=Colors.bg_color)
+        try:
+            self.remove_widget(self.info_box)
+        except:
+            pass
+        try:
+            self.remove_widget(self.demo_info_box)
+        except:
+            pass
 
-            subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
-            rectangle = MDIcon(icon='card', theme_text_color='Custom')
-            rectangle.color = Colors.piechart_colors[i]
-            rectangle.halign = 'right'
-            rectangle.size_hint_x = 0.25
-            label1 = MDLabel(text=label, font_style='Caption')
-            label1.color = Colors.text_color
-            label1.halign = 'left'
-            label1.size_hint_x = 0.75
-            subbox.add_widget(rectangle)
-            subbox.add_widget(label1)
-            contentbox.add_widget(subbox)
-          
-            subbox2 = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
-            total = round(data.categories_expenditures[label]/data.categories_expenditures_total*100, 1)
-            label2 = MDLabel(text='')
+        if self.app.demo_mode:
+            text = "[color=#ffcd0a][ref=demo]Exit demo[/ref][/color]"
+            self.demo_info_box = MDFloatLayout()
+            label = MDLabel(text=text, font_style='Subtitle2')
+            label.markup = True
+            label.color = Colors.text_color
+            label.pos_hint = {'top': 1.35, 'right': 1.03}
+            label.on_ref_press = lambda x='Hi': self.exit_demo(x)
+            self.demo_info_box.add_widget(label)
+            self.add_widget(self.demo_info_box)
+
+        if len(data.accounts)==0:
+            text1 = "No accounts!" 
+            text2 = "Add a [color=#ffcd0a][ref=account]new account[/ref][/color] or run the [color=#ffcd0a][ref=demo]demo[/ref][/color]."
+            self.info_box = MDFloatLayout()
+            label = MDLabel(text=text1, font_style='Subtitle2')
+            label2 = MDLabel(text=text2, font_style='Caption')
+            label2.markup = True
+            label.color = Colors.text_color
+            label.halign = 'center'
+            label.pos_hint = {'top': 0.78}
             label2.color = Colors.text_color
-            label2.halign = 'left'
-            label2.size_hint_x = 0.25
+            label2.halign = 'center'
+            label2.pos_hint = {'top': 0.74}
+            label2.on_ref_press = lambda x: self.ref_clicked(x)
+            self.info_box.add_widget(label)
+            self.info_box.add_widget(label2)
+            self.add_widget(self.info_box)
 
-            label3 = MDLabel(text=str(round(data.categories_expenditures[label],2))+'€', font_style='Caption')
-            label3.color = Colors.text_color
-            label3.halign = 'left'
-            label3.size_hint_x = 0.35
+        elif data.categories_expenditures_total>=0:
+            text1 = "No expenditures!" 
+            text2 = "Select another month by tapping on the chart above\n or add an expenditure to this month."
+            self.info_box = MDFloatLayout()
+            label = MDLabel(text=text1, font_style='Subtitle2')
+            label2 = MDLabel(text=text2, font_style='Caption')
+            label.color = Colors.text_color
+            label.halign = 'center'
+            label.pos_hint = {'top': 0.78}
+            label2.color = Colors.text_color
+            label2.halign = 'center'
+            label2.pos_hint = {'top': 0.74}
+            self.info_box.add_widget(label)
+            self.info_box.add_widget(label2)
+            self.add_widget(self.info_box)
 
-            label4 = MDLabel(text='=', font_style='Caption')
-            label4.color = Colors.text_color
-            label4.halign = 'center'
-            label4.size_hint_x = 0.05
+        else:
+            piecanvas = PieChart.make_plot(data.categories_expenditures)
+            piecanvas.size_hint_y = 0.95
+            piecanvas.size_hint_x = 0.7
+            piecanvas.pos_hint = {'top': 1, 'right': 1}
+            self.ids.piechartview.size = 100, 100
+            self.ids.piechartview.add_widget(piecanvas)
+        
+            for i, label in enumerate(data.categories_expenditures):
+                card = MDCard(size_hint_y=None, height='40dp', md_bg_color=Colors.bg_color, elevation = 0)
+                contentbox = MDBoxLayout(orientation='vertical', md_bg_color=Colors.bg_color)
 
-            label5 = MDLabel(text=str(total)+'%', font_style='Caption')
-            label5.color = Colors.text_color
-            label5.halign = 'right'
-            label5.size_hint_x = 0.35
-            subbox2.add_widget(label2)
-            subbox2.add_widget(label3)
-            subbox2.add_widget(label4)
-            subbox2.add_widget(label5)
-            contentbox.add_widget(subbox2)
+                subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
+                rectangle = MDIcon(icon='card', theme_text_color='Custom')
+                rectangle.color = Colors.piechart_colors[i]
+                rectangle.halign = 'right'
+                rectangle.size_hint_x = 0.25
+                label1 = MDLabel(text=label, font_style='Caption')
+                label1.color = Colors.text_color
+                label1.halign = 'left'
+                label1.size_hint_x = 0.75
+                subbox.add_widget(rectangle)
+                subbox.add_widget(label1)
+                contentbox.add_widget(subbox)
+            
+                subbox2 = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
+                total = round(data.categories_expenditures[label]/data.categories_expenditures_total*100, 1)
+                label2 = MDLabel(text='')
+                label2.color = Colors.text_color
+                label2.halign = 'left'
+                label2.size_hint_x = 0.25
 
-            card.add_widget(contentbox)
-            self.ids.legend_list.add_widget(card)
-       
-        label = MDLabel(text='Trend of monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
-        label.color = Colors.text_color
-        self.ids.assetview.add_widget(label)     
+                label3 = MDLabel(text=str(round(data.categories_expenditures[label],2))+'€', font_style='Caption')
+                label3.color = Colors.text_color
+                label3.halign = 'left'
+                label3.size_hint_x = 0.35
+
+                label4 = MDLabel(text='=', font_style='Caption')
+                label4.color = Colors.text_color
+                label4.halign = 'center'
+                label4.size_hint_x = 0.05
+
+                label5 = MDLabel(text=str(total)+'%', font_style='Caption')
+                label5.color = Colors.text_color
+                label5.halign = 'right'
+                label5.size_hint_x = 0.35
+                subbox2.add_widget(label2)
+                subbox2.add_widget(label3)
+                subbox2.add_widget(label4)
+                subbox2.add_widget(label5)
+                contentbox.add_widget(subbox2)
+
+                card.add_widget(contentbox)
+                self.ids.legend_list.add_widget(card)
+        
+            label = MDLabel(text='Trend of monthly profit', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
+            label.color = Colors.text_color
+            self.ids.assetview.add_widget(label)     
 
     def add_things_to_screen(self):
 
@@ -377,5 +495,67 @@ class MainScreen(Screen):
 
         self.ids.status_income_label.text = str(round(data.categories_income_total, 2))+' €'
         self.ids.status_income_label.color = Colors.green_color if data.categories_income_total>=0 else Colors.error_color
+
+    def execute_accounts_management(self, instance):
+        if self.dialog_manage_accounts.content_cls.accountfield.hint_text == "Account name":
+            self.add_account()
+        else:
+            self.remove_account()
+            self.dialog_manage_accounts.content_cls.accountfield.text = ''
+            self.dialog_manage_accounts.content_cls.amountfield.text = ''
+            self.dialog_manage_accounts.content_cls.datefield.text = data.today_str    
+            self.app.global_update()
+        
+
+    def add_account(self):
+        account = self.dialog_manage_accounts.content_cls.accountfield.text.replace(' ','').replace('\t','')
+        try:
+            amount  = round(float(self.dialog_manage_accounts.content_cls.amountfield.text),2)
+            valid_amount = True
+        except:
+            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+            valid_amount = False
+        if valid_amount:
+            date    = self.dialog_manage_accounts.content_cls.datefield.text
+            data.accounts[account] = {}
+            for key in data.keys_list:
+                data.accounts[account][key] = {}
+            data.accounts[account]['Transfers'][date] = []
+            data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
+            ScreenSettings.settings['AccountScreen']['SelectedGraphs'][account] = 'down'
+            ScreenSettings.save(self.app.demo_mode)
+            data.fill_status_of_account(account)
+
+            self.dialog_manage_accounts.dismiss()
+            message = Snackbar(text='Added account {} with {} € start amount.'.format(account, amount), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+
+            self.dialog_manage_accounts.content_cls.accountfield.text = ''
+            self.dialog_manage_accounts.content_cls.amountfield.text = ''
+            self.dialog_manage_accounts.content_cls.datefield.text = data.today_str    
+            self.app.global_update()
+       
+        
+    def remove_account(self):
+        account = self.dialog_manage_accounts.content_cls.accountfield.text
+        del data.accounts[account]
+        orders_to_delete = []
+        for order in data.standingorders['Orders']:
+            if data.standingorders['Orders'][order]['Account'] == account:
+                orders_to_delete.append(order)
+        for order in orders_to_delete:
+            del data.standingorders['Orders'][order]
+
+        self.dialog_manage_accounts.dismiss()
+        message = Snackbar(text='Deleted account {}.'.format(account), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+        message.bg_color=Colors.black_color
+        message.text_color=Colors.text_color
+        message.open()
+        
 
            

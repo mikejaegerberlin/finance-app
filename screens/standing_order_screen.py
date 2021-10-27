@@ -1,15 +1,8 @@
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.core.window import Window
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.label import MDLabel
-from kivymd.uix.snackbar import Snackbar
 from kivy.metrics import dp
-from kivymd import images_path
-from kivymd.icon_definitions import md_icons
 from kivymd.uix.dialog import MDDialog
-from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivymd.uix.card import MDCard
@@ -21,7 +14,6 @@ from datetime import datetime
 from dialogs.add_standingorder_dialog import AddStandingOrderDialogContent
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from kivy.base import EventLoop
 
 class StandingOrdersScreen(Screen):
@@ -62,7 +54,7 @@ class StandingOrdersScreen(Screen):
         data.add_order_in_transfers(order)
         data.fill_status_of_account(order['Account'])      
         data.fill_total_status()     
-        data.save_accounts()
+        data.save_accounts(self.app.demo_mode)
         self.update_standingorder_list()
         self.app.global_update()
         
@@ -88,7 +80,7 @@ class StandingOrdersScreen(Screen):
         self.standing_orders_list.clear_widgets()
         sorted_orders = self.sort_standingorders()
         data.standingorders['Orders'] = sorted_orders
-        data.save_standingorders()
+        data.save_standingorders(self.app.demo_mode)
         for number in sorted_orders:
             carditem = self.generate_carditem(sorted_orders[number], number)
             self.standing_orders_list.add_widget(carditem)
@@ -186,7 +178,7 @@ class StandingOrdersScreen(Screen):
         del data.standingorders['Orders'][str(number)]
         self.standingorder_dropdown.dismiss()
         self.update_standingorder_list()
-        data.save_accounts()
+        data.save_accounts(self.app.demo_mode)
  
 
         

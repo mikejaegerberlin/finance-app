@@ -4,8 +4,17 @@ from kivy.utils import platform
 
 class ScreenSettings():
     def __init__(self):
-        self.make_structure()
-        #self.load_settings()
+        #self.make_structure()
+        try:
+            self.load_settings()
+        except:
+            self.settings = {}
+            self.settings['AccountScreen'] = {}
+            self.settings['AccountScreen']['SelectedGraphs'] = {}
+            self.settings['CategoriesScreen'] = {}
+            self.settings['CategoriesScreen']['SelectedGraphs'] = {}
+            with open('settings.json', 'w') as qt:
+                json.dump(self.settings, qt)
 
     def make_structure(self):
         self.settings = {}
@@ -39,10 +48,10 @@ class ScreenSettings():
         with open('settings.json', 'r') as lp:
             self.settings = json.load(lp)
 
-    def save(self):
-
-        with open('settings.json', 'w') as qt:
-            json.dump(self.settings, qt)
+    def save(self, demo_mode):
+        if not demo_mode:
+            with open('settings.json', 'w') as qt:
+                json.dump(self.settings, qt)
 
 class Sizes():
     def __init__(self):  

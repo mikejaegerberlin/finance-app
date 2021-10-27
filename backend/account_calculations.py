@@ -302,18 +302,21 @@ class Calculations():
                          
         return amount
                         
-    def get_all_months_of_transfers(self):
+    def get_all_years_of_transfers(self):
         dates = list(self.total['Status'].keys())
         dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
-        date_min = datetime.strptime(dates[0], '%Y-%m-%d').date()
-        date_max = datetime.strptime(dates[-1], '%Y-%m-%d').date()
- 
-        date = date_max - relativedelta(months=1)
-        months = [self.months_text[date_max.month-1]+' '+str(date_max.year)]
-        while date.year>=date_min.year and date.month>=date_min.month:
-            months.append(self.months_text[date.month-1]+' '+str(date.year))
-            date = date - relativedelta(months=1)
-        return months
+        
+        years = {}
+        for date in dates:
+            if not date[0:4] in years.keys():
+                years[date[0:4]] = []
+
+        for date in dates:
+            month = self.months_text[int(date[5:7])-1]
+            if not month in years[date[0:4]]:
+                years[date[0:4]].append(month)
+        
+        return years
         
 
 

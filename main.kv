@@ -80,61 +80,12 @@ ScreenManager:
 
         MDBoxLayout:
             size_hint: 1, 0.03
-            id: account_tabs
-            orientation: 'horizontal'
-            
-           
-
-            MDFillRoundFlatButton:
-                id: oneyear_button
-                text: '1Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.bg_color
-                md_bg_color: app.text_color
-                on_release: root.button_clicked(oneyear_button)
-
-            MDFillRoundFlatButton:
-                id: threeyears_button
-                text: '3Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(threeyears_button)
-
-            MDFillRoundFlatButton:
-                id: fiveyears_button
-                text: '5Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(fiveyears_button)
-
-            MDFillRoundFlatButton:
-                id: tenyears_button
-                text: '10Y'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(tenyears_button)
-
-            MDFillRoundFlatButton:
-                id: all_button
-                text: 'All'
-                size_hint: 0.125, 1
-                font_style: 'Button'
-                text_color: app.text_color
-                md_bg_color: app.bg_color
-                on_release: root.button_clicked(all_button)
-
+        
         MDCard:
             elevation: 0
             md_bg_color: app.bg_color
             size_hint: 1, 0.35
-            on_release: root.dialog_select_month.open()
+            on_release: root.open_dialog_select_month()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
@@ -244,7 +195,6 @@ ScreenManager:
     MDFloatLayout:
         MDIconButton:
             icon: 'gesture-tap'
-            size_hint: 0.5, 1
             theme_text_color: 'Custom'
             text_color: app.text_color
             pos_hint:  {'top': 0.855, 'right': 0.95}  
@@ -255,6 +205,53 @@ ScreenManager:
             pos_hint: {'top': 0.34, 'right': 0.475}    
             MDList:
                 id: legend_list
+                
+    MDFloatLayout:
+        MDFillRoundFlatButton:
+            id: oneyear_button
+            text: '1Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.bg_color
+            md_bg_color: app.text_color
+            on_release: root.button_clicked(oneyear_button)
+            pos_hint: {'top': 0.92, 'right': 0.2}  
+        MDFillRoundFlatButton:
+            id: threeyears_button
+            text: '3Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(threeyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.4}  
+        MDFillRoundFlatButton:
+            id: fiveyears_button
+            text: '5Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(fiveyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.6}  
+        MDFillRoundFlatButton:
+            id: tenyears_button
+            text: '10Y'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(tenyears_button)
+            pos_hint: {'top': 0.92, 'right': 0.8} 
+        MDFillRoundFlatButton:
+            id: all_button
+            text: 'All'
+            size_hint: 0.2, 0.03
+            font_style: 'Button'
+            text_color: app.text_color
+            md_bg_color: app.bg_color
+            on_release: root.button_clicked(all_button)
+            pos_hint: {'top': 0.92, 'right': 1}  
   
                 
         
@@ -360,7 +357,7 @@ ScreenManager:
         x: root.width - self.width - dp(20)
         y: dp(70)
         elevation_normal: 8
-        on_release: root.dialog_add_value.open()
+        on_release: root.open_dialog_add_value()
 
             
                

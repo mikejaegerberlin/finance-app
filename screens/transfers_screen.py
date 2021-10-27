@@ -107,10 +107,10 @@ class TransfersScreen(Screen):
                 other_account = account_to if account_from==data.current_account else account_from
                 self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
                 self.fill_transfers_list(data.current_account)
-            data.save_accounts()
+            data.save_accounts(self.app.demo_mode)
             self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
         except:
-            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -133,7 +133,7 @@ class TransfersScreen(Screen):
         data.fill_total_status()
         self.app.screen.ids.main.update_plot()
         self.app.screen.ids.main.add_things_to_screen()
-        data.save_accounts()
+        data.save_accounts(self.app.demo_mode)
 
     def message_after_change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount):
         if 'From' in old_purpose and 'to' in old_purpose:
@@ -149,7 +149,7 @@ class TransfersScreen(Screen):
                 message += 'Changed purpose from {} to {}. '.format(old_purpose, new_purpose)
             if new_amount!=old_amount:
                 message += 'Changed amount from {} to {}. '.format(old_amount, new_amount)    
-        message = Snackbar(text=message, snackbar_x="10dp", snackbar_y="10dp")
+        message = Snackbar(text=message, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
         message.bg_color=Colors.black_color
         message.text_color=Colors.text_color
         message.open()
@@ -201,15 +201,12 @@ class TransfersScreen(Screen):
                     message_text = 'Deleted transfer also from account {}.'.format(delete_account)   
                 else:
                     message_text = 'Deleted {} for {} on {}'.format(amountlabel.text, purposelabel.text, datelabel.text)
-                message = Snackbar(text=message_text, snackbar_x="10dp", snackbar_y="10dp")
+                message = Snackbar(text=message_text, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
                 message.bg_color=Colors.black_color
                 message.text_color=Colors.text_color
                 message.open()
-
-                data.fill_total_status()
-                self.app.screen.ids.main.update_plot()
-                self.app.screen.ids.main.add_things_to_screen()
-                data.save_accounts()
+                self.app.global_update()
+                
         self.transfer_dropdown.dismiss()
         
      

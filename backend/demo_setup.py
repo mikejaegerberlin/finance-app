@@ -33,15 +33,19 @@ class DemoData(Calculations):
         self.months_rev      = {'January': 1, 'February': 2, 'March': 3, 'April':4, 'Mai': 5, 'June': 6, 'July': 7, 'August': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'December': 12,
                                 'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr':4, 'Mai': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dez': 12}
         self.months_text     = ['January', 'February', 'March', 'April', 'Mai', 'June', 'July', 'August', 'September', 'Oktober', 'November', 'December']
-        self.categories      = ['Freizeit', 'Musik', 'Möbel', 'Miete', 'Essen&Trinken', 'Reisen', 'Versicherung', 'Gehalt', 'Bekleidung']
-        self.accounts        = {}
-        self.standingorders  = {}
-        self.total = {}
-        self.create_new_setup() 
-        self.save_accounts()
-        self.save_standingorders()
-        #self.load_setup()       
-
+        self.total           = {}
+        try:
+            #self.jiubui()
+            self.load_internal_setup()      
+        except:
+            self.accounts        = {}
+            self.standingorders  = {}
+            self.standingorders['Orders'] = {}
+            self.standingorders['Reset date'] = self.today_str
+            self.categories = []
+            self.save_accounts(demo_mode=False)
+            self.save_standingorders(demo_mode=False)
+        
     def load_setup(self, path):
 
         file = open(path, "rb")
@@ -62,8 +66,8 @@ class DemoData(Calculations):
             my_data = json.loads(ascii_msg)
             
         self.accounts = my_data['accounts']
-        #self.total    = my_data['total']
         self.standingorders = my_data['standingorders']
+        self.categories = my_data['categories']
         for order in self.standingorders['Orders']:
             if self.standingorders['Orders'][order]['MonthListed'] == 'Trü':
                 self.standingorders['Orders'][order]['MonthListed'] = True
@@ -74,8 +78,8 @@ class DemoData(Calculations):
 
         my_data = {}
         my_data['accounts']       = self.accounts
-        #my_data['total']          = self.total
         my_data['standingorders'] = self.standingorders
+        my_data['categories']     = self.categories
         if platform == 'android':
             for order in my_data['standingorders']['Orders']:
                 my_data['standingorders']['Orders'][order]['MonthListed'] = str(my_data['standingorders']['Orders'][order]['MonthListed'])
@@ -166,7 +170,7 @@ class DemoData(Calculations):
     
 
     def create_new_setup(self):
-        
+        self.categories      = ['Freizeit', 'Musik', 'Möbel', 'Miete', 'Essen&Trinken', 'Reisen', 'Versicherung', 'Gehalt', 'Bekleidung']
         accounts_list = ['DKB', 'ING']
         Purposes      = ['Wohnung', 'Proberaum', 'Schuhe', 'Schrank', 'Vedis', 'Eis', 'Cocktails', 'B-DD', 
                         'Looperboard', 'Gitarre', 'Bier']
@@ -257,19 +261,27 @@ class DemoData(Calculations):
         for acc in self.accounts:
             self.add_standingorders_in_transfers_demosetup(acc)
             self.fill_status_of_account(acc)
-
-    def save_accounts(self):
+        
+    def save_accounts(self, demo_mode):
         my_data = {}
         my_data['accounts']       = self.accounts
-        my_data['total']          = self.total
         my_data['standingorders'] = self.standingorders
+        my_data['categories']     = self.categories
   
-        with open('my_data.vifi', 'w') as outfile:
-            json.dump(my_data, outfile)
+        if not demo_mode:
+            with open('my_data.vifi', 'w') as outfile:
+                json.dump(my_data, outfile)
 
-    def save_standingorders(self):
-        self.save_accounts()
-        #with open('standingorders.json', 'w') as outfile:
-        #    json.dump(self.standingorders, outfile)
+    def load_internal_setup(self):
+        with open('my_data.vifi', 'r') as infile:
+            my_data = json.load(infile)
+        
+        self.accounts = my_data['accounts']
+        self.standingorders = my_data['standingorders']
+        self.categories = my_data['categories']
+                            
+    def save_standingorders(self, demo_mode):
+        self.save_accounts(demo_mode)
+        
 
 DemoData = DemoData()

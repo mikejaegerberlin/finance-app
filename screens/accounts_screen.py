@@ -1,50 +1,26 @@
-from logging import root
-from kivymd import app
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.core.window import Window
-from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.boxlayout import MDBoxLayout
-from kivy.uix.screenmanager import Screen, ScreenManager, NoTransition
-from kivymd.uix.menu import MDDropdownMenu
+from kivy.uix.screenmanager import Screen
 from kivymd.uix.button import MDFlatButton
 from kivymd.uix.label import MDLabel, MDIcon
 from kivymd.uix.snackbar import Snackbar
-from kivy.metrics import dp
-from kivymd import images_path
-from kivymd.icon_definitions import md_icons
 from kivymd.uix.dialog import MDDialog
-from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivymd.uix.card import MDCard
-from kivymd.uix.floatlayout import MDFloatLayout
 from kivy.graphics import *
 from datetime import datetime
-from dateutil.relativedelta import relativedelta 
-from dialogs.custom_datepicker import DatePickerContent
 from dialogs.add_value_dialog import AddValueDialogContent
-from dialogs.dialogs_empty_pythonside import ChangeTransferitemContent
-from dialogs.dialogs_empty_pythonside import SettingsDialogContent
 from dialogs.manage_accounts_dialog import ManageAccountsDialogContent
 from dialogs.dialogs_empty_pythonside import Spacer_Horizontal, Spacer_Vertical
-from dialogs.dialogs_empty_pythonside import MoneyTransferDialogContent
-from kivymd.uix.picker import MDDatePicker
 from backend.colors import Colors
 from backend.accountplot import AccountPlot
 from backend.demo_setup import DemoData as data
-from backend.settings import Sizes
-from backend.carditems import CardItemsBackend
-from screens.standing_order_screen import StandingOrdersScreen
-from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from dialogs.add_value_dialog import AddValueDialogContent
 from dialogs.selection_dialogs import GraphSelectionDialogContent
-from screens.transfers_screen import TransfersScreen
 from kivy.uix.screenmanager import SlideTransition
 from backend.settings import ScreenSettings
 from kivy.base import EventLoop
-
-
+from kivy.metrics import dp
 
 class AccountsScreen(Screen):
     def __init__(self, **kwargs):
@@ -57,7 +33,7 @@ class AccountsScreen(Screen):
                 title="Add transfer",
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_value.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_add_value(x)
                     ),
                     MDFlatButton(
                         text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_money_transfer(x)
@@ -71,7 +47,7 @@ class AccountsScreen(Screen):
                 title="Add/Delete account",
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_manage_accounts.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_manage_accounts(x)
                     ),
                     MDFlatButton(
                         text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_accounts_management(x)
@@ -94,6 +70,21 @@ class AccountsScreen(Screen):
             )
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
+    def dismiss_dialog_add_value(self, instance):
+        self.dialog_add_value.dismiss()
+        self.dialog_add_value.content_cls.accountfield.text = ''
+        self.dialog_add_value.content_cls.amountfield.text = ''
+        self.dialog_add_value.content_cls.purposefield.text = ''
+        self.dialog_add_value.content_cls.categoryfield.text = ''
+        self.dialog_add_value.content_cls.datefield.text = data.today_str 
+
+    def dismiss_dialog_manage_accounts(self, instance):
+        self.dialog_manage_accounts.dismiss()
+        self.dialog_manage_accounts.content_cls.accountfield.text = ''
+        self.dialog_manage_accounts.content_cls.amountfield.text = ''
+        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str 
+        
+
     def hook_keyboard(self, window, key, *largs):
        if key == 27:
            self.app.go_to_main()
@@ -104,7 +95,7 @@ class AccountsScreen(Screen):
         self.update_plot()
         for acc in data.accounts:
             self.update_main_accountview(acc)
-        ScreenSettings.save()
+        ScreenSettings.save(self.app.demo_mode)
 
     #def on_pre_enter(self):
     #    self.app.update_accounts_screen()
@@ -114,44 +105,63 @@ class AccountsScreen(Screen):
             self.add_account()
         else:
             self.remove_account()
-        self.app.global_update()
+            self.dialog_manage_accounts.content_cls.accountfield.text = ''
+            self.dialog_manage_accounts.content_cls.amountfield.text = ''
+            self.dialog_manage_accounts.content_cls.datefield.text = data.today_str  
+            self.app.global_update()
 
     def add_account(self):
-        account = self.dialog_manage_accounts.content_cls.accountfield.text
-        amount  = round(float(self.dialog_manage_accounts.content_cls.amountfield.text),2)
-        date    = self.dialog_manage_accounts.content_cls.datefield.text
-        self.dialog_manage_accounts.content_cls.accountfield.text = ''
-        self.dialog_manage_accounts.content_cls.amountfield.text = ''
-        self.dialog_manage_accounts.content_cls.datefield.text = data.today_str
-        data.accounts[account] = {}
-        for key in data.keys_list:
-            data.accounts[account][key] = {}
-        data.accounts[account]['Transfers'][date] = []
-        data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
-        ScreenSettings.settings['AccountScreen']['SelectedGraphs'][account] = 'down'
-        self.dialog_graph_selection.content_cls.update_list()
-        data.fill_status_of_account(account)
-        self.ids.accountsview.clear_widgets()
-        self.AmountLabels = {}
-        self.IconBoxes = {}
-        for i, acc in enumerate(data.accounts):
-            carditem = self.generate_main_carditem(acc, i)
-            self.ids.accountsview.add_widget(carditem)
-            self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
-        label2 = MDLabel(text='Tap on account to see transfers.', font_style='Caption')
-        label2.color = Colors.text_color
-        label2.halign = 'center'
-        card.add_widget(label2)
-        self.ids.accountsview.add_widget(card)
-        card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
-        self.ids.accountsview.add_widget(card)
+        account = self.dialog_manage_accounts.content_cls.accountfield.text.replace(' ','').replace('\t','')
+        try:
+            amount  = round(float(self.dialog_manage_accounts.content_cls.amountfield.text),2)
+            valid_amount = True
+        except:
+            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+            valid_amount = False
 
-        self.dialog_manage_accounts.dismiss()
-        message = Snackbar(text='Added account {} with {} € start amount.'.format(account, amount), snackbar_x="10dp", snackbar_y="10dp")
-        message.bg_color=Colors.black_color
-        message.text_color=Colors.text_color
-        message.open()
+        if valid_amount:
+            date    = self.dialog_manage_accounts.content_cls.datefield.text
+            self.dialog_manage_accounts.content_cls.accountfield.text = ''
+            self.dialog_manage_accounts.content_cls.amountfield.text = ''
+            self.dialog_manage_accounts.content_cls.datefield.text = data.today_str
+            data.accounts[account] = {}
+            for key in data.keys_list:
+                data.accounts[account][key] = {}
+            data.accounts[account]['Transfers'][date] = []
+            data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
+            ScreenSettings.settings['AccountScreen']['SelectedGraphs'][account] = 'down'
+            ScreenSettings.save(self.app.demo_mode)
+            self.dialog_graph_selection.content_cls.update_list()
+            data.fill_status_of_account(account)
+            self.ids.accountsview.clear_widgets()
+            self.AmountLabels = {}
+            self.IconBoxes = {}
+            for i, acc in enumerate(data.accounts):
+                carditem = self.generate_main_carditem(acc, i)
+                self.ids.accountsview.add_widget(carditem)
+                self.ids.accountsview.add_widget(Spacer_Vertical('6dp'))
+            card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+            label2 = MDLabel(text='Tap on account to see transfers.', font_style='Caption')
+            label2.color = Colors.text_color
+            label2.halign = 'center'
+            card.add_widget(label2)
+            self.ids.accountsview.add_widget(card)
+            card       = MDCard(size_hint_y=None, height='60dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+            self.ids.accountsview.add_widget(card)
+
+            self.dialog_manage_accounts.dismiss()
+            message = Snackbar(text='Added account {} with {} € start amount.'.format(account, amount), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+
+            self.dialog_manage_accounts.content_cls.accountfield.text = ''
+            self.dialog_manage_accounts.content_cls.amountfield.text = ''
+            self.dialog_manage_accounts.content_cls.datefield.text = data.today_str    
+            self.app.global_update()
         
     def remove_account(self):
         account = self.dialog_manage_accounts.content_cls.accountfield.text
@@ -179,7 +189,7 @@ class AccountsScreen(Screen):
         self.ids.accountsview.add_widget(card)
 
         self.dialog_manage_accounts.dismiss()
-        message = Snackbar(text='Deleted account {}.'.format(account), snackbar_x="10dp", snackbar_y="10dp")
+        message = Snackbar(text='Deleted account {}.'.format(account), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
         message.bg_color=Colors.black_color
         message.text_color=Colors.text_color
         message.open()
@@ -210,13 +220,13 @@ class AccountsScreen(Screen):
         messagestring += 'Account field to is empty.' if account_to=='' else ''   
         messagestring += 'Account field from and to are same. ' if account_from==account_to else ''
         if messagestring!='':
-            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to), snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text="Transfered {} € from {} to {}".format(amount, account_from, account_to), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -251,13 +261,13 @@ class AccountsScreen(Screen):
         messagestring += 'Purpose field is empty.' if purpose=='' else ''  
         messagestring += 'Category field is empty.' if category=='' else '' 
         if messagestring!='':
-            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
         else:
             self.dialog_add_value.dismiss()
-            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose), snackbar_x="10dp", snackbar_y="10dp")
+            message = Snackbar(text="Added {} € to {} for {}".format(amount, account, purpose), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -286,11 +296,12 @@ class AccountsScreen(Screen):
 
     
     def update_plot(self):
+        ScreenSettings.update()
         self.filter_buttons = [self.ids.onemonth_button, self.ids.threemonths_button, self.ids.sixmonths_button, 
                                self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
                                self.ids.tenyears_button, self.ids.all_button]
         canvas    = AccountPlot.make_plot(self.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
+        canvas.pos_hint = {'top': 0.99}
         self.ids.assetview.clear_widgets()
         self.ids.assetview.add_widget(canvas)
         label = MDLabel(text='Trend of each account', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})

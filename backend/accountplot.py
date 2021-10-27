@@ -111,6 +111,9 @@ class AccountPlot():
         self.ax.spines['bottom'].set_color(Colors.text_color_hex)
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
+        if end_date==start_date:
+            end_date = end_date - relativedelta(days=1)
+            start_date = start_date + relativedelta(days=1)
         self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
         #self.ax.legend(loc='best', ncol=4, fontsize='medium', facecolor=Colors.bg_color_light_hex, edgecolor=Colors.bg_color_hex, bbox_to_anchor=(0.8, -0.06))
         #print (dir(self.ax.legend))

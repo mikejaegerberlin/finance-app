@@ -1,3 +1,17 @@
+<ContentCustomSheet>:
+    size_hint_y: None
+    height: "105dp"
+    adaptive_height: True
+
+   
+  
+
+    #ScrollView:
+    #    MDBoxLayout:
+    #        orientation: 'horizontal'
+    #        adaptive_height: True
+    #        id: category_list              
+
 <AddValueDialogContent>
     orientation: "vertical"
     spacing: "8dp"
@@ -17,6 +31,7 @@
     dialog_transfer_button: dialog_expenditure_button
     dialog_transfer_button_icon: dialog_transfer_button_icon
     dialog_transfer_button_text: dialog_transfer_button_text
+    on_kv_post: root.app = app
     
 
     MDBoxLayout:

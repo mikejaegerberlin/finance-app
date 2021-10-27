@@ -3,6 +3,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from backend.settings import Sizes
 from backend.colors import Colors
+from datetime import datetime
 
 class TotalPlot():
     def __init__(self):  
@@ -12,24 +13,31 @@ class TotalPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)    
 
+    def get_last_day_date_of_month(self, year,i_str):
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                last_day_date = datetime.strptime('{}-{}-{}'.format(str(year), i_str, day), '%Y-%m-%d').date()
+                break
+            except:
+                pass
+        return last_day_date
+
     def make_plot(self, filter_buttons, data, month_to_highlight, year_to_highlight, filterbutton_clicked):
+
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)
         self.ax      = self.fig.add_subplot(111)
         start_year   = str(self.today_date.year)
         start_month  = str(self.today_date.month)
-        days = ['31', '30', '29', '28']
-        for day in days:
-            try:
-                start_date   = datetime.strptime('{}-{}-{}'.format(start_year, start_month, day), '%Y-%m-%d').date() 
-                break
-            except:
-                pass
-        self.filters = [relativedelta(years=1), relativedelta(years=3), relativedelta(years=5), relativedelta(years=10), relativedelta(years=13)]
+        
+        start_date = self.get_last_day_date_of_month(start_year, start_month)
+        self.filters = [relativedelta(months=11), relativedelta(months=35), relativedelta(months=59), relativedelta(months=119), relativedelta(months=155)]
         self.filters_help = [365, 1095, 1825, 3650, 4745]
-        for i, button in enumerate(filter_buttons):
+        for y, button in enumerate(filter_buttons):
             if button.md_bg_color[0]==1:
-                self.filter_index = i
+                self.filter_index = y
+                break
         
         if self.filter_index==len(filter_buttons)-1:
             end_date = start_date - relativedelta(years=1000)
@@ -54,6 +62,7 @@ class TotalPlot():
         dates_daily  = []
         possible_dates = list(data.total['Status'].keys())
         possible_dates.sort(reverse=True)
+        
         try:
             min_date = possible_dates[-1]
         except:
@@ -68,11 +77,12 @@ class TotalPlot():
                 adjust_plot = False
                 break
         
+        #if plot must be adjusted, adjust filter_index
         self.exceed_years = 0
         if adjust_plot:
             end_date = datetime.strptime(min_date, '%Y-%m-%d').date()
             delta    = start_date - end_date
-            if delta.days<=30:
+            if delta.days<=365:
                 self.filter_index = 0
             else:
                 exceeded = True
@@ -83,7 +93,7 @@ class TotalPlot():
                         if distance1>distance2:
                             self.filter_index = i+1
                         else:
-                            self.filter_index = i
+                            self.filter_index = i+1
                         exceeded = False
                         if self.filter_index==len(self.filters)-1:
                             self.exceed_years = 1
@@ -93,11 +103,10 @@ class TotalPlot():
                     rest_days         = delta.days - self.filters_help[-1]
                     rest_years        = int(int(rest_days / 365) / 6)
                     self.exceed_years = 1 + rest_years
-       
-     
+               
+                 
         amounts_monthly = []
         dates_monthly   = []
-        
         possible_dates = list(data.total['Status'].keys())
         possible_dates.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
         try:
@@ -107,53 +116,40 @@ class TotalPlot():
         for date in possible_dates:
             if date[0:4]!=years[-1]:
                 years.append(date[0:4])
-
+        
         status_before = 0
         for year in years:
             filter_year        = list(filter(lambda k: str(year) in k, possible_dates))
             for i in range(1,13):
                 i_str = '0'+str(i) if i<10 else str(i)
-                filter_month   = list(filter(lambda k: i_str in k[5:7], filter_year))
-                if len(filter_month)>=1:
-                    amounts_monthly.append(data.total['Status'][filter_month[-1]])
-                    status_before = amounts_monthly[-1]
-                else:
-                    amounts_monthly.append(status_before)
-                for day in days:
-                    try:
-                        dates_monthly.append(datetime.strptime('{}-{}-{}'.format(str(year), i_str, day), '%Y-%m-%d').date())
-                        break
-                    except:
-                        pass
-
+                filter_month  = list(filter(lambda k: i_str in k[5:7], filter_year))
+                last_day_date = self.get_last_day_date_of_month(year,i_str)
+                if last_day_date>end_date-relativedelta(days=1):
+                    if len(filter_month)>=1:
+                        amounts_monthly.append(data.total['Status'][filter_month[-1]])
+                        status_before = amounts_monthly[-1]
+                    else:
+                        amounts_monthly.append(status_before)
+                    dates_monthly.append(last_day_date)
+                               
         self.profits = []
         self.profits_date = {}
-        for i in range(1, len(amounts_monthly)):
+        for i in range(1, len(dates_monthly)):
             income, expenditure = data.filter_categories_within_dates_for_totalplot(dates_monthly[i-1]+relativedelta(days=1), dates_monthly[i])
             self.profits.append(income+expenditure)
-            #self.profits.append(amounts_monthly[i]-amounts_monthly[i-1])
-            #month = int((dates_monthly[i]).month)
-            #year  = int((dates_monthly[i]).year)
-            #self.profits_date[self.months[month-1]+' '+str(year)] = self.profits[-1]
-
-            ###double check sinc found weird bug
-            #no_transfer = True
-            #for acc in data.accounts:
-            #    for date in data.accounts[acc]['Transfers']:
-            #        date_date = datetime.strptime(date, '%Y-%m-%d').date()
-            #        if date_date.month == month and date_date.year == year:
-            #            no_transfer = False
-            #if no_transfer:
-            #    self.profits[-1] = 0
-            #    self.profits_date[self.months[month-1]+' '+str(year)] = self.profits[-1]
-
-
+       
+        try:
+            income, expenditure = data.filter_categories_within_dates_for_totalplot(datetime.strptime('{}-{}-01'.format(dates_monthly[0].year, dates_monthly[0].month), '%Y-%m-%d').date(), dates_monthly[0])
+            profit_0 = income+expenditure
+            self.profits.insert(0, profit_0)
+        except:
+            pass
+        end_date = end_date - relativedelta(months=1)
+            
         for q, date in enumerate(dates_monthly):
             if end_date<date:
                 break
-
-        colors = Colors.matplotlib_colors
-        #self.ax.plot(dates_daily, amounts_daily, colors[1], linewidth=Sizes.linewidth, markersize=Sizes.markersize, label='Total')        
+       
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.grid(axis='y', linestyle=':', linewidth=0.05)
         self.ax.grid(axis='x', linestyle=':', linewidth=0.05, alpha=0.3)
@@ -187,25 +183,39 @@ class TotalPlot():
             
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
+        dates_minus, amounts_minus = [], []
+        dates_plus, amounts_plus = [], []
+
         for j, profit in enumerate(self.profits):
             if dates_monthly[j]>=end_date:
                 if profit>=0:
-                    self.ax.bar(dates_monthly[j], profit, color=Colors.green_color, width=30)
+                    dates_plus.append(dates_monthly[j]-relativedelta(months=1))
+                    amounts_plus.append(profit)
                 else:
-                    self.ax.bar(dates_monthly[j], profit, color=Colors.error_color, width=30)
+                    dates_minus.append(dates_monthly[j]-relativedelta(months=1))
+                    amounts_minus.append(profit)
+        
+        self.ax.plot([xticks[highlight_spot], xticks[highlight_spot]], [y_axis_min-100,y_axis_max+100], color=Colors.primary_color, linewidth=0.2, alpha=0.2)
+        self.ax.bar(dates_plus, amounts_plus, color=Colors.green_color, width=30)
+        self.ax.bar(dates_minus, amounts_minus, color=Colors.error_color, width=30)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         self.fig.patch.set_alpha(0)
         
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.get_xticklabels()[highlight_spot].set_color(Colors.primary_color)
+       
+        #self.ax.get_xticklines()[highlight_spot].set_color(Colors.primary_color)
+           
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if end_date.day!=1:
+            end_date = '{}-{}-{}'.format(str(end_date.year), str(end_date.month), '01')
+            end_date  = datetime.strptime(end_date, '%Y-%m-%d').date()
+        #self.ax.axis([end_date-relativedelta(days=14), start_date,y_axis_min,y_axis_max])
         self.ax.axis([end_date, start_date,y_axis_min,y_axis_max])
-        self.ax.plot(date_to_highlight, y_axis_min, marker='x', markersize=20, color=Colors.primary_color)
-        
-        
-        
+        #self.ax.plot(date_to_highlight, y_axis_min, marker='x', markersize=20, color=Colors.primary_color)
+                
         canvas = self.fig.canvas  
         
         return canvas, end_date     
@@ -227,6 +237,7 @@ class TotalPlot():
             else:
                 xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+next_date.strftime('%Y-%m-%d')[2:4])
             next_date = next_date - step
+       
         return xticks, xticklabels
 
 TotalPlot = TotalPlot()

@@ -12,7 +12,7 @@ class AddStandingOrderDialogContent(MDBoxLayout):
         super(AddStandingOrderDialogContent, self).__init__(**kwargs)
         months      = ['January', 'February', 'March', 'April', 'Mai', 'June', 'July', 'August', 'September', 'Oktober', 'November', 'December']
         todays_year = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date().year
-        years       = [str(int(todays_year)+2)]  
+        years       = [str(int(todays_year)+1)]  
         days        = []      
         for i in range(10):
             years.append(str(int(years[-1])-1))
@@ -119,8 +119,11 @@ class AddStandingOrderDialogContent(MDBoxLayout):
 
     def add_standing_order(self):
         no_orders = list(data.standingorders['Orders'].keys())
-        no_orders.sort(key=int)
-        new_number = str(int(no_orders[-1]) + 1)
+        if len(no_orders)>1:
+            no_orders.sort(key=int)
+            new_number = str(int(no_orders[-1]) + 1)
+        else:
+            new_number = '1' 
         data.standingorders['Orders'][new_number] = {}
         data.standingorders['Orders'][new_number]['Account']     = self.ids.accountfield.text
         data.standingorders['Orders'][new_number]['From']        = self.ids.fromfield_month.text[0:3]+'\n'+self.ids.fromfield_year.text

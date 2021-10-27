@@ -1,15 +1,7 @@
-from kivymd.app import MDApp
-from kivy.lang import Builder
-from kivy.core.window import Window
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.label import MDLabel, MDIcon
-from kivymd.uix.snackbar import Snackbar
-from kivy.metrics import dp
-from kivymd import images_path
-from kivymd.icon_definitions import md_icons
 from kivymd.uix.dialog import MDDialog
-from kivymd.font_definitions import theme_font_styles
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivymd.uix.card import MDCard
@@ -17,17 +9,12 @@ from kivy.graphics import *
 from dialogs.dialogs_empty_pythonside import Spacer_Vertical
 from backend.colors import Colors
 from backend.demo_setup import DemoData as data
-from datetime import datetime
-from dialogs.add_standingorder_dialog import AddStandingOrderDialogContent
 from kivymd.uix.button import MDFlatButton
-from kivymd.uix.menu import MDDropdownMenu
-from kivymd.uix.bottomnavigation import MDBottomNavigationItem
 from backend.categoryplot import CategoryPlot
 from dialogs.selection_dialogs import GraphSelectionDialogCategoriesContent
 from dialogs.add_category_dialog import AddCategoryDialogContent
 from backend.settings import ScreenSettings
 from dialogs.dialogs_empty_pythonside import Spacer_Horizontal
-from kivymd.uix.spinner import MDSpinner
 from kivy.base import EventLoop
 
 class CategoriesScreen(Screen):
@@ -44,6 +31,7 @@ class CategoriesScreen(Screen):
         self.dialog_graph_selection = MDDialog(
                 type="custom",
                 content_cls=GraphSelectionDialogCategoriesContent(),
+                title='Displayed trends and detailed overview period',
                 buttons=[
                     MDFlatButton(
                         text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_graph_selection.dismiss()
@@ -78,12 +66,16 @@ class CategoriesScreen(Screen):
         #add category
         if self.dialog_add_category.content_cls.namefield.hint_text == "Category name":
             data.categories.append(category)
+            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='normal'
+            ScreenSettings.save(self.app.demo_mode)
         #remove category
         else:
             for i, cat in enumerate(data.categories):
                 if cat==category:
                     data.categories.pop(i)
                     break
+        self.dialog_add_category.dismiss()
+        self.dialog_add_category.content_cls.namefield.text = ''
         self.app.global_update()
 
     def remove_category_from_transfers(self, category):
@@ -99,7 +91,7 @@ class CategoriesScreen(Screen):
     def execute_graph_selection(self, instance):
         self.dialog_graph_selection.dismiss()
         self.update_plot()
-        ScreenSettings.save()
+        ScreenSettings.save(self.app.demo_mode)
 
     def button_clicked(self, instance):
         for button in self.filter_buttons:
@@ -114,44 +106,12 @@ class CategoriesScreen(Screen):
     def update_plot(self):
         self.ids.categoryview.clear_widgets()
         canvas    = CategoryPlot.make_plot(self.filter_buttons, data)
-        canvas.pos_hint = {'top': 1}
+        canvas.pos_hint = {'top': 0.99}
         self.ids.categoryview.clear_widgets()
         self.ids.categoryview.add_widget(canvas)
         label = MDLabel(text='Trend of each category', font_style='Caption', md_bg_color=Colors.bg_color, size_hint_y=0.1, halign='center', pos_hint={'top': 0.99})
         label.color = Colors.text_color
         self.ids.categoryview.add_widget(label)
-
-        '''legendbox = MDBoxLayout(orientation='vertical')
-        legendbox.size_hint_x = 1
-        legendbox.size_hint_y = 1
-        
-        subbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color)
-        subbox.add_widget(MDBoxLayout(md_bg_color=Colors.bg_color, size_hint_x=0.1))
-        icons, labels = [], []
-        for i in range(3):
-            rectangle = MDIcon(icon='blank', theme_text_color='Custom')
-            rectangle.size_hint_x = 0.07
-            rectangle.halign = 'left'
-            label1 = MDLabel(text='', font_style='Caption')
-            label1.color = Colors.text_color
-            label1.halign = 'left'
-            label1.size_hint_x = 0.1967
-            icons.append(rectangle)
-            labels.append(label1)
-            subbox.add_widget(rectangle)
-            subbox.add_widget(label1)
-        subbox.add_widget(MDBoxLayout(md_bg_color=Colors.bg_color, size_hint_x=0.1))
-
-        items = 0
-        for i, label in enumerate(CategoryPlot.for_legend):
-            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][label] == 'down' and items<4:
-                icons[items].icon='card'
-                icons[items].color = Colors.piechart_colors[i]
-                labels[items].text = label
-                items += 1
-        legendbox.add_widget(subbox)
-        legendbox.pos_hint = {'top': 1, 'right': 1}
-        #self.ids.legendview.add_widget(legendbox)'''
 
         #scrollview items
         self.ids.category_list.clear_widgets()
