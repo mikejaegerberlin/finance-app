@@ -1,6 +1,6 @@
 <AddCategoryDialogContent>
     orientation: "vertical"
-    spacing: "12dp"
+    spacing: "4dp"
     size_hint_y: None
     height: "110dp"
     namefield: namefield
@@ -65,11 +65,12 @@
     MDTextField:
         id: namefield
         hint_text: "Category name"
-        color_mode: 'custom'
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.namefield_focus_function()
    
     

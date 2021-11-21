@@ -3,7 +3,7 @@ from backend.colors import Colors
 from kivymd.uix.menu import MDDropdownMenu
 from backend.demo_setup import DemoData as data
 from kivy.metrics import dp
-from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.snackbar import Snackbar
 from kivymd.uix.button import MDFlatButton
 from dialogs.add_category_dialog import AddCategoryDialogContent
@@ -24,6 +24,23 @@ class ContentCustomSheet(StackLayout):
 class AddValueDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
         super(AddValueDialogContent, self).__init__(**kwargs)
+
+    def reset_dialog_after_dismiss(self):
+        self.ids.accountfield.text = ''
+        self.ids.amountfield.text = ''
+        self.ids.purposefield.text = ''
+        self.ids.categoryfield.text = ''
+        self.ids.datefield.text = data.today_str 
+        self.ids.accountfield.focus = False
+        self.ids.amountfield.focus = False
+        self.ids.purposefield.focus = False
+        self.ids.categoryfield.focus = False
+        self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
+        self.ids.dialog_income_button_text.color = Colors.button_disable_onwhite_color
+        self.ids.dialog_transfer_button_icon.color = Colors.button_disable_onwhite_color
+        self.ids.dialog_transfer_button_text.color = Colors.button_disable_onwhite_color
+        self.ids.dialog_expenditure_button_text.color = Colors.error_color
+        self.ids.dialog_expenditure_button_icon.color = Colors.error_color
         
     def update_acc_items(self):
         self.acc_menu_items = [
@@ -49,9 +66,9 @@ class AddValueDialogContent(MDBoxLayout):
         ]
 
         self.cat_dropdown.items = self.cat_menu_items
-
-
+      
     def on_kv_post(self, instance):
+        self.create_bottomsheet()
         self.acc_menu_items = [
             {
                 "text": acc,
@@ -97,13 +114,17 @@ class AddValueDialogContent(MDBoxLayout):
                 content_cls=AddCategoryDialogContent(),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_category.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_add_category(x)       
                     ),
                     MDFlatButton(
                         text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_add_remove_category(x)
                     ),
                 ],
             )    
+
+    def dismiss_dialog_add_category(self, instance):
+        self.dialog_add_category.dismiss()
+        self.dialog_add_category.content_cls.reset_dialog_after_dismiss()            
         
     def dialog_date_ok(self, instance, value, date_range):
         date_str = value.strftime('%Y-%m-%d')
@@ -133,13 +154,7 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.focus     = False
         self.ids.amountfield.focus      = False
 
-    def open_cat_dropdown(self, categoryfield):
-        categoryfield.hide_keyboard()
-        self.cat_dropdown.caller = categoryfield
-        #self.cat_dropdown.open()
-        self.ids.purposefield.focus     = False
-        self.ids.amountfield.focus      = False
-
+    def create_bottomsheet(self):
         self.content_custom_sheet = ContentCustomSheet()
         self.custom_sheet = MDCustomBottomSheet(screen=self.content_custom_sheet)
         self.custom_sheet.radius = 15
@@ -190,8 +205,28 @@ class AddValueDialogContent(MDBoxLayout):
         first_box.add_widget(CHIP)
         first_box.add_widget(MDBoxLayout(size_hint_x=0.03))
         self.content_custom_sheet.add_widget(first_box)
-        self.custom_sheet.open()
+
+        self.custom_sheet.on_dismiss = lambda x='Hi': self.defocus(x)
         
+    def defocus(self, instance):
+        self.ids.line_category.color = Colors.button_disable_onwhite_color
+        if self.ids.categoryfield.text == '':
+            self.ids.caption_category.font_style = 'Subtitle1'
+            self.ids.caption_category.pos_hint = {'top': 0.71, 'right': 0.21}
+
+    def open_cat_dropdown(self):
+        self.cat_dropdown.caller = self.ids.categoryfield
+        self.cat_dropdown.open()
+        self.ids.purposefield.focus     = False
+        self.ids.amountfield.focus      = False
+        #self.ids.line_category.color = Colors.bg_color
+        #self.ids.caption_category.font_style = 'Caption'
+        #self.ids.caption_category.pos_hint = {'top': 1.02, 'right': 0.21}
+        #self.create_bottomsheet()
+        #self.custom_sheet.open()
+        
+    def open_dialog_date(self):
+        self.dialog_date.open()
 
     def set_acc_item(self, text_item):
         self.acc_dropdown.caller.text = text_item
@@ -201,13 +236,13 @@ class AddValueDialogContent(MDBoxLayout):
         if self.ids.categoryfield.text != 'Transfer':
             self.focus_function()
 
-    def set_cat_item(self, CHIP):
-        if CHIP.text=='Add new category':
+    def set_cat_item(self, cat):
+        if cat=='Add new category':
             self.dialog_add_category.open()
         else:
-            self.categoryfield.text = CHIP.text
-        self.custom_sheet.dismiss()
-        self.categoryfield.focus = False
+            self.categoryfield.text = cat
+        self.cat_dropdown.dismiss()
+        #self.custom_sheet.dismiss()
         self.focus_function()
 
     def execute_add_remove_category(self, instance):
@@ -216,7 +251,11 @@ class AddValueDialogContent(MDBoxLayout):
         if self.dialog_add_category.content_cls.namefield.hint_text == "Category name":
             data.categories.append(category)
             from backend.settings import ScreenSettings
-            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='normal'
+            active_plots = 0
+            for cat in ScreenSettings.settings['CategoriesScreen']['SelectedGraphs']:
+                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='down':
+                    active_plots += 1
+            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='down' if active_plots < 3 else 'normal'
             ScreenSettings.save(self.app.demo_mode)
             self.dialog_add_category.content_cls.namefield.text = ''
             self.cat_dropdown.caller.text = category
@@ -227,6 +266,7 @@ class AddValueDialogContent(MDBoxLayout):
                     data.categories.pop(i)
                     break
         self.dialog_add_category.dismiss()
+        self.dialog_add_category.content_cls.reset_dialog_after_dismiss()    
         self.app.global_update()    
 
     def purposefield_function(self):
@@ -246,6 +286,7 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
         self.ids.categoryfield.disabled = False
+        self.ids.categoryfield.icon_right = "arrow-down-drop-circle-outline"
         #if switched from expenditure to income button
         if not self.ids.dialog_expenditure_button_icon.color[0]==Colors.error_color[0]:
             self.ids.categoryfield.text = ''
@@ -270,6 +311,7 @@ class AddValueDialogContent(MDBoxLayout):
         self.ids.purposefield.icon_right = ""
         self.ids.purposefield.keyboard_mode = 'auto'
         self.ids.categoryfield.disabled = False
+        self.ids.categoryfield.icon_right = "arrow-down-drop-circle-outline"
         #if switched from expenditure to income button
         if not self.ids.dialog_income_button_icon.color[1]==Colors.green_color[1]:
             self.ids.categoryfield.text = ''
@@ -291,7 +333,7 @@ class AddValueDialogContent(MDBoxLayout):
 
     def transfer_button_clicked(self):
         if len(data.accounts)<2:
-            message = Snackbar(text='At least two accounts needed for internal transfer.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message = Snackbar(text='Two accounts needed for internal transfer.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
             message.bg_color=Colors.black_color
             message.text_color=Colors.text_color
             message.open()
@@ -303,6 +345,7 @@ class AddValueDialogContent(MDBoxLayout):
             self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
             self.ids.purposefield.keyboard_mode = 'managed'
             self.ids.categoryfield.text = 'Transfer'
+            self.ids.categoryfield.icon_right = ""
             self.ids.categoryfield.disabled = True
 
             if self.ids.dialog_transfer_button_icon.color[0] == 0:
@@ -336,3 +379,5 @@ class AddValueDialogContent(MDBoxLayout):
                     self.ids.amountfield.text = str(-amount)
             except:
                 pass
+
+     

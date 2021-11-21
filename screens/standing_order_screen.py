@@ -22,41 +22,15 @@ class StandingOrdersScreen(Screen):
         self.months          = ['Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez']
         self.months_dict     = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mai': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Dez': 12}
         self.create_dialogs()
-        
-       
+    
     #create dialogs for the screen
     def create_dialogs(self):
-
-        content = AddStandingOrderDialogContent()
-        self.dialog_add_standingorder = MDDialog(
-                title="Add standing order",
-                type="custom",
-                content_cls=content,
-                buttons=[
-                    MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_standingorder.dismiss()
-                    ),
-                    MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x: self.add_standing_order(x, content)
-                    ),
-                ],
-        )
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
 
     def hook_keyboard(self, window, key, *largs):
        if key == 27:
            self.app.go_to_main()
            return True 
-
-    def add_standing_order(self, instance, content):
-        order = content.add_standing_order()
-        self.dialog_add_standingorder.dismiss()
-        data.add_order_in_transfers(order)
-        data.fill_status_of_account(order['Account'])      
-        data.fill_total_status()     
-        data.save_accounts(self.app.demo_mode)
-        self.update_standingorder_list()
-        self.app.global_update()
         
     def create_screen(self):
         self.md_bg_color = Colors.bg_color

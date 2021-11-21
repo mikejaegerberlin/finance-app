@@ -12,7 +12,7 @@
         MDToolbar:
             title: 'Standing orders'
             md_bg_color: app.primary_color
-            right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_standingorder.open()]]
+            right_action_items: [["cog", lambda x: root.app.dropdown_settings.open()]]
             specific_text_color: app.bg_color
                     
         MDBoxLayout:
@@ -50,6 +50,7 @@
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_main()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -57,19 +58,20 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                   
                 MDLabel:
                     text: 'Overview'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_accounts()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -77,19 +79,20 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+         
                 MDLabel:
                     text: 'Accounts'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_categories()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -97,20 +100,21 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+                  
+
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
-            
+            md_bg_color: app.bg_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -118,7 +122,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color
+                   
                    
                 MDLabel:
                     text: 'Orders'
@@ -126,7 +130,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color
+                    
                
                            
         

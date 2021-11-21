@@ -25,7 +25,7 @@
             id: main_toolbar
             title: 'Accounts'
             md_bg_color: app.primary_color
-            right_action_items: [["account-edit", lambda x: root.dialog_manage_accounts.open()]]
+            right_action_items: [["cog", lambda x: root.app.dropdown_settings.open()]]
             specific_text_color: app.bg_color
     
         MDBoxLayout:
@@ -38,7 +38,7 @@
             elevation: 0
             md_bg_color: app.bg_color
             size_hint: 1, 0.35
-            on_release: root.dialog_graph_selection.open()
+            on_release: root.open_dialog_graph_selection()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
@@ -77,6 +77,7 @@
             theme_text_color: 'Custom'
             text_color: app.text_color
             pos_hint:  {'top': 0.855, 'right': 0.95}  
+            on_release: root.open_dialog_graph_selection()
 
     MDFloatLayout:
         MDFillRoundFlatButton:
@@ -160,6 +161,7 @@
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_main()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -167,18 +169,19 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
                 MDLabel:
                     text: 'Overview'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
+            md_bg_color: app.bg_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -186,19 +189,20 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color   
+                    
                 MDLabel:
                     text: 'Accounts'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_categories()
+            md_bg_color: app.primary_color 
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -206,20 +210,20 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+                   
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
-
+                 
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_standingorders()
+            md_bg_color: app.primary_color 
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -227,7 +231,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                
                    
                 MDLabel:
                     text: 'Orders'
@@ -235,7 +239,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color 
+                    
 
 
 
@@ -253,6 +257,6 @@
         x: root.width - self.width - dp(20)
         y: dp(70)
         elevation_normal: 8
-        on_release: root.dialog_add_value.open()
+        on_release: root.app.open_dialog_add_value()
      
       

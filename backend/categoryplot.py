@@ -14,6 +14,16 @@ class CategoryPlot():
         self.today_date = datetime.strptime(datetime.today().strftime('%Y-%m-%d'), '%Y-%m-%d').date() 
         self.fig     = plt.figure(figsize=(1,1), dpi=100)   
 
+    def get_last_day_date_of_month(self, year,i_str):
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                last_day_date = datetime.strptime('{}-{}-{}'.format(str(year), i_str, day), '%Y-%m-%d').date()
+                break
+            except:
+                pass
+        return last_day_date
+
     def get_list_for_category(self, data, key):
         transfer_list = []
         date_list = []
@@ -31,7 +41,7 @@ class CategoryPlot():
 
         #self.accounts[acc]['Transfers'][date] = [[amount, purpose, category]] 
 
-    def make_plot(self, filter_buttons, data):
+    def make_plot(self, filter_buttons, data, year_to_highlight, month_to_highlight, filterbutton_clicked):
         plt.close(self.fig)
         self.fig     = plt.figure(figsize=(1,1), dpi=100)
         self.ax      = self.fig.add_subplot(111)
@@ -44,7 +54,7 @@ class CategoryPlot():
                 break
             except:
                 pass
-        self.filters = [relativedelta(years=1), relativedelta(years=3), relativedelta(years=5), relativedelta(years=10), relativedelta(years=13)]
+        self.filters = [relativedelta(months=11), relativedelta(months=35), relativedelta(months=59), relativedelta(months=119), relativedelta(months=155)]
         self.filters_help = [365, 1095, 1825, 3650, 4745]
         for i, button in enumerate(filter_buttons):
             if button.md_bg_color[0]==1:
@@ -54,10 +64,21 @@ class CategoryPlot():
             end_date = start_date - relativedelta(years=1000)
         else:
             end_date = start_date - self.filters[self.filter_index]
+
+        date_to_highlight = datetime.strptime('{}-{}-01'.format(year_to_highlight, month_to_highlight), '%Y-%m-%d').date()
+        if filterbutton_clicked==False:
+            while date_to_highlight<end_date:
+                self.filter_index += 1
+                end_date = start_date - relativedelta(years=1000) if self.filter_index==len(filter_buttons)-1 else start_date - self.filters[self.filter_index] 
+            for button in filter_buttons:
+                button.md_bg_color = Colors.bg_color
+                button.text_color = Colors.text_color
+            filter_buttons[self.filter_index].md_bg_color = Colors.text_color
+            filter_buttons[self.filter_index].text_color = Colors.bg_color
+        elif date_to_highlight<end_date: 
+            date_to_highlight = datetime.strptime('{}-{}-01'.format(data.current_year, data.current_month), '%Y-%m-%d').date()    
         
         adjust_plot = True
-       
-
         amounts_daily = []
         dates_daily  = []
         possible_dates = list(data.total['Status'].keys())
@@ -80,7 +101,7 @@ class CategoryPlot():
         if adjust_plot:
             end_date = datetime.strptime(min_date, '%Y-%m-%d').date()
             delta    = start_date - end_date
-            if delta.days<=30:
+            if delta.days<=365:
                 self.filter_index = 0
             else:
                 exceeded = True
@@ -91,7 +112,7 @@ class CategoryPlot():
                         if distance1>distance2:
                             self.filter_index = i+1
                         else:
-                            self.filter_index = i
+                            self.filter_index = i+1
                         exceeded = False
                         if self.filter_index==len(self.filters)-1:
                             self.exceed_years = 1
@@ -149,7 +170,7 @@ class CategoryPlot():
                     break
         except:
             pass
-
+        end_date = end_date-relativedelta(months=1)
         colors = Colors.piechart_colors_hex
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.grid(axis='y', linestyle=':', linewidth=0.05)
@@ -163,24 +184,35 @@ class CategoryPlot():
         xticklabels = xticklabels
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
-        max_amounts = []
-        min_amounts = []
-        for key in category_y_axis:
-            try:
-                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
-                    max_amounts.append(max(category_y_axis[key][q:]))
-                    min_amounts.append(min(category_y_axis[key][q:]))
-            except:
-                pass
-        try:
-            y_axis_max = int(max(max_amounts)+100)
-            y_axis_min = int(min(min_amounts)-100)
-        except:
-            y_axis_max = 10
-            y_axis_min = -10
-       
-        graph_no = 0
+                    
+        found = False
+        for z, date in enumerate(xticks):
+            if date==date_to_highlight:
+                highlight_spot = z
+                found = True
+        if found==False:
+            for z, date in enumerate(xticks):
+                try:
+                    if date>date_to_highlight and xticks[z+1]<date_to_highlight:
+                        xticks.pop(z)
+                        xticks.pop(z)
+                        xticklabels.pop(z)
+                        xticklabels.pop(z)
+                        month_string = data.months[date_to_highlight.month-1]+"\n'"+str(date_to_highlight.year)[2:]
+                        xticks.insert(z, date_to_highlight)
+                        xticklabels.insert(z, month_string)
+                        highlight_spot = z
+                except:
+                    xticks.pop(z)
+                    xticklabels.pop(z)
+                    month_string = data.months[date_to_highlight.month-1]+"\n'"+str(date_to_highlight.year)[2:]
+                    xticks.insert(z, date_to_highlight)
+                    xticklabels.insert(z, month_string)
+                    highlight_spot = z   
+        self.ax.set_xticks(xticks)
+        self.ax.set_xticklabels(xticklabels)                 
 
+        graph_no = 0
         total_graphs = 0
         for h, key in enumerate(category_x_axis):
             try:
@@ -188,42 +220,87 @@ class CategoryPlot():
                     total_graphs += 1
             except:
                 pass
-
+        bottom1, bottom2 = {}, {}
+        y_axis_max, y_axis_min = 0, 0
         for h, key in enumerate(category_x_axis):
-            try:
-                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
-                    for k, value in enumerate(category_y_axis[key]):
-                        if category_x_axis[key][k]>=end_date:
-                            if total_graphs == 1:
+            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
+                for k, value in enumerate(category_y_axis[key]):
+                    if category_x_axis[key][k]>=end_date:
+                        y_axis_max = category_y_axis[key][k] if y_axis_max<category_y_axis[key][k] else y_axis_max
+                        y_axis_min = category_y_axis[key][k] if y_axis_min>category_y_axis[key][k] else y_axis_min
+                        if total_graphs == 1:
+                            self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
+                            
+                        if total_graphs == 2:
+                            if graph_no==0:
                                 self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
+                                bottom1[category_x_axis[key][k]] = category_y_axis[key][k]
+                            elif graph_no==1:
+                                if category_x_axis[key][k] in bottom1.keys():
+                                    if bottom1[category_x_axis[key][k]]>=0:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
+                                    else:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
+                                else:
+                                    offset = 0
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
 
-                            if total_graphs == 2:
-                                if graph_no==0:
-                                    self.ax.bar(category_x_axis[key][k] - relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
-                                elif graph_no==1:
-                                    self.ax.bar(category_x_axis[key][k] + relativedelta(days=5), category_y_axis[key][k], width=15, color=colors[h])
+                        if total_graphs == 3:
+                            if graph_no==0:
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
+                                bottom1[category_x_axis[key][k]] = category_y_axis[key][k]
+                            elif graph_no==1:
+                                if category_x_axis[key][k] in bottom1.keys():
+                                    if bottom1[category_x_axis[key][k]]>=0:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
+                                    else:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
+                                else:
+                                    offset = 0
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
+                                bottom2[category_x_axis[key][k]] = category_y_axis[key][k]
+                            elif graph_no==2:
+                                if category_x_axis[key][k] in bottom1.keys() and category_x_axis[key][k] in bottom2.keys():
+                                    if bottom1[category_x_axis[key][k]]>0 and bottom2[category_x_axis[key][k]]>0:    
+                                        offset = bottom1[category_x_axis[key][k]] + bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
+                                    if bottom1[category_x_axis[key][k]]>0 and bottom2[category_x_axis[key][k]]<0:    
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else bottom2[category_x_axis[key][k]]
+                                    if bottom1[category_x_axis[key][k]]<0 and bottom2[category_x_axis[key][k]]>0:   
+                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else bottom1[category_x_axis[key][k]] 
+                                    if bottom1[category_x_axis[key][k]]<0 and bottom2[category_x_axis[key][k]]<0:
+                                        offset = bottom1[category_x_axis[key][k]] + bottom2[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
+                                if category_x_axis[key][k] in bottom1.keys():
+                                    if bottom1[category_x_axis[key][k]]>=0:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
+                                    else:
+                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
+                                if category_x_axis[key][k] in bottom2.keys():
+                                    if bottom2[category_x_axis[key][k]]>=0:
+                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
+                                    else:
+                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
+                                else:
+                                    offset = 0
 
-                            if total_graphs == 3:
-                                if graph_no==0:
-                                    self.ax.bar(category_x_axis[key][k] - relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
-                                elif graph_no==1:
-                                    self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=8, color=colors[h])
-                                elif graph_no==2:
-                                    self.ax.bar(category_x_axis[key][k] + relativedelta(days=7), category_y_axis[key][k], width=8, color=colors[h])
-                    graph_no += 1
-            except:
-                pass
+                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
+                graph_no += 1
+            
                 
-      
+        y_axis_max += 100
+        y_axis_min += -100
         self.for_legend = category_y_axis
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
         #self.fig.patch.set_facecolor(Colors.bg_color_hex)
         self.fig.patch.set_alpha(0)
-        
+        self.ax.plot([xticks[highlight_spot], xticks[highlight_spot]], [y_axis_min-100,y_axis_max+100], color=Colors.primary_color, linewidth=0.2, alpha=0.4)
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
+        self.ax.get_xticklabels()[highlight_spot].set_color(Colors.primary_color)
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
-        start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
+        start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()       
+        if end_date.day!=1:
+            end_date = '{}-{}-{}'.format(str(end_date.year), str(end_date.month), '01')
+            end_date  = datetime.strptime(end_date, '%Y-%m-%d').date()
         try:
             self.ax.axis([end_date, start_date, y_axis_min,y_axis_max])
         except:
@@ -236,7 +313,7 @@ class CategoryPlot():
     def get_xticks_and_labels(self, start_date, end_date):
         steps = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), relativedelta(years=1), relativedelta(years=1)+relativedelta(years=self.exceed_years)]
         step  = steps[self.filter_index]
-        
+       
         #start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
@@ -249,7 +326,7 @@ class CategoryPlot():
                 xticklabels.append(str(int(next_date.strftime('%Y-%m-%d')[8:]))+' '+self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1])
             else:
                 xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+next_date.strftime('%Y-%m-%d')[2:4])
-            next_date = next_date - step
+            next_date = next_date - step          
         return xticks, xticklabels
 
 CategoryPlot = CategoryPlot()

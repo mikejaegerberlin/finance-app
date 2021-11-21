@@ -209,21 +209,22 @@ class Calculations():
                 if datetime.strptime(date, '%Y-%m-%d').date()>=start_date and datetime.strptime(date, '%Y-%m-%d').date()<=end_date:
                     for transfer in self.accounts[acc]['Transfers'][date]:
                         category = transfer[2]
-                        amount   = transfer[0]
-                        if not category in self.categories_amounts.keys():
-                            self.categories_amounts[category] = amount
-                        else:
-                            self.categories_amounts[category] += amount
+                        if not 'Transfer' in category:
+                            amount   = transfer[0]
+                            if not category in self.categories_amounts.keys():
+                                self.categories_amounts[category] = amount
+                            else:
+                                self.categories_amounts[category] += amount
 
-                        if not category in self.categories_expenditures.keys() and amount<0:
-                            self.categories_expenditures[category] = amount
-                        elif amount<0:
-                            self.categories_expenditures[category] += amount
+                            if not category in self.categories_expenditures.keys() and amount<0:
+                                self.categories_expenditures[category] = amount
+                            elif amount<0:
+                                self.categories_expenditures[category] += amount
 
-                        if not category in self.categories_income.keys() and amount>=0:
-                            self.categories_income[category] = amount
-                        elif amount>=0:
-                            self.categories_income[category] += amount
+                            if not category in self.categories_income.keys() and amount>=0:
+                                self.categories_income[category] = amount
+                            elif amount>=0:
+                                self.categories_income[category] += amount
         
 
         self.categories_total = 0
@@ -253,7 +254,7 @@ class Calculations():
         self.categories_income_total = 0
         for cat in self.categories_income:
             self.categories_income_total += self.categories_income[cat]
-
+ 
     def filter_categories_within_dates_for_totalplot(self, start_date, end_date):
         categories_expenditures = {}
         categories_income = {}
@@ -279,16 +280,31 @@ class Calculations():
 
         categories_expenditures_total = 0
         for cat in categories_expenditures:
-            categories_expenditures_total += categories_expenditures[cat]
+            if not 'Transfer' in cat:
+                categories_expenditures_total += categories_expenditures[cat]
 
         categories_income_total = 0
         for cat in categories_income:
-            categories_income_total += categories_income[cat]
+            if not 'Transfer' in cat:
+                categories_income_total += categories_income[cat]
 
         return categories_income_total, categories_expenditures_total
 
+    def get_last_day_date_of_month(self, year, month):
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                last_day_date = datetime.strptime('{}-{}-{}'.format(str(year), month, day), '%Y-%m-%d').date()
+                break
+            except:
+                pass
+        return last_day_date
 
-    def get_sum_of_category(self, cat, start_date, end_date):
+    def get_sum_of_category(self, cat, selected_month, selected_year):
+        month_str  = '0'+str(selected_month) if selected_month<10 else str(selected_month)       
+        start_date = '{}-{}-{}'.format(selected_year, month_str, '01')
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date   = self.get_last_day_date_of_month(selected_year, selected_month)
         amount = 0
         for acc in self.accounts:
             dates = list(self.accounts[acc]['Transfers'].keys())

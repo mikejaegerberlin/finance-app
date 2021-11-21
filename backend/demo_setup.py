@@ -175,9 +175,10 @@ class DemoData(Calculations):
         Purposes      = ['Wohnung', 'Proberaum', 'Schuhe', 'Schrank', 'Vedis', 'Eis', 'Cocktails', 'B-DD', 
                         'Looperboard', 'Gitarre', 'Bier']
         
-        years         = [2015, 2016, 2017, 2018, 2019, 2020, 2021]
+        years         = [2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
         #years         = [2019, 2020, 2021]
         #initialize dictionaries
+        self.accounts = {}
         for acc in accounts_list:
             self.accounts[acc] = {}
             for key in self.keys_list:

@@ -43,7 +43,7 @@ class TotalPlot():
             end_date = start_date - relativedelta(years=1000)
         else:
             end_date = start_date - self.filters[self.filter_index]
-
+     
         date_to_highlight = datetime.strptime('{}-{}-01'.format(year_to_highlight, month_to_highlight), '%Y-%m-%d').date()
         if filterbutton_clicked==False:
             while date_to_highlight<end_date:
@@ -56,7 +56,7 @@ class TotalPlot():
             filter_buttons[self.filter_index].text_color = Colors.bg_color
         elif date_to_highlight<end_date: 
             date_to_highlight = datetime.strptime('{}-{}-01'.format(data.current_year, data.current_month), '%Y-%m-%d').date()
-    
+       
         adjust_plot = True
         amounts_daily = []
         dates_daily  = []
@@ -149,7 +149,7 @@ class TotalPlot():
         for q, date in enumerate(dates_monthly):
             if end_date<date:
                 break
-       
+        
         xticks, xticklabels = self.get_xticks_and_labels(start_date, end_date)
         self.ax.grid(axis='y', linestyle=':', linewidth=0.05)
         self.ax.grid(axis='x', linestyle=':', linewidth=0.05, alpha=0.3)
@@ -171,15 +171,25 @@ class TotalPlot():
                 found = True
         if found==False:
             for z, date in enumerate(xticks):
-                if date>date_to_highlight and xticks[z+1]<date_to_highlight:
+                try:
+                    if date>date_to_highlight and xticks[z+1]<date_to_highlight:
+                        xticks.pop(z)
+                        xticks.pop(z)
+                        xticklabels.pop(z)
+                        xticklabels.pop(z)
+                        month_string = data.months[date_to_highlight.month-1]+"\n'"+str(date_to_highlight.year)[2:]
+                        xticks.insert(z, date_to_highlight)
+                        xticklabels.insert(z, month_string)
+                        highlight_spot = z
+                except:
                     xticks.pop(z)
-                    xticks.pop(z)
-                    xticklabels.pop(z)
                     xticklabels.pop(z)
                     month_string = data.months[date_to_highlight.month-1]+"\n'"+str(date_to_highlight.year)[2:]
                     xticks.insert(z, date_to_highlight)
                     xticklabels.insert(z, month_string)
                     highlight_spot = z
+
+
             
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(xticklabels)
@@ -195,7 +205,7 @@ class TotalPlot():
                     dates_minus.append(dates_monthly[j]-relativedelta(months=1))
                     amounts_minus.append(profit)
         
-        self.ax.plot([xticks[highlight_spot], xticks[highlight_spot]], [y_axis_min-100,y_axis_max+100], color=Colors.primary_color, linewidth=0.2, alpha=0.2)
+        self.ax.plot([xticks[highlight_spot], xticks[highlight_spot]], [y_axis_min-100,y_axis_max+100], color=Colors.primary_color, linewidth=0.2, alpha=0.4)
         self.ax.bar(dates_plus, amounts_plus, color=Colors.green_color, width=30)
         self.ax.bar(dates_minus, amounts_minus, color=Colors.error_color, width=30)
         self.ax.patch.set_facecolor(Colors.bg_color_light_hex)
@@ -223,7 +233,6 @@ class TotalPlot():
     def get_xticks_and_labels(self, start_date, end_date):
         steps = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), relativedelta(years=1), relativedelta(years=1)+relativedelta(years=self.exceed_years)]
         step  = steps[self.filter_index]
-        
         #start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()

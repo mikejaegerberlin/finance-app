@@ -5,7 +5,9 @@ from kivy.metrics import dp
 from kivymd.uix.button import MDFlatButton
 from datetime import datetime
 from backend.demo_setup import DemoData as data
-from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.snackbar import Snackbar
+from kivy.metrics import dp
 
 class AddStandingOrderDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
@@ -117,6 +119,9 @@ class AddStandingOrderDialogContent(MDBoxLayout):
 
         self.acc_dropdown.items = self.acc_menu_items
 
+    def reset_dialog_after_dismiss(self):
+        pass
+
     def add_standing_order(self):
         no_orders = list(data.standingorders['Orders'].keys())
         if len(no_orders)>1:
@@ -127,7 +132,7 @@ class AddStandingOrderDialogContent(MDBoxLayout):
         data.standingorders['Orders'][new_number] = {}
         data.standingorders['Orders'][new_number]['Account']     = self.ids.accountfield.text
         data.standingorders['Orders'][new_number]['From']        = self.ids.fromfield_month.text[0:3]+'\n'+self.ids.fromfield_year.text
-        data.standingorders['Orders'][new_number]['M/A']         = 'M'
+        data.standingorders['Orders'][new_number]['M/A']         = 'M' if '(M)' in self.ids.executionfield.text else 'A'
         data.standingorders['Orders'][new_number]['Day']         = self.ids.dayfield.text+'.'
         data.standingorders['Orders'][new_number]['Purpose']     = self.ids.purposefield.text
         data.standingorders['Orders'][new_number]['Amount']      = float(self.ids.amountfield.text)
@@ -213,28 +218,36 @@ class AddStandingOrderDialogContent(MDBoxLayout):
                 pass      
 
     def transfer_button_clicked(self):
-        self.ids.amountfield.text = ''
-        self.ids.accountfield.hint_text = "Account (from)"
-        self.ids.purposefield.text = ""
-        self.ids.purposefield.hint_text = "Account (to)"
-        self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
-        self.ids.purposefield.keyboard_mode = 'managed'
-        self.ids.categoryfield.text = 'Transfer'
-        self.ids.categoryfield.disabled = True
+        if len(data.accounts)<2:
+            message = Snackbar(text='Two accounts needed for internal transfer.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+        else:
+            self.ids.amountfield.text = ''
+            self.ids.accountfield.hint_text = "Account (from)"
+            self.ids.purposefield.text = ""
+            self.ids.purposefield.hint_text = "Account (to)"
+            self.ids.purposefield.icon_right = "arrow-down-drop-circle-outline"
+            self.ids.purposefield.icon_right_color_normal = Colors.button_disable_onwhite_color
+            self.ids.purposefield.icon_right_color_focus = Colors.bg_color
+            self.ids.purposefield.keyboard_mode = 'managed'
+            self.ids.categoryfield.text = 'Transfer'
+            self.ids.categoryfield.disabled = True
 
-        if self.ids.dialog_transfer_button_icon.color[0] == 0:
-            self.ids.dialog_transfer_button_icon.color = Colors.primary_color
-            self.ids.dialog_transfer_button_text.color = Colors.primary_color
-            self.ids.dialog_expenditure_button_text.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_expenditure_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
-            self.ids.dialog_income_button_text.color = Colors.button_disable_onwhite_color
-            try:
-                amount = float(self.ids.amountfield.text)
-                if amount>0:
-                    self.ids.amountfield.text = str(-amount)
-            except:
-                pass     
+            if self.ids.dialog_transfer_button_icon.color[0] == 0:
+                self.ids.dialog_transfer_button_icon.color = Colors.primary_color
+                self.ids.dialog_transfer_button_text.color = Colors.primary_color
+                self.ids.dialog_expenditure_button_text.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_expenditure_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_income_button_icon.color = Colors.button_disable_onwhite_color
+                self.ids.dialog_income_button_text.color = Colors.button_disable_onwhite_color
+                try:
+                    amount = float(self.ids.amountfield.text)
+                    if amount>0:
+                        self.ids.amountfield.text = str(-amount)
+                except:
+                    pass     
 
     def focus_function(self):
         self.ids.accountfield.focus    = False
@@ -243,6 +256,7 @@ class AddStandingOrderDialogContent(MDBoxLayout):
         self.ids.fromfield_year.focus  = False
         self.ids.categoryfield.focus   = False
         self.ids.executionfield.focus  = False
+        self.ids.dayfield.focus        = False
         if self.ids.dialog_income_button_icon.color[1] == 0:
             try:
                 amount = float(self.ids.amountfield.text)

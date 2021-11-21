@@ -1,6 +1,6 @@
 <AddStandingOrderDialogContent>
     orientation: "vertical"
-    spacing: "12dp"
+    spacing: "4dp"
     size_hint_y: None
     height: "480dp"
     accountfield: accountfield
@@ -20,6 +20,7 @@
     dialog_transfer_button: dialog_expenditure_button
     dialog_transfer_button_icon: dialog_transfer_button_icon
     dialog_transfer_button_text: dialog_transfer_button_text
+    on_kv_post: root.app = app
 
 
     MDBoxLayout:
@@ -94,11 +95,12 @@
     MDTextField:
         id: amountfield
         hint_text: "Amount (€)"
-        color_mode: 'custom'
-        line_color_normal: app.bg_color
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color  
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.focus_function()
         
         
@@ -108,10 +110,14 @@
         hint_text: "Account"
         icon_right: "arrow-down-drop-circle-outline"
         on_focus: if self.focus: root.open_acc_dropdown(accountfield)
-        line_color_normal: app.bg_color
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         keyboard_mode: 'managed'
 
     
@@ -120,62 +126,73 @@
         MDTextField:
             id: fromfield_month
             hint_text: "From (month)"
-            color_mode: 'custom'
-            line_color_normal: app.bg_color
+            line_color_normal: app.button_disable_onwhite_color
             line_color_focus: app.bg_color
-            current_hint_text_color: app.bg_color
-            text_color: app.bg_color
+            hint_text_color_normal: app.bg_color
+            hint_text_color_focus: app.bg_color            
+            text_color_normal: app.bg_color
+            text_color_focus: app.bg_color
             on_focus: if self.focus: root.open_dropdown(fromfield_month)
             keyboard_mode: 'managed'
 
         MDTextField:
             id: fromfield_year
             hint_text: "From (year)"
-            color_mode: 'custom'
-            line_color_normal: app.bg_color
+            line_color_normal: app.button_disable_onwhite_color
             line_color_focus: app.bg_color
-            current_hint_text_color: app.bg_color
-            text_color: app.bg_color
+            hint_text_color_normal: app.bg_color
+            hint_text_color_focus: app.bg_color            
+            text_color_normal: app.bg_color
+            text_color_focus: app.bg_color
             on_focus: if self.focus: root.open_dropdown(fromfield_year)
             keyboard_mode: 'managed'       
 
     MDTextField:
         id: executionfield
         hint_text: "Monthly / Annualy"
-        color_mode: 'custom'
-        line_color_normal: app.bg_color
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color            
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.open_dropdown(executionfield)
         keyboard_mode: 'managed'   
 
     MDTextField:
         id: purposefield
         hint_text: "Purpose"
-        color_mode: 'custom'
-        line_color_normal: app.bg_color
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color            
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.purposefield_function()
 
     MDTextField:
         id: categoryfield
         hint_text: "Category"
-        color_mode: 'custom'
-        line_color_normal: app.bg_color
+        icon_right: "arrow-down-drop-circle-outline"
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color            
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
         on_focus: if self.focus: root.open_cat_dropdown(categoryfield)
+        keyboard_mode: 'managed' 
 
     MDTextField:
         id: dayfield
         hint_text: "Day"
-        color_mode: 'custom'
-        line_color_normal: app.bg_color
+        line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color            
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.open_dropdown(dayfield)
+        keyboard_mode: 'managed' 

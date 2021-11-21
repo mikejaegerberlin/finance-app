@@ -1,3 +1,4 @@
+from typing import Text
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivy.uix.screenmanager import Screen
 from kivymd.uix.label import MDLabel, MDIcon
@@ -16,6 +17,10 @@ from dialogs.add_category_dialog import AddCategoryDialogContent
 from backend.settings import ScreenSettings
 from dialogs.dialogs_empty_pythonside import Spacer_Horizontal
 from kivy.base import EventLoop
+from kivymd.uix.snackbar import Snackbar
+from kivy.metrics import dp
+from dialogs.selection_dialogs import MonthSelectionDialogContent
+from datetime import datetime
 
 class CategoriesScreen(Screen):
     def __init__(self, **kwargs):
@@ -26,7 +31,9 @@ class CategoriesScreen(Screen):
     def create_screen(self):
         self.filter_buttons = [self.ids.oneyear_button, self.ids.threeyears_button, self.ids.fiveyears_button,
                                self.ids.tenyears_button, self.ids.all_button]
-        self.update_plot()
+        self.selected_month = data.today_date.month
+        self.selected_year = data.today_date.year                       
+        self.update_plot(filterbutton_clicked=False)
         self.create_mainlist()
         self.dialog_graph_selection = MDDialog(
                 type="custom",
@@ -47,26 +54,96 @@ class CategoriesScreen(Screen):
                 content_cls=AddCategoryDialogContent(),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_add_category.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_add_category(x)
                     ),
                     MDFlatButton(
                         text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.execute_add_remove_category(x)
                     ),
                 ],
             )
+
+        self.dialog_select_month = MDDialog(
+                type="custom",
+                content_cls=MonthSelectionDialogContent(),
+                title="Detailed overiew period",
+                buttons=[
+                    MDFlatButton(
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dismiss_dialog_select_month(x)
+                    ),
+                    MDFlatButton(
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Add': self.change_month_overview(x)
+                    ),
+                ],
+            )
         EventLoop.window.bind(on_keyboard=self.hook_keyboard)
+
+    def dismiss_dialog_select_month(self, instance):
+        self.dialog_select_month.content_cls.reset_dialog_after_dismiss()
+        self.dialog_select_month.dismiss()
+        
+    def dismiss_dialog_add_category(self, instance):
+        self.dialog_add_category.dismiss()
+        self.dialog_add_category.content_cls.reset_dialog_after_dismiss()    
 
     def hook_keyboard(self, window, key, *largs):
        if key == 27:
            self.app.go_to_main()
            return True 
 
+    def open_dialog_select_month(self):
+        years = data.get_all_years_of_transfers()
+        self.dialog_select_month.content_cls.update_years()
+        snackbar = False
+        if len(years.keys())>1:
+            self.dialog_select_month.open()
+        elif len(years.keys())==1:
+            months = 0
+            for key in years:
+                months = len(years[key])
+            if months>1:
+                self.dialog_select_month.open()
+            else:
+                snackbar = True
+        
+        if snackbar or len(years.keys())==0:
+            if len(data.accounts)>0:
+                messagestring = 'At least data in two months is required.'
+            else:
+                messagestring = 'No accounts.'
+            message = Snackbar(text=messagestring, snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+            message.bg_color=Colors.black_color
+            message.text_color=Colors.text_color
+            message.open()
+
+    def change_month_overview(self, instance):
+        self.dialog_select_month.dismiss()
+        month = data.months_rev[self.dialog_select_month.content_cls.month_field.text]
+        year = int(self.dialog_select_month.content_cls.year_field.text)
+        
+        start_date = datetime.strptime('{}-{}-01'.format(year, month), '%Y-%m-%d').date()
+        days = ['31', '30', '29', '28']
+        for day in days:
+            try:
+                end_date   = datetime.strptime('{}-{}-{}'.format(year, month, day), '%Y-%m-%d').date() 
+                break
+            except:
+                pass
+        self.selected_month = month
+        self.selected_year = year
+        data.filter_categories_within_dates(start_date, end_date)  
+        self.update_plot(filterbutton_clicked=False)
+       
+
     def execute_add_remove_category(self, instance):
         category = self.dialog_add_category.content_cls.namefield.text
         #add category
         if self.dialog_add_category.content_cls.namefield.hint_text == "Category name":
             data.categories.append(category)
-            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='normal'
+            active_plots = 0
+            for cat in ScreenSettings.settings['CategoriesScreen']['SelectedGraphs']:
+                if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='down':
+                    active_plots += 1
+            ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][category]='down' if active_plots < 3 else 'normal'
             ScreenSettings.save(self.app.demo_mode)
         #remove category
         else:
@@ -75,7 +152,7 @@ class CategoriesScreen(Screen):
                     data.categories.pop(i)
                     break
         self.dialog_add_category.dismiss()
-        self.dialog_add_category.content_cls.namefield.text = ''
+        self.dialog_add_category.content_cls.reset_dialog_after_dismiss()    
         self.app.global_update()
 
     def remove_category_from_transfers(self, category):
@@ -90,7 +167,7 @@ class CategoriesScreen(Screen):
 
     def execute_graph_selection(self, instance):
         self.dialog_graph_selection.dismiss()
-        self.update_plot()
+        self.update_plot(filterbutton_clicked=False)
         ScreenSettings.save(self.app.demo_mode)
 
     def button_clicked(self, instance):
@@ -101,11 +178,20 @@ class CategoriesScreen(Screen):
             else:
                 button.md_bg_color = Colors.bg_color
                 button.text_color  = Colors.text_color
-        self.update_plot()
+        self.update_plot(filterbutton_clicked=True)
 
-    def update_plot(self):
+    def add_label_card(self, text):
+        card       = MDCard(size_hint_y=None, height='20dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        label2 = MDLabel(text=text, font_style='Caption')
+        label2.color = Colors.text_color
+        label2.halign = 'center'
+        card.add_widget(label2)
+        self.ids.category_list.add_widget(card)   
+        self.ids.category_list.add_widget(Spacer_Vertical('3dp')) 
+
+    def update_plot(self, filterbutton_clicked):
         self.ids.categoryview.clear_widgets()
-        canvas    = CategoryPlot.make_plot(self.filter_buttons, data)
+        canvas    = CategoryPlot.make_plot(self.filter_buttons, data, self.selected_year, self.selected_month, filterbutton_clicked)
         canvas.pos_hint = {'top': 0.99}
         self.ids.categoryview.clear_widgets()
         self.ids.categoryview.add_widget(canvas)
@@ -119,7 +205,7 @@ class CategoriesScreen(Screen):
         total_expenditure = 0
         cat_colors = {}
         for i, cat in enumerate(data.categories):
-            sum = data.get_sum_of_category(cat, data.first_of_month_date, data.today_date)
+            sum = data.get_sum_of_category(cat, self.selected_month, self.selected_year)
             sorted_categories[cat] = sum
             cat_colors[cat] = Colors.piechart_colors[i]
             if sum<=0:
@@ -127,20 +213,41 @@ class CategoriesScreen(Screen):
         sorted_categories = dict(sorted(sorted_categories.items(), key=lambda item: item[1]))
 
         self.IconBoxes = {}
-        for cat in sorted_categories:
-            #if sorted_categories[cat]!=0:
+        
+        cardcount = 0
+        for cat in sorted_categories:         
             if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='down':
+                if cardcount==0:
+                    self.add_label_card(text='Selected categories in {} {}'.format(self.months[self.selected_month-1], self.selected_year))                
                 carditem = self.generate_main_carditem(cat, sorted_categories[cat], total_expenditure, cat_colors[cat])
                 self.ids.category_list.add_widget(carditem)
                 self.ids.category_list.add_widget(Spacer_Vertical('6dp'))
+                cardcount += 1
+            
+        cardcount = 0
+        label = False
         for cat in sorted_categories:
             if sorted_categories[cat]!=0 and ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='normal':
+                if cardcount==0:
+                    self.add_label_card(text='Other categories in {} {}'.format(self.months[self.selected_month-1], self.selected_year))    
+                    label = True
                 carditem = self.generate_main_carditem(cat, sorted_categories[cat], total_expenditure, cat_colors[cat])
                 self.ids.category_list.add_widget(carditem)
                 self.ids.category_list.add_widget(Spacer_Vertical('6dp'))
-        
-        #card       = MDCard(size_hint_y=None, height='5dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
-        #self.ids.category_list.add_widget(card)
+                cardcount += 1
+
+        cardcount = 0
+        for cat in sorted_categories:
+            if sorted_categories[cat]==0 and ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='normal':
+                if cardcount==0 and label==False:
+                    self.add_label_card(text='Other categories in {} {}'.format(self.months[self.selected_month-1], self.selected_year))   
+                carditem = self.generate_main_carditem(cat, sorted_categories[cat], total_expenditure, cat_colors[cat])
+                self.ids.category_list.add_widget(carditem)
+                self.ids.category_list.add_widget(Spacer_Vertical('6dp'))    
+                cardcount += 1    
+        self.add_label_card(text='Tap on category to see trend.') 
+        card       = MDCard(size_hint_y=None, height='22dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, elevation=0)
+        self.ids.category_list.add_widget(card)
 
     def create_mainlist(self):
         #header of table scrollview
@@ -158,10 +265,32 @@ class CategoriesScreen(Screen):
             header_label.size_hint_x = sizes[q]
             header.add_widget(header_label)
 
-        
+    def select_category(self, cat):
+        active_plots = 0
+        for cat2 in data.categories:
+            if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat2] == 'down':
+                active_plots += 1
+        if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat]=='normal':
+            if active_plots < 3: 
+                ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'down'
+                self.update_plot(filterbutton_clicked=False)
+            else:
+                message = Snackbar(text='Max. 3 categories can be selected.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+                message.bg_color=Colors.black_color
+                message.text_color=Colors.text_color
+                message.open()
+        else:
+            if active_plots > 1: 
+                ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][cat] = 'normal'
+                self.update_plot(filterbutton_clicked=False)
+            else:
+                message = Snackbar(text='At least 1 category must be selected.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+                message.bg_color=Colors.black_color
+                message.text_color=Colors.text_color
+                message.open()
 
     def generate_main_carditem(self, cat, sum, total, color):
-        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color)
+        card       = MDCard(size_hint_y=None, height='36dp', md_bg_color=Colors.bg_color, ripple_behavior=True, ripple_color=Colors.bg_color, on_release=lambda x=cat:self.select_category(cat))
         contentbox = MDBoxLayout(orientation='horizontal', md_bg_color=Colors.bg_color_light, radius=[20,20,20,20])   
         contentbox.size_hint_x = 1
 

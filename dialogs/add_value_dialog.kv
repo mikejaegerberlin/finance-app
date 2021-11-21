@@ -1,20 +1,11 @@
 <ContentCustomSheet>:
     size_hint_y: None
     height: "105dp"
-    adaptive_height: True
-
-   
-  
-
-    #ScrollView:
-    #    MDBoxLayout:
-    #        orientation: 'horizontal'
-    #        adaptive_height: True
-    #        id: category_list              
+    adaptive_height: True      
 
 <AddValueDialogContent>
     orientation: "vertical"
-    spacing: "8dp"
+    spacing: "4dp"
     size_hint_y: None
     height: "340dp"
     accountfield: accountfield
@@ -31,6 +22,9 @@
     dialog_transfer_button: dialog_expenditure_button
     dialog_transfer_button_icon: dialog_transfer_button_icon
     dialog_transfer_button_text: dialog_transfer_button_text
+    #line_category: line_category
+    #caption_category: caption_category
+    #floatlayout: floatlayout
     on_kv_post: root.app = app
     
 
@@ -105,11 +99,12 @@
     MDTextField:
         id: amountfield
         hint_text: "Amount (€)"
-        color_mode: 'custom'
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.focus_function()
         
         
@@ -121,45 +116,91 @@
         on_focus: if self.focus: root.open_acc_dropdown(accountfield)
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         keyboard_mode: 'managed'
         
 
     MDTextField:
         id: purposefield
         hint_text: "Purpose"
-        color_mode: 'custom'
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.purposefield_function()
+
 
     MDTextField:
         id: categoryfield
         hint_text: "Category"
         icon_right: "arrow-down-drop-circle-outline"
-        on_focus: if self.focus: root.open_cat_dropdown(categoryfield)
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
+        on_focus: if self.focus: root.open_cat_dropdown()
         keyboard_mode: 'managed'
+
+    #MDFloatLayout:
+    #    id: floatlayout
+
+    #    MDTextButton:
+    #        id: categoryfield
+    #        font_style: 'Subtitle1'
+    #        theme_text_color: 'Custom'
+    #        color: app.bg_color           
+    #        text: ''
+    #        pos_hint: {'top': 0.71, 'right': 1}
+    #        on_release: root.open_cat_dropdown()
+    #        size_hint_x: 1
+        
+    #    MDTextButton:
+    #        id: line_category
+    #        font_style: 'Caption'
+    #        theme_text_color: 'Custom'
+    #        color: app.button_disable_onwhite_color
+    #        text: '____________________________________________________________'
+    #        pos_hint: {'top': 0.6, 'right': 1}
+    #       on_release: root.open_cat_dropdown()
+
+
+    #    MDTextButton:
+    #        id: caption_category
+    #        font_style: 'Subtitle1'
+    #        theme_text_color: 'Custom'
+    #        color: app.bg_color          
+    #        text: 'Category'
+    #        pos_hint: {'top': 0.71, 'right': 0.21}
+    #        on_release: root.open_cat_dropdown()
+
 
     MDBoxLayout:
         orientation: 'horizontal'
         MDTextField:
             id: datefield
             hint_text: "Date"
-            color_mode: 'custom'
             line_color_normal: app.button_disable_onwhite_color
             line_color_focus: app.bg_color
-            current_hint_text_color: app.bg_color
-            text_color: app.bg_color
+            hint_text_color_normal: app.bg_color
+            hint_text_color_focus: app.bg_color
+            text_color_normal: app.bg_color
+            text_color_focus: app.bg_color
             disabled: True
         MDIconButton:
             icon: "calendar"
             theme_text_color: "Custom"
             text_color: app.bg_color
-            on_release: root.dialog_date.open()
+            on_release: root.open_dialog_date()
+
+    

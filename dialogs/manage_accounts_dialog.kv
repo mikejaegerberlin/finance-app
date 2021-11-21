@@ -1,6 +1,6 @@
 <ManageAccountsDialogContent>
     orientation: "vertical"
-    spacing: "12dp"
+    spacing: "4dp"
     size_hint_y: None
     height: "220dp"
     accountfield: accountfield
@@ -65,11 +65,14 @@
     MDTextField:
         id: accountfield
         hint_text: "Account name"
-        color_mode: 'custom'
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
         on_focus: if self.focus: root.accountfield_focus_function()
    
     

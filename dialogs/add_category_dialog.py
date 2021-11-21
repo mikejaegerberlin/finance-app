@@ -12,7 +12,10 @@ from kivymd.uix.snackbar import Snackbar
 class AddCategoryDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
         super(AddCategoryDialogContent, self).__init__(**kwargs)
-        
+
+    def reset_dialog_after_dismiss(self):
+        self.add_category_button_clicked()
+                       
     def update_category_items(self):
         self.category_menu_items = [
             {
@@ -41,7 +44,7 @@ class AddCategoryDialogContent(MDBoxLayout):
         )
 
     def add_category_button_clicked(self):
-        self.namefield.focus = False
+        self.ids.namefield.focus = False
         self.ids.namefield.hint_text = "Category name"
         self.ids.namefield.text = ""
         self.ids.namefield.icon_right = "blank"
@@ -65,8 +68,10 @@ class AddCategoryDialogContent(MDBoxLayout):
         else:
             self.ids.namefield.hint_text = "Which category"
             self.ids.namefield.icon_right = "arrow-down-drop-circle-outline"
+            self.ids.namefield.icon_right_color_normal = Colors.button_disable_onwhite_color
+            self.ids.namefield.icon_right_color_focus = Colors.bg_color
             self.ids.namefield.keyboard_mode = 'managed'    
-            self.namefield.focus = False
+            self.ids.namefield.focus = False
         
             if self.ids.remove_category_button_icon.color[0] == 0:
                 self.ids.add_category_button_icon.color = Colors.button_disable_onwhite_color

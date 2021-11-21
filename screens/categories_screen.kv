@@ -19,7 +19,7 @@
         MDToolbar:
             title: 'Categories'
             md_bg_color: app.primary_color
-            right_action_items: [["text-box-plus-outline", lambda x: root.dialog_add_category.open()]]
+            right_action_items: [["cog", lambda x: root.app.dropdown_settings.open()]]
             specific_text_color: app.bg_color
                     
         MDBoxLayout:
@@ -32,7 +32,7 @@
             elevation: 0
             md_bg_color: app.bg_color
             size_hint: 1, 0.35
-            on_release: root.dialog_graph_selection.open()
+            on_release: root.open_dialog_select_month()
             MDFloatLayout:
                 size: root.width, root.height
                 md_bg_color: app.bg_color
@@ -70,7 +70,8 @@
             icon: 'gesture-tap'
             theme_text_color: 'Custom'
             text_color: app.text_color
-            pos_hint:  {'top': 0.855, 'right': 0.95}  
+            pos_hint:  {'top': 0.855, 'right': 0.95}
+            on_release: root.open_dialog_select_month()  
 
     MDFloatLayout:
         MDFillRoundFlatButton:
@@ -129,6 +130,7 @@
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_main()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -136,19 +138,20 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                   
                 MDLabel:
                     text: 'Overview'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_accounts()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -156,18 +159,19 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+                    
                 MDLabel:
                     text: 'Accounts'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
+            md_bg_color: app.bg_color
             
             MDBoxLayout:
                 orientation: 'vertical'
@@ -176,20 +180,21 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color
+                   
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color
+                    
 
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_standingorders()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -197,7 +202,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                   
                    
                 MDLabel:
                     text: 'Orders'
@@ -205,7 +210,7 @@
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color
+                    
                
                            
         

@@ -1,24 +1,17 @@
-import kivy
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
- 
- 
-class MainWid(BoxLayout):
-    def __init__(self):
-        super(MainWid, self).__init__()
-        for i in range(30):
-            self.ids.container_y.add_widget(Button(text=f"Botony: {i}"))
-        for i in range(30):
-            self.ids.container_x.add_widget(Button(text=f"Botonx: {i}"))
- 
- 
-class MainApp(App):
-    title = "Scroll view"
- 
-    def build(self):
-        return MainWid()
- 
- 
+from multiprocessing import Process, Queue
+import random
+
+def rand_num():
+    num = random.random()
+    print(num)
+
 if __name__ == "__main__":
-    MainApp().run()
+    queue = Queue()
+
+    processes = [Process(target=rand_num, args=()) for x in range(4)]
+
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()

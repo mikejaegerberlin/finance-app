@@ -45,6 +45,13 @@ class GraphSelectionDialogContent(MDBoxLayout):
         else:
             ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc] = 'down'
 
+    def reset_dialog_after_dismiss(self):
+        reset_values = self.app.screen.ids.accounts_screen.reset_values
+        for acc in reset_values:
+            ScreenSettings.settings['AccountScreen']['SelectedGraphs'][acc] = reset_values[acc]
+        self.update_list()
+
+       
 class GraphSelectionDialogCategoriesContent(MDBoxLayout):
     def __init__(self, **kwargs):
         super(GraphSelectionDialogCategoriesContent, self).__init__(**kwargs)  
@@ -78,7 +85,19 @@ class GraphSelectionDialogCategoriesContent(MDBoxLayout):
 
 class MonthSelectionDialogContent(MDBoxLayout):
     def __init__(self, **kwargs):
-        super(MonthSelectionDialogContent, self).__init__(**kwargs)  
+        super(MonthSelectionDialogContent, self).__init__(**kwargs)
+
+    def reset_dialog_after_dismiss(self):
+        self.ids.month_field.focus = False
+        self.ids.year_field.focus = False
+
+    def open_month_dropdown(self):
+        self.ids.year_field.focus = False
+        self.month_dropdown.open()
+
+    def open_year_dropdown(self):
+        self.ids.month_field.focus = False
+        self.year_dropdown.open()
 
     def update_years(self):
         year = str(data.today_date.year)   

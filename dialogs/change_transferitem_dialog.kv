@@ -13,31 +13,34 @@
         MDTextField:
             id: amountfield
             hint_text: "Amount (€)"
-            color_mode: 'custom'
             line_color_normal: app.button_disable_onwhite_color
             line_color_focus: app.bg_color
-            current_hint_text_color: app.bg_color
-            text_color: app.bg_color
+            hint_text_color_normal: app.bg_color
+            hint_text_color_focus: app.bg_color
+            text_color_normal: app.bg_color
+            text_color_focus: app.bg_color
          
 
         MDTextField:
             id: purposefield
             hint_text: "Purpose"
-            color_mode: 'custom'
             line_color_normal: app.button_disable_onwhite_color
             line_color_focus: app.bg_color
-            current_hint_text_color: app.bg_color
-            text_color: app.bg_color
+            hint_text_color_normal: app.bg_color
+            hint_text_color_focus: app.bg_color
+            text_color_normal: app.bg_color
+            text_color_focus: app.bg_color
         MDBoxLayout:
             orientation: 'horizontal'
             MDTextField:
                 id: datefield
                 hint_text: "Date"
-                color_mode: 'custom'
                 line_color_normal: app.button_disable_onwhite_color
                 line_color_focus: app.bg_color
-                current_hint_text_color: app.bg_color
-                text_color: app.bg_color
+                hint_text_color_normal: app.bg_color
+                hint_text_color_focus: app.bg_color
+                text_color_normal: app.bg_color
+                text_color_focus: app.bg_color
                 on_focus: if self.focus: app.open_datepicker(datefield)
                 disabled: True
             MDIconButton:

@@ -39,10 +39,10 @@ class TransfersScreen(Screen):
                 content_cls=ChangeTransferitemContent(),
                 buttons=[
                     MDFlatButton(
-                        text="CANCEL", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Cancel': self.dialog_change_transferitem.dismiss()
+                        text="CANCEL", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Cancel': self.dialog_change_transferitem.dismiss()
                     ),
                     MDFlatButton(
-                        text="OK", theme_text_color='Custom', text_color=Colors.primary_color, on_release=lambda x='Change': self.check_and_execute_change_transfer_item(x)
+                        text="OK", theme_text_color='Custom', text_color=Colors.bg_color, on_release=lambda x='Change': self.check_and_execute_change_transfer_item(x)
                     ),
                 ],
         )
@@ -71,8 +71,8 @@ class TransfersScreen(Screen):
                 button.text_color  = Colors.text_color
         self.fill_transfers_list(data.current_account)
  
-    def open_transfer_dropdown(self, card, box, datelabel, purposelabel, amountlabel):
-        self.selected_card = [datelabel, purposelabel, amountlabel, card, box]
+    def open_transfer_dropdown(self, card, box, datelabel, purposelabel, amountlabel,catlabel):
+        self.selected_card = [datelabel, purposelabel, amountlabel, catlabel, card, box]
         self.items = ['Change', 'Delete']
         self.transfer_menu_items = [
             {
@@ -96,31 +96,32 @@ class TransfersScreen(Screen):
         new_purpose = self.dialog_change_transferitem.content_cls.ids.purposefield.text
         old_date    = self.selected_card[0].text
         old_purpose = self.selected_card[1].text
+        cat         = self.selected_card[3].text
         old_amount  = float(self.selected_card[2].text.replace(' €',''))
-        try:
-            new_amount  = float(self.dialog_change_transferitem.content_cls.ids.amountfield.text.replace(' €',''))
-            print (new_amount, old_amount)
-            self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, data.current_account)
-            if 'From' in old_purpose and 'to' in old_purpose:
-                account_from = old_purpose.split(' ')[1]
-                account_to   = old_purpose.split(' ')[3]
-                other_account = account_to if account_from==data.current_account else account_from
-                self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account)
-                self.fill_transfers_list(data.current_account)
-            data.save_accounts(self.app.demo_mode)
-            self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
-        except:
-            message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
-            message.bg_color=Colors.black_color
-            message.text_color=Colors.text_color
-            message.open()
+        #try:
+        new_amount  = float(self.dialog_change_transferitem.content_cls.ids.amountfield.text.replace(' €',''))
+        self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, data.current_account, cat)
+        if 'From' in old_purpose and 'to' in old_purpose:
+            account_from = old_purpose.split(' ')[1]
+            account_to   = old_purpose.split(' ')[3]
+            other_account = account_to if account_from==data.current_account else account_from
+            self.change_transfer_item(new_date, old_date, new_purpose, old_purpose, -new_amount, -old_amount, other_account, cat)
+            self.fill_transfers_list(data.current_account)
+        data.save_accounts(self.app.demo_mode)
+        self.message_after_change_transfer_item(new_date, old_date, new_purpose, old_purpose, new_amount, old_amount)
+        #except:
+        #    message = Snackbar(text='Amount must be number.', snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.app.Window.width - (dp(10) * 2)) / self.app.Window.width)
+        #    message.bg_color=Colors.black_color
+        #    message.text_color=Colors.text_color
+        #    message.open()
+            
 
-    def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account):
+    def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account, cat):
         
         if not new_date in data.accounts[account]['Transfers'].keys():
-            data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose]]
+            data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose, cat]]
         else:
-            data.accounts[account]['Transfers'][new_date].append([new_amount, new_purpose])
+            data.accounts[account]['Transfers'][new_date].append([new_amount, new_purpose, cat])
         
         if len(data.accounts[account]['Transfers'][old_date])==1:
             del data.accounts[account]['Transfers'][old_date]
@@ -128,12 +129,11 @@ class TransfersScreen(Screen):
             for i, transfer in enumerate(data.accounts[account]['Transfers'][old_date]):
                 if transfer[0]==old_amount and transfer[1]==old_purpose:
                     data.accounts[account]['Transfers'][old_date].pop(i)       
+        self.app.global_update()
         self.fill_transfers_list(account)
         data.fill_status_of_account(account)
         data.fill_total_status()
-        self.app.screen.ids.main.update_plot()
-        self.app.screen.ids.main.add_things_to_screen()
-        data.save_accounts(self.app.demo_mode)
+        
 
     def message_after_change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount):
         if 'From' in old_purpose and 'to' in old_purpose:
@@ -235,7 +235,7 @@ class TransfersScreen(Screen):
         catlabel.text     = category
         amountlabel.text  = str(amount)+' €'
         amountlabel.color = Colors.error_color if amount<0 else Colors.green_color
-        card.on_release   = lambda x=box: self.open_transfer_dropdown(card, box, datelabel, purposelabel, amountlabel)
+        card.on_release   = lambda x=box: self.open_transfer_dropdown(card, box, datelabel, purposelabel, amountlabel, catlabel)
         return card
 
 

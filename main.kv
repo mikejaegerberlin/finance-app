@@ -71,7 +71,7 @@ ScreenManager:
             id: main_toolbar
             title: 'Overview'
             halign: 'center'
-            right_action_items: [["cog", lambda x: root.dropdown_settings.open()]]
+            right_action_items: [["cog", lambda x: root.app.dropdown_settings.open()]]
             md_bg_color: app.primary_color
             specific_text_color: app.bg_color
     
@@ -198,6 +198,7 @@ ScreenManager:
             theme_text_color: 'Custom'
             text_color: app.text_color
             pos_hint:  {'top': 0.855, 'right': 0.95}  
+            on_release: root.open_dialog_select_month()
 
     MDFloatLayout:
         ScrollView:
@@ -265,6 +266,7 @@ ScreenManager:
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
+            md_bg_color: app.bg_color  
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -272,19 +274,20 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color  
+                   
                 MDLabel:
                     text: 'Overview'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.primary_color
-                    md_bg_color: app.bg_color  
+            
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_accounts()
+            md_bg_color: app.primary_color 
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -292,19 +295,20 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color   
+                    
                 MDLabel:
                     text: 'Accounts'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color 
+                  
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_categories()
+            md_bg_color: app.primary_color 
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -312,20 +316,21 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color 
+                  
                 MDLabel:
                     text: 'Categories'
                     font_style: 'Button'
                     halign: 'center'
                     theme_text_color: 'Custom'
                     color: app.bg_color
-                    md_bg_color: app.primary_color 
+                    
 
 
         MDCard:
             elevation: 0
             size_hint: 0.25, 1
             on_release: app.go_to_standingorders()
+            md_bg_color: app.primary_color
             MDBoxLayout:
                 orientation: 'vertical'
                 MDIcon:
@@ -333,7 +338,6 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     text_color: app.bg_color
-                    md_bg_color: app.primary_color 
                    
                 MDLabel:
                     text: 'Orders'
@@ -341,8 +345,7 @@ ScreenManager:
                     halign: 'center'
                     theme_text_color: 'Custom'
                     text_color: app.bg_color
-                    md_bg_color: app.primary_color 
-                   
+    
             
     MDFloatingActionButton:
         icon: 'bank-plus'
@@ -357,7 +360,7 @@ ScreenManager:
         x: root.width - self.width - dp(20)
         y: dp(70)
         elevation_normal: 8
-        on_release: root.open_dialog_add_value()
+        on_release: root.app.open_dialog_add_value()
 
             
                

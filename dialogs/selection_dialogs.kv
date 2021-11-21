@@ -10,6 +10,7 @@
 
 
 <GraphSelectionDialogContent>
+    on_kv_post: root.app = app
     orientation: "vertical"
     spacing: "12dp"
     size_hint_y: None
@@ -35,7 +36,7 @@
 
 <MonthSelectionDialogContent>
     orientation: "horizontal"
-    spacing: "6dp"
+    spacing: "4dp"
     size_hint_y: None
     height: "40dp"
     month_field: month_field
@@ -46,11 +47,15 @@
         id: month_field
         hint_text: "Month"
         icon_right: "arrow-down-drop-circle-outline"
-        on_focus: if self.focus: root.month_dropdown.open()
+        on_focus: if self.focus: root.open_month_dropdown()
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
         keyboard_mode: 'managed'
 
     MDTextField:
@@ -58,11 +63,15 @@
         id: year_field
         hint_text: "Year"
         icon_right: "arrow-down-drop-circle-outline"
-        on_focus: if self.focus: root.year_dropdown.open()
+        on_focus: if self.focus: root.open_year_dropdown()
         line_color_normal: app.button_disable_onwhite_color
         line_color_focus: app.bg_color
-        current_hint_text_color: app.bg_color
-        text_color: app.bg_color
+        hint_text_color_normal: app.bg_color
+        hint_text_color_focus: app.bg_color
+        text_color_normal: app.bg_color
+        text_color_focus: app.bg_color
+        icon_right_color_normal: app.button_disable_onwhite_color
+        icon_right_color_focus: app.bg_color
         keyboard_mode: 'managed'
         
     

@@ -5,7 +5,7 @@ from kivy.metrics import dp
 from kivymd.uix.button import MDFlatButton
 from datetime import datetime
 from backend.demo_setup import DemoData as data
-from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.label import MDLabel
@@ -18,16 +18,19 @@ class ManageAccountsDialogContent(MDBoxLayout):
         self.amountfield.hint_text               = "Start amount (€)"
         self.amountfield.line_color_normal       = Colors.button_disable_onwhite_color
         self.amountfield.line_color_focus        = Colors.bg_color
-        self.amountfield.current_hint_text_color = Colors.bg_color
-        self.amountfield.text_color              = Colors.bg_color
+        self.amountfield.hint_text_color_normal  = Colors.bg_color
+        self.amountfield.hint_text_color_focus   = Colors.bg_color
+        self.amountfield.text_color_normal       = Colors.bg_color
+        self.amountfield.text_color_focus        = Colors.bg_color
         self.datebox = MDBoxLayout(orientation='horizontal')
         self.datefield   = MDTextField()
         self.datefield.hint_text               = "Date"
-        self.datefield.color_mode              = "custom"
         self.datefield.line_color_normal       = Colors.button_disable_onwhite_color
         self.datefield.line_color_focus        = Colors.bg_color
-        self.datefield.current_hint_text_color = Colors.bg_color
-        self.datefield.text_color              = Colors.bg_color
+        self.datefield.hint_text_color_normal  = Colors.bg_color
+        self.datefield.hint_text_color_focus   = Colors.bg_color
+        self.datefield.text_color_normal       = Colors.bg_color
+        self.datefield.text_color_focus        = Colors.bg_color
         self.datefield.disabled                = True
         self.datefield.text                    = data.today_str
         self.datebox.add_widget(self.datefield)
@@ -40,7 +43,10 @@ class ManageAccountsDialogContent(MDBoxLayout):
 
         self.add_widget(self.amountfield)
         self.add_widget(self.datebox)
-
+    
+    def reset_dialog_after_dismiss(self):
+        self.add_account_button_clicked()
+      
     def open_dialog_date(self, instance):
         self.dialog_date.open()
 
@@ -78,10 +84,13 @@ class ManageAccountsDialogContent(MDBoxLayout):
 
         
     def add_account_button_clicked(self):
-        self.remove_widget(self.sudo_label1)
-        self.remove_widget(self.sudo_label2)
-        self.add_widget(self.amountfield)
-        self.add_widget(self.datebox)
+        try:
+            self.remove_widget(self.sudo_label1)
+            self.remove_widget(self.sudo_label2)
+            self.add_widget(self.amountfield)
+            self.add_widget(self.datebox)
+        except:
+            pass
         self.height = "220dp"
         self.ids.accountfield.hint_text = 'Account name'
         self.ids.accountfield.text = ''

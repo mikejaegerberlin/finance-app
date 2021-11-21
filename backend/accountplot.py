@@ -70,7 +70,7 @@ class AccountPlot():
                         if distance1>distance2:
                             self.filter_index = i+1
                         else:
-                            self.filter_index = i
+                            self.filter_index = i+1
                         exceeded = False
                         if self.filter_index==len(self.filters)-1:
                             self.exceed_years = 1
