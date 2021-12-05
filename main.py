@@ -67,11 +67,12 @@ class DemoApp(MDApp):
         sm.add_widget(StandingOrdersScreen(name='Standing order'))
         sm.add_widget(AccountsScreen(name='Accounts'))
         sm.add_widget(CategoriesScreen(name='Categories'))
-
+ 
         #data.today_str  = '2021-12-02'
         #data.today_date = datetime.strptime(data.today_str, '%Y-%m-%d').date()
         #data.reset_standingorders_monthlisted()
         ## prepare data for start
+        ScreenSettings.update()
         for acc in data.accounts:
             data.check_standingorders(acc)
             data.fill_status_of_account(acc)

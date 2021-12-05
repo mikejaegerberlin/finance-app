@@ -220,72 +220,38 @@ class CategoryPlot():
                     total_graphs += 1
             except:
                 pass
-        bottom1, bottom2 = {}, {}
-        y_axis_max, y_axis_min = 0, 0
+       
+        OFFSET_PLUS, OFFSET_MINUS = {}, {}
         for h, key in enumerate(category_x_axis):
             if ScreenSettings.settings['CategoriesScreen']['SelectedGraphs'][key] == 'down':
                 for k, value in enumerate(category_y_axis[key]):
                     if category_x_axis[key][k]>=end_date:
-                        y_axis_max = category_y_axis[key][k] if y_axis_max<category_y_axis[key][k] else y_axis_max
-                        y_axis_min = category_y_axis[key][k] if y_axis_min>category_y_axis[key][k] else y_axis_min
-                        if total_graphs == 1:
-                            self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
-                            
-                        if total_graphs == 2:
-                            if graph_no==0:
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
-                                bottom1[category_x_axis[key][k]] = category_y_axis[key][k]
-                            elif graph_no==1:
-                                if category_x_axis[key][k] in bottom1.keys():
-                                    if bottom1[category_x_axis[key][k]]>=0:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
-                                    else:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
-                                else:
-                                    offset = 0
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
-
-                        if total_graphs == 3:
-                            if graph_no==0:
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h])
-                                bottom1[category_x_axis[key][k]] = category_y_axis[key][k]
-                            elif graph_no==1:
-                                if category_x_axis[key][k] in bottom1.keys():
-                                    if bottom1[category_x_axis[key][k]]>=0:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
-                                    else:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
-                                else:
-                                    offset = 0
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
-                                bottom2[category_x_axis[key][k]] = category_y_axis[key][k]
-                            elif graph_no==2:
-                                if category_x_axis[key][k] in bottom1.keys() and category_x_axis[key][k] in bottom2.keys():
-                                    if bottom1[category_x_axis[key][k]]>0 and bottom2[category_x_axis[key][k]]>0:    
-                                        offset = bottom1[category_x_axis[key][k]] + bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
-                                    if bottom1[category_x_axis[key][k]]>0 and bottom2[category_x_axis[key][k]]<0:    
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else bottom2[category_x_axis[key][k]]
-                                    if bottom1[category_x_axis[key][k]]<0 and bottom2[category_x_axis[key][k]]>0:   
-                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else bottom1[category_x_axis[key][k]] 
-                                    if bottom1[category_x_axis[key][k]]<0 and bottom2[category_x_axis[key][k]]<0:
-                                        offset = bottom1[category_x_axis[key][k]] + bottom2[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
-                                if category_x_axis[key][k] in bottom1.keys():
-                                    if bottom1[category_x_axis[key][k]]>=0:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
-                                    else:
-                                        offset = bottom1[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
-                                if category_x_axis[key][k] in bottom2.keys():
-                                    if bottom2[category_x_axis[key][k]]>=0:
-                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]>0 else 0
-                                    else:
-                                        offset = bottom2[category_x_axis[key][k]] if category_y_axis[key][k]<0 else 0
-                                else:
-                                    offset = 0
-
-                                self.ax.bar(category_x_axis[key][k], category_y_axis[key][k], width=30, color=colors[h], bottom=offset)
-                graph_no += 1
+                        VALUE   = category_y_axis[key][k]
+                        DATE    = category_x_axis[key][k]
+                      
+                        if VALUE>=0:
+                            if DATE in OFFSET_PLUS.keys():
+                                offset = OFFSET_PLUS[DATE]
+                                OFFSET_PLUS[DATE] += VALUE
+                            else:
+                                offset = 0
+                                OFFSET_PLUS[DATE] = VALUE
+                        else:
+                            if DATE in OFFSET_MINUS.keys():
+                                offset = OFFSET_MINUS[DATE]
+                                OFFSET_MINUS[DATE] += VALUE
+                            else:
+                                offset = 0
+                                OFFSET_MINUS[DATE] = VALUE                               
+                        self.ax.bar(DATE, VALUE, width=30, color=colors[h], bottom=offset)   
+              
             
-                
+        y_axis_max, y_axis_min = 0, 0
+        for date in OFFSET_PLUS:
+            y_axis_max = OFFSET_PLUS[date] if OFFSET_PLUS[date]>y_axis_max else y_axis_max
+        for date in OFFSET_MINUS:
+            y_axis_min = OFFSET_MINUS[date] if OFFSET_MINUS[date]<y_axis_min else y_axis_min
+            
         y_axis_max += 100
         y_axis_min += -100
         self.for_legend = category_y_axis
@@ -296,7 +262,8 @@ class CategoryPlot():
         self.ax.tick_params(axis='y', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.tick_params(axis='x', colors=Colors.text_color_hex, labelsize=Sizes.labelsize)
         self.ax.get_xticklabels()[highlight_spot].set_color(Colors.primary_color)
-        start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
+        
+        start_date  = '{}-{}-{}'.format(str((start_date+relativedelta(months=1)).year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()       
         if end_date.day!=1:
             end_date = '{}-{}-{}'.format(str(end_date.year), str(end_date.month), '01')

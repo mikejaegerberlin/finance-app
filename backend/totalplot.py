@@ -158,11 +158,14 @@ class TotalPlot():
         self.ax.spines['top'].set_color(Colors.text_color_hex)
         self.ax.spines['bottom'].set_color(Colors.text_color_hex)
         try:
-            y_axis_max = int(max(self.profits[q:])+10)
-            y_axis_min = int(min(self.profits[q:])-10)
+            y_axis_max = int(max(self.profits[q:]))
+            y_axis_min = int(min(self.profits[q:]))
+
+            y_axis_max = 100 if y_axis_max<0 else y_axis_max + 100
+            y_axis_min = -100 if y_axis_min>0 else y_axis_min - 100
         except:
-            y_axis_max = 10
-            y_axis_min = -10
+            y_axis_max = 100
+            y_axis_min = -100
         
         found = False
         for z, date in enumerate(xticks):
@@ -216,8 +219,9 @@ class TotalPlot():
         self.ax.get_xticklabels()[highlight_spot].set_color(Colors.primary_color)
        
         #self.ax.get_xticklines()[highlight_spot].set_color(Colors.primary_color)
-           
-        start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
+
+
+        start_date  = '{}-{}-{}'.format(str((start_date+relativedelta(months=1)).year), str((start_date+relativedelta(months=1)).month), '01')
         start_date  = datetime.strptime(start_date, '%Y-%m-%d').date()
         if end_date.day!=1:
             end_date = '{}-{}-{}'.format(str(end_date.year), str(end_date.month), '01')
@@ -231,6 +235,7 @@ class TotalPlot():
         return canvas, end_date     
         
     def get_xticks_and_labels(self, start_date, end_date):
+        
         steps = [relativedelta(months=1), relativedelta(months=3), relativedelta(months=6), relativedelta(years=1), relativedelta(years=1)+relativedelta(years=self.exceed_years)]
         step  = steps[self.filter_index]
         #start_date  = '{}-{}-{}'.format(str(start_date.year), str((start_date+relativedelta(months=1)).month), '01')
@@ -246,7 +251,7 @@ class TotalPlot():
             else:
                 xticklabels.append(self.months[int(next_date.strftime('%Y-%m-%d')[5:7])-1]+"\n'"+next_date.strftime('%Y-%m-%d')[2:4])
             next_date = next_date - step
-       
+        
         return xticks, xticklabels
 
 TotalPlot = TotalPlot()

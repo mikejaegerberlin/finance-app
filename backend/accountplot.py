@@ -129,6 +129,16 @@ class AccountPlot():
                  relativedelta(years=1), relativedelta(years=self.exceed_years)]
 
         step  = steps[self.filter_index]
+        delta = start_date - end_date
+        print (delta.days)
+        if delta.days<=7:
+            step = relativedelta(days=1)
+        if delta.days>7 and delta.days<=14:
+            step = relativedelta(days=2)
+        if delta.days>14 and delta.days<=21:
+            step = relativedelta(days=3)
+        if delta.days>21 and delta.days<=28:
+            step = relativedelta(days=4)
         
         if self.filter_index<3:
             xticklabels = [str(int(start_date.strftime('%Y-%m-%d')[8:]))+' '+self.months[int(start_date.strftime('%Y-%m-%d')[5:7])-1]]
