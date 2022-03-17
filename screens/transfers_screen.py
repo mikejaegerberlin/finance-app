@@ -19,6 +19,7 @@ from backend.demo_setup import DemoData as data
 from backend.carditems import CardItemsBackend
 from kivy.uix.screenmanager import SlideTransition
 from kivy.base import EventLoop
+import copy
 
 class TransfersScreen(Screen):
     def __init__(self, **kwargs):
@@ -119,9 +120,9 @@ class TransfersScreen(Screen):
     def change_transfer_item(self, new_date, old_date, new_purpose, old_purpose, new_amount, old_amount, account, cat):
         
         if not new_date in data.accounts[account]['Transfers'].keys():
-            data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose, cat]]
+            data.accounts[account]['Transfers'][new_date] = [[new_amount, new_purpose, cat, datetime.now().strftime('%H-%M-%S')]]
         else:
-            data.accounts[account]['Transfers'][new_date].append([new_amount, new_purpose, cat])
+            data.accounts[account]['Transfers'][new_date].append([new_amount, new_purpose, cat, datetime.now().strftime('%H-%M-%S')])
         
         if len(data.accounts[account]['Transfers'][old_date])==1:
             del data.accounts[account]['Transfers'][old_date]
@@ -267,7 +268,13 @@ class TransfersScreen(Screen):
                     card = self.generate_month_carditem(int(date_to_date.year), int(date_to_date.month))
                     self.ids.transfers_list.add_widget(card)
 
-                for transfer in data.accounts[account]['Transfers'][date]:
+                transfers = copy.deepcopy(data.accounts[account]['Transfers'][date])
+                try:
+                    transfers = sorted(transfers, key=lambda x: datetime.strptime(x[3], '%H-%M-%S'), reverse=True)
+                except:
+                    pass
+                
+                for transfer in transfers:
                     category = transfer[2]
                     purpose  = transfer[1]
                     amount   = transfer[0]

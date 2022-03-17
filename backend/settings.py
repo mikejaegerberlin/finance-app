@@ -44,7 +44,6 @@ class ScreenSettings():
 
        
     def load_settings(self):
-
         with open('settings.json', 'r') as lp:
             self.settings = json.load(lp)
 

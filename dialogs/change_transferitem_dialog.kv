@@ -1,8 +1,8 @@
 <ChangeTransferitemContent>
     orientation: "vertical"
-    spacing: "12dp"
+    spacing: "20dp"
     size_hint_y: None
-    height: "150dp"
+    height: "180dp"
     datefield: datefield
     purposefield: purposefield
     amountfield: amountfield
@@ -41,10 +41,11 @@
                 hint_text_color_focus: app.bg_color
                 text_color_normal: app.bg_color
                 text_color_focus: app.bg_color
-                on_focus: if self.focus: app.open_datepicker(datefield)
                 disabled: True
             MDIconButton:
                 icon: "calendar"
                 theme_text_color: "Custom"
                 text_color: app.bg_color
-                on_release: app.open_datepicker(datefield)
+                on_release: root.open_dialog_date()
+
+        

@@ -128,14 +128,12 @@ class CategoryPlot():
         category_y_axis = {}
       
         for key in data.categories:
-            
             transfer_list, date_list = self.get_list_for_category(data, key)
             amounts_monthly = []
             dates_monthly   = []
             
             sorted_date_list = deepcopy(date_list)
             sorted_date_list.sort(key=lambda date: datetime.strptime(date, '%Y-%m-%d').date()) 
-            
             try:
                 years = [sorted_date_list[0][0:4]]
                 for date in sorted_date_list:
@@ -143,13 +141,14 @@ class CategoryPlot():
                         years.append(date[0:4])
             except:
                 years = []
+
             for year in years:
                 for i in range(1,13):
                     if (int(year)<self.today_date.year) or (int(year)==self.today_date.year and i<=self.today_date.month):
                         i_str = '0'+str(i) if i<10 else str(i)
                         amounts_cumulative = 0
                         for transfer in transfer_list:
-                            if transfer[3][0:4]==year and transfer[3][5:7]==i_str:
+                            if transfer[-1][0:4]==year and transfer[-1][5:7]==i_str:
                                 amounts_cumulative += float(transfer[0])
                         amounts_monthly.append(amounts_cumulative)
                         needed_year = (datetime.strptime('{}-{}-{}'.format(str(year), i_str, '01'), '%Y-%m-%d').date() - relativedelta(months=1)).year
@@ -163,7 +162,6 @@ class CategoryPlot():
                                 pass
             category_x_axis[key] = dates_monthly
             category_y_axis[key] = amounts_monthly
-            
         try:
             for q, date in enumerate(dates_monthly):
                 if end_date<date:

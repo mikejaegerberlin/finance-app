@@ -31,6 +31,7 @@ from dialogs.add_standingorder_dialog import AddStandingOrderDialogContent
 from kivymd.uix.filemanager import MDFileManager
 from kivymd.uix.menu import MDDropdownMenu
 from kivymd.toast import toast
+import copy
 
 class MainScreen(Screen):
     def __init__(self, **kwargs):
@@ -72,7 +73,8 @@ class DemoApp(MDApp):
         #data.today_date = datetime.strptime(data.today_str, '%Y-%m-%d').date()
         #data.reset_standingorders_monthlisted()
         ## prepare data for start
-        ScreenSettings.update()
+        #ScreenSettings.update()
+        ScreenSettings.load_settings()
         for acc in data.accounts:
             data.check_standingorders(acc)
             data.fill_status_of_account(acc)
@@ -126,6 +128,7 @@ class DemoApp(MDApp):
     def update_backend(self):
         for acc in data.accounts:
             data.fill_status_of_account(acc)
+            data.clean_transfers(acc)
         data.fill_total_status() 
         data.save_accounts(self.demo_mode)
         ScreenSettings.save(self.demo_mode)
@@ -458,13 +461,13 @@ class DemoApp(MDApp):
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account_to]['Transfers'].keys():
-                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
+                data.accounts[account_to]['Transfers'][date].append([amount, 'From {} to {}'.format(account_from, account_to), 'Transfer', datetime.now().strftime('%H-%M-%S')])
             else:
-                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']]
+                data.accounts[account_to]['Transfers'][date] = [[amount, 'From {} to {}'.format(account_from, account_to), 'Transfer', datetime.now().strftime('%H-%M-%S')]]
             if date in data.accounts[account_from]['Transfers'].keys():
-                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer'])
+                data.accounts[account_from]['Transfers'][date].append([-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer', datetime.now().strftime('%H-%M-%S')])
             else:
-                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer']] 
+                data.accounts[account_from]['Transfers'][date] = [[-amount, 'From {} to {}'.format(account_from, account_to), 'Transfer', datetime.now().strftime('%H-%M-%S')]] 
             self.dialog_add_value.content_cls.reset_dialog_after_dismiss()    
             self.global_update()
 
@@ -502,10 +505,10 @@ class DemoApp(MDApp):
             
             #insert transfer into transfers_list and update account status
             if date in data.accounts[account]['Transfers'].keys():
-                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category, datetime.now().strftime('%H-%M-%S')])
             else:
                 data.accounts[account]['Transfers'][date] = []
-                data.accounts[account]['Transfers'][date].append([amount, purpose, category])
+                data.accounts[account]['Transfers'][date].append([amount, purpose, category, datetime.now().strftime('%H-%M-%S')])
             self.dialog_add_value.content_cls.reset_dialog_after_dismiss() 
             self.global_update()   
     
@@ -546,7 +549,7 @@ class DemoApp(MDApp):
             for key in data.keys_list:
                 data.accounts[account][key] = {}
             data.accounts[account]['Transfers'][date] = []
-            data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount'])
+            data.accounts[account]['Transfers'][date].append([amount, 'Start amount', 'Start amount', datetime.now().strftime('%H-%M-%S')])
             ScreenSettings.settings['AccountScreen']['SelectedGraphs'][account] = 'down'
             ScreenSettings.save(self.demo_mode)
             data.fill_status_of_account(account)
@@ -565,13 +568,38 @@ class DemoApp(MDApp):
         
     def remove_account(self):
         account = self.dialog_manage_accounts.content_cls.accountfield.text
-        del data.accounts[account]
+        
         orders_to_delete = []
         for order in data.standingorders['Orders']:
             if data.standingorders['Orders'][order]['Account'] == account:
                 orders_to_delete.append(order)
         for order in orders_to_delete:
             del data.standingorders['Orders'][order]
+
+        cats_to_delete = []
+        for date in data.accounts[account]['Transfers']:
+            for transfer in data.accounts[account]['Transfers'][date]:
+                cat = transfer[2]
+                if not cat in cats_to_delete:
+                    cats_to_delete.append(cat)
+        del data.accounts[account]
+
+        real_cats_to_delete = copy.deepcopy(cats_to_delete)
+        for acc in data.accounts:
+            for date in data.accounts[acc]['Transfers']:
+                for transfer in data.accounts[acc]['Transfers'][date]:
+                    cat = transfer[2]
+                    if cat in cats_to_delete:
+                        try:
+                            real_cats_to_delete.remove(cat)
+                        except:
+                            pass
+
+        for cat in real_cats_to_delete:
+            try:
+                data.categories.remove(cat)
+            except:
+                pass
 
         self.dialog_manage_accounts.dismiss()
         message = Snackbar(text='Deleted account {}.'.format(account), snackbar_x="10dp", snackbar_y="10dp", size_hint_x=(self.Window.width - (dp(10) * 2)) / self.Window.width)

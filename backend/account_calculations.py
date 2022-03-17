@@ -159,9 +159,9 @@ class Calculations():
 
         #add standingorder to transfers
         if not date_str in self.accounts[acc]['Transfers'].keys():
-            self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']]]
+            self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')]]
         else:
-            self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category']])
+            self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')])
         order['MonthListed'] = True   
         return order  
 
@@ -181,20 +181,20 @@ class Calculations():
                 #add standingorder to 
                 if order['Category']=='Transfer':
                     if not date_str in self.accounts[acc]['Transfers'].keys():
-                        self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category']]]
+                        self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')]]
                     else:
-                        self.accounts[acc]['Transfers'][date_str].append([order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category']])
+                        self.accounts[acc]['Transfers'][date_str].append([order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')])
                         
                     if not date_str in self.accounts[order['Purpose']]['Transfers'].keys():
-                        self.accounts[order['Purpose']]['Transfers'][date_str] = [[-order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category']]]
+                        self.accounts[order['Purpose']]['Transfers'][date_str] = [[-order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')]]
                     else:
-                        self.accounts[order['Purpose']]['Transfers'][date_str].append([-order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category']])
+                        self.accounts[order['Purpose']]['Transfers'][date_str].append([-order['Amount'], 'From '+acc+' to '+order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')])
 
                 else:
                     if not date_str in self.accounts[acc]['Transfers'].keys():
-                        self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']]]
+                        self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')]]
                     else:
-                        self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category']])
+                        self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')])
                     if date.month==self.today_date.month and date.year==self.today_date.year:
                         order['MonthListed'] = True
 
@@ -209,7 +209,7 @@ class Calculations():
                 if datetime.strptime(date, '%Y-%m-%d').date()>=start_date and datetime.strptime(date, '%Y-%m-%d').date()<=end_date:
                     for transfer in self.accounts[acc]['Transfers'][date]:
                         category = transfer[2]
-                        if not 'Transfer' in category:
+                        if not 'Transfer' in category and not 'Start amount' in category:
                             amount   = transfer[0]
                             if not category in self.categories_amounts.keys():
                                 self.categories_amounts[category] = amount
@@ -267,15 +267,16 @@ class Calculations():
                         category = transfer[2]
                         amount   = transfer[0]
                        
-                        if not category in categories_expenditures.keys() and amount<0:
-                            categories_expenditures[category] = amount
-                        elif amount<0:
-                            categories_expenditures[category] += amount
+                        if not 'Start amount' in category:
+                            if not category in categories_expenditures.keys() and amount<0:
+                                categories_expenditures[category] = amount
+                            elif amount<0:
+                                categories_expenditures[category] += amount
 
-                        if not category in categories_income.keys() and amount>=0:
-                            categories_income[category] = amount
-                        elif amount>=0:
-                            categories_income[category] += amount
+                            if not category in categories_income.keys() and amount>=0:
+                                categories_income[category] = amount
+                            elif amount>=0:
+                                categories_income[category] += amount
         
 
         categories_expenditures_total = 0
@@ -334,7 +335,12 @@ class Calculations():
         
         return years
         
-
+    def clean_transfers(self, acc):
+        for date in self.accounts[acc]['Transfers']:
+            for i, transfer in enumerate(self.accounts[acc]['Transfers'][date]):
+                if len(transfer)>4:
+                    self.accounts[acc]['Transfers'][date][i] = transfer[0:4]
+                   
 
     ####################################################################################################################################################
     ############################################################ FUNCTIONS ONLY FOR DEMOSETUP ##########################################################
@@ -349,9 +355,9 @@ class Calculations():
 
                 #add standingorder to transfers
                 if not date_str in self.accounts[acc]['Transfers'].keys():
-                    self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']]]
+                    self.accounts[acc]['Transfers'][date_str] = [[order['Amount'], order['Purpose'], order['Category']], datetime.now().strftime('%H-%M-%S')]
                 else:
-                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category']])
+                    self.accounts[acc]['Transfers'][date_str].append([order['Amount'], order['Purpose'], order['Category'], datetime.now().strftime('%H-%M-%S')])
                 if date.month==self.today_date.month and date.year==self.today_date.year:
                     order['MonthListed'] = True
 
